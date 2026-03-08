@@ -1,13 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
-  "name": "Interactive-Weathermap",
+  "name": "Interactive Network Weathermap",
   "id": "hanazuki-interactiveweathermap-panel",
   "info": {
     "keywords": ["panel"],
     "description": "",
     "author": {
-      "name": "Hanazuki"
+      "name": "Kasumi Hanazuki"
     },
     "logos": {
       "small": "img/logo.svg",
