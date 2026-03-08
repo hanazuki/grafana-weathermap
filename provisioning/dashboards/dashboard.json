@@ -20,7 +20,6 @@
   "graphTooltip": 0,
   "id": 1,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -28,77 +27,85 @@
         "uid": "trlxrdZVk"
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 16,
+        "w": 24,
         "x": 0,
         "y": 0
       },
       "id": 1,
       "options": {
-        "seriesCountSize": "sm",
-        "showSeriesCount": false,
-        "text": "Default value of text input option"
+        "colorScaleMode": "linear",
+        "defaultZoom": 1.0,
+        "nodeWidth": 120,
+        "nodeHeight": 40,
+        "nodeLabelPattern": "",
+        "nodeLabelReplacement": "",
+        "nodes": [
+          { "id": 1, "name": "router-1", "x": 200, "y": 200 },
+          { "id": 2, "name": "switch-1", "x": 500, "y": 200 },
+          { "id": 3, "name": "server-1", "x": 800, "y": 200 }
+        ],
+        "links": [
+          {
+            "id": 1,
+            "source": 1,
+            "target": 2,
+            "sourceInterface": "eth0",
+            "targetInterface": "eth0",
+            "capacity": 1000000000,
+            "outQueryId": 1,
+            "outReversed": false,
+            "inQueryId": 1,
+            "inReversed": true
+          },
+          {
+            "id": 2,
+            "source": 2,
+            "target": 3,
+            "sourceInterface": "eth1",
+            "targetInterface": "eth0",
+            "capacity": 1000000000,
+            "outQueryId": 1,
+            "outReversed": false,
+            "inQueryId": 1,
+            "inReversed": true
+          }
+        ],
+        "queries": [
+          {
+            "id": 1,
+            "refId": "A",
+            "type": "linkTraffic",
+            "instanceLabelKey": "instance",
+            "interfaceLabelKey": "ifName"
+          }
+        ]
       },
       "targets": [
         {
           "datasource": {
             "type": "grafana-testdata-datasource",
-            "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
+            "uid": "trlxrdZVk"
           },
           "refId": "A",
-          "scenarioId": "raw_frame",
-          "rawFrameContent": "[\n  {\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 10],\n      [1609462800000, \"B\", 20],\n      [1609466400000, \"C\", 15],\n      [1609470000000, \"D\", 25],\n      [1609473600000, \"E\", 30]\n    ]\n  },\n{\n    \"columns\": [\n      {\n        \"text\": \"Time\",\n        \"type\": \"time\"\n      },\n      {\n        \"text\": \"Label\",\n        \"type\": \"string\"\n      },\n      {\n        \"text\": \"Value\",\n        \"type\": \"number\"\n      }\n    ],\n    \"rows\": [\n      [1609459200000, \"A\", 40],\n      [1609462800000, \"B\", 50],\n      [1609466400000, \"C\", 45],\n      [1609470000000, \"D\", 55],\n      [1609473600000, \"E\", 60]\n    ]\n  }\n]"
+          "scenarioId": "csv_content",
+          "csvContent": "Time,Value{instance=\"router-1\",ifName=\"eth0\"},Value{instance=\"switch-1\",ifName=\"eth0\"},Value{instance=\"switch-1\",ifName=\"eth1\"},Value{instance=\"server-1\",ifName=\"eth0\"}\n0,500000000,400000000,350000000,300000000\n30000,520000000,380000000,360000000,280000000\n60000,510000000,410000000,340000000,310000000"
         }
       ],
-      "title": "Sample Panel Title",
-      "type": "hanazuki-interactiveweathermap-panel"
-    },
-    {
-      "datasource": {
-        "type": "grafana-testdata-datasource",
-        "uid": "trlxrdZVk"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "seriesCountSize": "sm",
-        "showSeriesCount": false,
-        "text": "Default value of text input option"
-      },
-      "targets": [
-        {
-          "alias": "",
-          "datasource": {
-            "type": "grafana-testdata-datasource",
-            "uid": "db84e60d-b92a-4089-82cb-34842fb1754b"
-          },
-          "refId": "A",
-          "scenarioId": "no_data_points"
-        }
-      ],
-      "title": "Sample Panel Title",
+      "title": "Network Weathermap",
       "type": "hanazuki-interactiveweathermap-panel"
     }
   ],
-  "refresh": "",
+  "refresh": "30s",
   "schemaVersion": 39,
-  "tags": [],
-  "templating": {
-    "list": []
-  },
+  "tags": ["weathermap"],
   "time": {
     "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Provisioned interactive-weathermap dashboard",
+  "title": "Interactive Weathermap — Sample",
   "uid": "a538aeff-5a8a-42a5-901c-938d896fdd6f",
-  "version": 1,
-  "weekStart": ""
+  "version": 2
 }
