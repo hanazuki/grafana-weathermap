@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { PanelProps } from '@grafana/data';
-import { useTheme2 } from '@grafana/ui';
-import { ReactFlow, ReactFlowProvider, Background, type Node, type Edge } from '@xyflow/react';
+import { usePanelContext, useTheme2 } from '@grafana/ui';
+import { ReactFlow, ReactFlowProvider, Background, type Node, type Edge, type NodeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { WeathermapOptions, NodeConfig, LinkTrafficQueryConfig } from '../types';
@@ -21,8 +21,10 @@ function getLinkOffset(index: number, parallelOffset: number): number {
   return Math.ceil(index / 2) * parallelOffset * (index % 2 === 1 ? 1 : -1);
 }
 
-export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height }) => {
+export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height, onOptionsChange }) => {
   const theme = useTheme2();
+  const panelContext = usePanelContext();
+  const canEdit = !!panelContext.canExecuteActions?.();
 
   const nodes = options.nodes ?? [];
   const links = options.links ?? [];
@@ -90,6 +92,30 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     return `${srcName} → ${tgtName} (#${link.id})`;
   };
 
+  // Commit node positions to panel options on every drag position change (edit mode only)
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      if (!canEdit) {
+        return;
+      }
+      const posMap = new Map<string, { x: number; y: number }>();
+      for (const change of changes) {
+        if (change.type === 'position' && change.position != null) {
+          posMap.set(change.id, change.position);
+        }
+      }
+      if (posMap.size === 0) {
+        return;
+      }
+      const updatedNodes = nodes.map((n) => {
+        const pos = posMap.get(String(n.id));
+        return pos != null ? { ...n, x: pos.x, y: pos.y } : n;
+      });
+      onOptionsChange({ ...options, nodes: updatedNodes });
+    },
+    [canEdit, nodes, options, onOptionsChange]
+  );
+
   // Compute parallel link offsets (keyed by link id)
   const linkOffsets = useMemo(() => {
     const pairCount = new Map<string, number>();
@@ -121,7 +147,6 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         } satisfies WeathermapNodeData,
         width: nodeWidth,
         height: nodeHeight,
-        draggable: false,
         selectable: false,
         connectable: false,
       })),
@@ -255,9 +280,12 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           edges={rfEdges}
           nodeTypes={NODE_TYPES}
           edgeTypes={EDGE_TYPES}
-          nodesDraggable={false}
+          nodesDraggable={canEdit}
           nodesConnectable={false}
           elementsSelectable={false}
+          snapToGrid={true}
+          snapGrid={[10, 10]}
+          onNodesChange={handleNodesChange}
           defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
           style={{ background: theme.colors.background.canvas }}
           proOptions={{ hideAttribution: true }}
