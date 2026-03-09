@@ -63,35 +63,35 @@ export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPan
     })
     .addNumberInput({
       path: 'linkStrokeWidth',
-      name: 'Stroke width',
-      defaultValue: 4,
+      name: 'Link stroke width (px)',
+      defaultValue: 6,
       category: APPEARANCE,
       settings: { min: 1, integer: true },
     })
     .addNumberInput({
       path: 'linkTipLength',
-      name: 'Tip length',
+      name: 'Link tip length (px)',
       defaultValue: 8,
       category: APPEARANCE,
       settings: { min: 1, integer: true },
     })
     .addNumberInput({
       path: 'linkLabelDistance',
-      name: 'Label distance',
+      name: 'Link label distance (px)',
       defaultValue: 40,
       category: APPEARANCE,
       settings: { min: 1, integer: true },
     })
     .addNumberInput({
       path: 'linkParallelOffset',
-      name: 'Parallel offset',
-      defaultValue: 6,
+      name: 'Parallel link offset (px)',
+      defaultValue: 8,
       category: APPEARANCE,
       settings: { min: 1, integer: true },
     })
     .addNumberInput({
       path: 'linkLabelFontSize',
-      name: 'Label font size',
+      name: 'Label font size (px)',
       defaultValue: 10,
       category: APPEARANCE,
       settings: { min: 1, integer: true },

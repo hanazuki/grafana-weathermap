@@ -56,7 +56,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
   const cy = HEALTH_INDICATOR_SIZE;
   const slash = r / Math.SQRT2;
 
-  const renderHealthIndicator = () => {
+  const healthIndicator = () => {
     if (healthStatus === null) {
       return null;
     }
@@ -94,8 +94,8 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
       <Handle type="source" position={Position.Top} style={HANDLE_STYLE} />
       <Handle type="target" position={Position.Top} style={HANDLE_STYLE} />
       <div style={style} title={String(label)}>
-        {renderHealthIndicator()}
-        {label}
+        {healthIndicator()}
+        <span style={{ fontWeight: "bold" }}>{label}</span>
       </div>
     </>
   );

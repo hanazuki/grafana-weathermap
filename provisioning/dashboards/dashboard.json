@@ -35,9 +35,6 @@
       "id": 1,
       "options": {
         "colorScaleMode": "linear",
-        "defaultZoom": 1.0,
-        "nodeWidth": 120,
-        "nodeHeight": 40,
         "nodeLabelPattern": "^(.+)\\.example\\.com$",
         "nodeLabelReplacement": "$1",
         "nodes": [
