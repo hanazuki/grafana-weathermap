@@ -10,7 +10,7 @@ export interface WeathermapNodeData {
   nodeWidth: number;
   nodeHeight: number;
   theme: GrafanaTheme2;
-  hasInvalidRefId: boolean;
+  hasConfigError: boolean;
   healthStatus: HealthStatus;
   [key: string]: unknown;
 }
@@ -29,14 +29,14 @@ const HANDLE_STYLE: React.CSSProperties = {
 };
 
 export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
-  const { label, nodeWidth, nodeHeight, theme, hasInvalidRefId, healthStatus } = data as WeathermapNodeData;
+  const { label, nodeWidth, nodeHeight, theme, hasConfigError, healthStatus } = data as WeathermapNodeData;
   const t = theme as GrafanaTheme2;
 
   const style: React.CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
     background: t.colors.background.secondary,
-    border: `2px solid ${hasInvalidRefId ? 'orange' : t.colors.border.medium}`,
+    border: `2px solid ${hasConfigError ? t.colors.warning.main : t.colors.border.medium}`,
     borderRadius: t.shape.radius.default,
     display: 'flex',
     alignItems: 'center',

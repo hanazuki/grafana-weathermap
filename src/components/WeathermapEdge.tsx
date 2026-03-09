@@ -9,7 +9,7 @@ export interface WeathermapEdgeData {
   inSpeed: string | null;
   /** Perpendicular offset in pixels (positive = right of source→target vector). */
   offsetPx: number;
-  hasInvalidRefId: boolean;
+  hasConfigError: boolean;
   labelBgColor: string;
   strokeWidth: number;
   tipLength: number;

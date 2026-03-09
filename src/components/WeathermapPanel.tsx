@@ -137,7 +137,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const rfNodes: Node[] = useMemo(
     () =>
       nodes.map((node) => {
-        const hasInvalidRefId = node.statusQueryId != null && !queryMap.has(node.statusQueryId);
+        const hasConfigError = node.statusQueryId != null && !queryMap.has(node.statusQueryId);
 
         let healthStatus = null;
         if (node.statusQueryId != null) {
@@ -156,7 +156,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             nodeWidth,
             nodeHeight,
             theme,
-            hasInvalidRefId,
+            hasConfigError,
             healthStatus,
           } satisfies WeathermapNodeData,
           width: nodeWidth,
@@ -227,7 +227,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             outSpeed,
             inSpeed,
             offsetPx,
-            hasInvalidRefId: hasInvalidQuery,
+            hasConfigError: hasInvalidQuery,
             labelBgColor: theme.colors.background.canvas,
             strokeWidth: linkStrokeWidth,
             tipLength: linkTipLength,
