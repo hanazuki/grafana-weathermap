@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, InlineField, InlineFieldRow, Input, Select, Switch } from '@grafana/ui';
+import { Button, FieldSet, InlineField, InlineFieldRow, Input, Select, Switch } from '@grafana/ui';
 import { LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -20,6 +20,106 @@ function queryOptions(queries: QueryConfig[]) {
   return queries.map((q) => ({ label: q.refId, value: q.id }));
 }
 
+type LinkEditorProps = {
+  link: LinkConfig;
+  nodes: NodeConfig[];
+  queries: QueryConfig[];
+  update: (patch: Partial<LinkConfig>) => void;
+};
+
+const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update }) => {
+  const nodeOpts = nodeOptions(nodes);
+  const queryOpts = queryOptions(queries);
+  const noQueryOption = { label: '— none —', value: 0 };
+
+  return (
+    <FieldSet>
+      <InlineFieldRow>
+        <InlineField label="Source node" grow>
+          <Select
+            options={nodeOpts}
+            value={link.source}
+            onChange={(opt) => update({ source: opt.value! })}
+            isSearchable
+          />
+        </InlineField>
+        <InlineField label="Src iface">
+          <Input
+            value={link.sourceInterface}
+            onChange={(e) => update({ sourceInterface: e.currentTarget.value })}
+            placeholder="eth0"
+            width={10}
+          />
+        </InlineField>
+      </InlineFieldRow>
+
+      <InlineFieldRow>
+        <InlineField label="Target node" grow>
+          <Select
+            options={nodeOpts}
+            value={link.target}
+            onChange={(opt) => update({ target: opt.value! })}
+            isSearchable
+          />
+        </InlineField>
+        <InlineField label="Tgt iface">
+          <Input
+            value={link.targetInterface}
+            onChange={(e) => update({ targetInterface: e.currentTarget.value })}
+            placeholder="eth0"
+            width={10}
+          />
+        </InlineField>
+      </InlineFieldRow>
+
+      <InlineFieldRow>
+        <InlineField label="Capacity (bps)">
+          <Input
+            type="number"
+            value={link.capacity}
+            onChange={(e) => update({ capacity: Number(e.currentTarget.value) })}
+            width={16}
+          />
+        </InlineField>
+      </InlineFieldRow>
+
+      <InlineFieldRow>
+        <InlineField label="Out query" tooltip="Query for egress (source→target) traffic">
+          <Select
+            options={[noQueryOption, ...queryOpts]}
+            value={link.outQueryId ?? 0}
+            onChange={(opt) => update({ outQueryId: opt.value || undefined })}
+            width={12}
+          />
+        </InlineField>
+        <InlineField label="Reversed" tooltip="Match target side instead of source side">
+          <Switch
+            value={link.outReversed ?? false}
+            onChange={(e) => update({ outReversed: e.currentTarget.checked })}
+          />
+        </InlineField>
+      </InlineFieldRow>
+
+      <InlineFieldRow>
+        <InlineField label="In query" tooltip="Query for ingress (target→source) traffic">
+          <Select
+            options={[noQueryOption, ...queryOpts]}
+            value={link.inQueryId ?? 0}
+            onChange={(opt) => update({ inQueryId: opt.value || undefined })}
+            width={12}
+          />
+        </InlineField>
+        <InlineField label="Reversed" tooltip="Match source side instead of target side">
+          <Switch
+            value={link.inReversed ?? false}
+            onChange={(e) => update({ inReversed: e.currentTarget.checked })}
+          />
+        </InlineField>
+      </InlineFieldRow>
+    </FieldSet>
+  );
+};
+
 export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, WeathermapOptions>> = ({
   value = [],
   onChange,
@@ -28,7 +128,9 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
   const nodes: NodeConfig[] = context.options?.nodes ?? [];
   const queries: QueryConfig[] = context.options?.queries ?? [];
 
-  const add = () =>
+  const [index, setIndex] = useState<number | null>(value.length > 0 ? 0 : null);
+
+  const add = () => {
     onChange([
       ...value,
       {
@@ -40,120 +142,50 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
         capacity: 1_000_000_000,
       },
     ]);
+    setIndex(value.length);
+  };
 
-  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
+  const remove = () => {
+    if (index === null) {
+      return;
+    }
+    const i = index;
+    setIndex(i > 0 ? i - 1 : value.length > 1 ? 0 : null);
+    onChange(value.filter((_, idx) => idx !== i));
+  };
 
-  const update = (i: number, patch: Partial<LinkConfig>) =>
-    onChange(value.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
+  const update = (patch: Partial<LinkConfig>) =>
+    onChange(value.map((l, idx) => (idx === index ? { ...l, ...patch } : l)));
 
-  const nodeOpts = nodeOptions(nodes);
-  const queryOpts = queryOptions(queries);
-  const noQueryOption = { label: '— none —', value: 0 };
+  const link: LinkConfig | null = index !== null ? value[index] : null;
+
+  const selectOptions = value
+    .map((l, idx) => {
+      const src = nodeName(nodes, l.source);
+      const tgt = nodeName(nodes, l.target);
+      return { label: `${src} → ${tgt} (#${l.id})`, value: idx };
+    })
+    .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
 
   return (
-    <div>
-      {value.map((link, i) => {
-        const srcName = nodeName(nodes, link.source);
-        const tgtName = nodeName(nodes, link.target);
-        const header = `${srcName} → ${tgtName} #${link.id}`;
-
-        return (
-          <div key={link.id} style={{ marginBottom: 8, paddingBottom: 8, borderBottom: '1px solid rgba(128,128,128,0.2)' }}>
-            <InlineFieldRow>
-              <InlineField label={header} grow>
-                <div />
-              </InlineField>
-              <Button variant="destructive" icon="trash-alt" size="sm" aria-label="Remove link" onClick={() => remove(i)} />
-            </InlineFieldRow>
-
-            <InlineFieldRow>
-              <InlineField label="Source node" grow>
-                <Select
-                  options={nodeOpts}
-                  value={link.source}
-                  onChange={(opt) => update(i, { source: opt.value! })}
-                  isSearchable
-                />
-              </InlineField>
-              <InlineField label="Src iface">
-                <Input
-                  value={link.sourceInterface}
-                  onChange={(e) => update(i, { sourceInterface: e.currentTarget.value })}
-                  placeholder="eth0"
-                  width={10}
-                />
-              </InlineField>
-            </InlineFieldRow>
-
-            <InlineFieldRow>
-              <InlineField label="Target node" grow>
-                <Select
-                  options={nodeOpts}
-                  value={link.target}
-                  onChange={(opt) => update(i, { target: opt.value! })}
-                  isSearchable
-                />
-              </InlineField>
-              <InlineField label="Tgt iface">
-                <Input
-                  value={link.targetInterface}
-                  onChange={(e) => update(i, { targetInterface: e.currentTarget.value })}
-                  placeholder="eth0"
-                  width={10}
-                />
-              </InlineField>
-            </InlineFieldRow>
-
-            <InlineFieldRow>
-              <InlineField label="Capacity (bps)">
-                <Input
-                  type="number"
-                  value={link.capacity}
-                  onChange={(e) => update(i, { capacity: Number(e.currentTarget.value) })}
-                  width={16}
-                />
-              </InlineField>
-            </InlineFieldRow>
-
-            <InlineFieldRow>
-              <InlineField label="Out query" tooltip="Query for egress (source→target) traffic">
-                <Select
-                  options={[noQueryOption, ...queryOpts]}
-                  value={link.outQueryId ?? 0}
-                  onChange={(opt) => update(i, { outQueryId: opt.value || undefined })}
-                  width={12}
-                />
-              </InlineField>
-              <InlineField label="Reversed" tooltip="Match target side instead of source side">
-                <Switch
-                  value={link.outReversed ?? false}
-                  onChange={(e) => update(i, { outReversed: e.currentTarget.checked })}
-                />
-              </InlineField>
-            </InlineFieldRow>
-
-            <InlineFieldRow>
-              <InlineField label="In query" tooltip="Query for ingress (target→source) traffic">
-                <Select
-                  options={[noQueryOption, ...queryOpts]}
-                  value={link.inQueryId ?? 0}
-                  onChange={(opt) => update(i, { inQueryId: opt.value || undefined })}
-                  width={12}
-                />
-              </InlineField>
-              <InlineField label="Reversed" tooltip="Match source side instead of target side">
-                <Switch
-                  value={link.inReversed ?? false}
-                  onChange={(e) => update(i, { inReversed: e.currentTarget.checked })}
-                />
-              </InlineField>
-            </InlineFieldRow>
-          </div>
-        );
-      })}
-      <Button icon="plus" variant="secondary" size="sm" onClick={add}>
-        Add Link
-      </Button>
-    </div>
+    <>
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <Select
+          options={selectOptions}
+          value={index}
+          onChange={(opt) => setIndex(opt.value!)}
+          placeholder="— select a link —"
+          grow
+          isSearchable
+        />
+        <Button icon="plus" variant="secondary" aria-label="Add link" onClick={add} />
+        <Button variant="destructive" icon="trash-alt" aria-label="Remove link" onClick={remove} disabled={link === null} />
+      </div>
+      {link !== null ? (
+        <LinkEditor link={link} nodes={nodes} queries={queries} update={update} />
+      ) : (
+        <div style={{ padding: '8px 0', color: 'gray' }}>No links yet — click + to add one</div>
+      )}
+    </>
   );
 };

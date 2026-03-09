@@ -83,11 +83,11 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     return bad;
   }, [links, queryMap]);
 
-  // Human-readable link label for warning banner: "Source name → Target name #id"
+  // Human-readable link label for warning banner: "Source name → Target name (#id)"
   const linkLabel = (link: (typeof links)[number]): string => {
     const srcName = nodeMap.get(link.source)?.name ?? `#${link.source}`;
     const tgtName = nodeMap.get(link.target)?.name ?? `#${link.target}`;
-    return `${srcName} → ${tgtName} #${link.id}`;
+    return `${srcName} → ${tgtName} (#${link.id})`;
   };
 
   // Compute parallel link offsets (keyed by link id)
