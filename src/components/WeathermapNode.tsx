@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Handle, NodeProps, Position } from '@xyflow/react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { HealthStatus } from '../types';
@@ -68,12 +68,19 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
           ? t.colors.error.main
           : t.colors.secondary.text;
 
+    const label = healthStatus === 'up' ? 'Up' : healthStatus === 'down' ? 'Down' : 'Unknown';
+
+    const labelId = useId();
+
     return (
       <svg
         width={HEALTH_INDICATOR_SIZE * 2}
         height={HEALTH_INDICATOR_SIZE * 2}
         style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+        role="img"
+        aria-labelled-by={`#${labelId}`}
       >
+        <title id={labelId}>Health: {label}</title>
         <circle cx={cx} cy={cy} r={r} fill={healthStatus === 'up' ? color : "none"} stroke={color} strokeWidth={1.5} />
         {healthStatus === 'down' && (
           <line
