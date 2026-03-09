@@ -125,14 +125,14 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
       {/* Speed labels (omitted when no data) */}
       {outSpeed && (
         <g transform={`rotate(${labelAngle}, ${outLabelX}, ${outLabelY})`}>
-          <text x={outLabelX} y={outLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={labelFontSize} fill={outColor} filter={`url(#${filterId})`}>
+          <text x={outLabelX} y={outLabelY} textAnchor="middle" dy="0.5cap" fontSize={labelFontSize} fill={outColor} filter={`url(#${filterId})`}>
             {outSpeed}
           </text>
         </g>
       )}
       {inSpeed && (
         <g transform={`rotate(${labelAngle}, ${inLabelX}, ${inLabelY})`}>
-          <text x={inLabelX} y={inLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={labelFontSize} fill={inColor} filter={`url(#${filterId})`}>
+          <text x={inLabelX} y={inLabelY} textAnchor="middle" dy="0.5cap" fontSize={labelFontSize} fill={inColor} filter={`url(#${filterId})`}>
             {inSpeed}
           </text>
         </g>
