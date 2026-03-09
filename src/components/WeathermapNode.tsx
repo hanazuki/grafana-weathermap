@@ -74,22 +74,16 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
         height={HEALTH_INDICATOR_SIZE * 2}
         style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
       >
-        {healthStatus === 'up' ? (
-          <circle cx={cx} cy={cy} r={r} fill={color} />
-        ) : (
-          <>
-            <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={1.5} />
-            {healthStatus === 'down' && (
-              <line
-                x1={cx - slash}
-                y1={cy + slash}
-                x2={cx + slash}
-                y2={cy - slash}
-                stroke={color}
-                strokeWidth={1.5}
-              />
-            )}
-          </>
+        <circle cx={cx} cy={cy} r={r} fill={healthStatus === 'up' ? color : "none"} stroke={color} strokeWidth={1.5} />
+        {healthStatus === 'down' && (
+          <line
+            x1={cx - slash}
+            y1={cy + slash}
+            x2={cx + slash}
+            y2={cy - slash}
+            stroke={color}
+            strokeWidth={1.5}
+          />
         )}
       </svg>
     );
