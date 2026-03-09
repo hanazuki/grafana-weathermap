@@ -41,9 +41,9 @@
         "nodeLabelPattern": "",
         "nodeLabelReplacement": "",
         "nodes": [
-          { "id": 1, "name": "router-1", "x": 200, "y": 200 },
-          { "id": 2, "name": "switch-1", "x": 500, "y": 200 },
-          { "id": 3, "name": "server-1", "x": 800, "y": 200 }
+          { "id": 1, "name": "host-0", "x": 200, "y": 200 },
+          { "id": 2, "name": "host-1", "x": 500, "y": 200 },
+          { "id": 3, "name": "host-2", "x": 800, "y": 200 }
         ],
         "links": [
           {
@@ -56,19 +56,19 @@
             "outQueryId": 1,
             "outReversed": false,
             "inQueryId": 1,
-            "inReversed": true
+            "inReversed": false
           },
           {
             "id": 2,
             "source": 2,
             "target": 3,
-            "sourceInterface": "eth1",
+            "sourceInterface": "eth0",
             "targetInterface": "eth0",
             "capacity": 1000000000,
             "outQueryId": 1,
             "outReversed": false,
             "inQueryId": 1,
-            "inReversed": true
+            "inReversed": false
           }
         ],
         "queries": [
@@ -88,8 +88,13 @@
             "uid": "trlxrdZVk"
           },
           "refId": "A",
-          "scenarioId": "csv_content",
-          "csvContent": "Time,Value{instance=\"router-1\",ifName=\"eth0\"},Value{instance=\"switch-1\",ifName=\"eth0\"},Value{instance=\"switch-1\",ifName=\"eth1\"},Value{instance=\"server-1\",ifName=\"eth0\"}\n0,500000000,400000000,350000000,300000000\n30000,520000000,380000000,360000000,280000000\n60000,510000000,410000000,340000000,310000000"
+          "scenarioId": "random_walk",
+          "seriesCount": 3,
+          "labels": "instance=host-$seriesIndex,ifName=eth0",
+          "startValue": 500000000,
+          "spread": 10000000,
+          "min": 1000000,
+          "max": 1000000000
         }
       ],
       "title": "Network Weathermap",
@@ -107,5 +112,5 @@
   "timezone": "",
   "title": "Interactive Weathermap — Sample",
   "uid": "a538aeff-5a8a-42a5-901c-938d896fdd6f",
-  "version": 2
+  "version": 5
 }
