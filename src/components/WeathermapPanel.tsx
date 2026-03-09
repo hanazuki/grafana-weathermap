@@ -37,6 +37,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const linkLabelDistance = options.linkLabelDistance ?? 40;
   const linkParallelOffset = options.linkParallelOffset ?? 6;
   const linkLabelFontSize = options.linkLabelFontSize ?? 10;
+  const logScaleBase = options.logScaleBase ?? 10;
 
   // Fast lookup maps
   const nodeMap = useMemo(() => new Map<number, NodeConfig>(nodes.map((n) => [n.id, n])), [nodes]);
@@ -179,7 +180,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const iface = link.outReversed ? link.targetInterface : link.sourceInterface;
               const result = findTrafficSeries(data, qc, instance, iface);
               if (result.found && result.value !== null) {
-                outColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear');
+                outColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase);
                 outSpeed = formatBps(result.value);
               }
             }
@@ -195,7 +196,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const iface = link.inReversed ? link.sourceInterface : link.targetInterface;
               const result = findTrafficSeries(data, qc, instance, iface);
               if (result.found && result.value !== null) {
-                inColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear');
+                inColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase);
                 inSpeed = formatBps(result.value);
               }
             }
@@ -222,7 +223,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           } satisfies WeathermapEdgeData,
         };
       });
-  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode, theme, linkStrokeWidth, linkTipLength, linkLabelDistance, linkLabelFontSize]);
+  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode, logScaleBase, theme, linkStrokeWidth, linkTipLength, linkLabelDistance, linkLabelFontSize]);
 
   // Full-panel error state for invalid label transform config
   if (labelTransformError) {
@@ -275,7 +276,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         </div>
       )}
 
-      <ColorLegend colorScaleMode={options.colorScaleMode ?? 'linear'} />
+      <ColorLegend colorScaleMode={options.colorScaleMode ?? 'linear'} logScaleBase={logScaleBase} />
 
       <ReactFlowProvider>
         <ReactFlow

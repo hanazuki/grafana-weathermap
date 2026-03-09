@@ -40,6 +40,15 @@ export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPan
         ],
       },
     })
+    .addSliderInput({
+      path: 'logScaleBase',
+      name: 'Log scale base',
+      description: 'Base of the logarithm used for log scale mode. Higher = stronger compression of low-utilization range.',
+      defaultValue: 10,
+      category: APPEARANCE,
+      showIf: (config) => config.colorScaleMode === 'log',
+      settings: { min: 2, max: 10, step: 1 },
+    })
     .addNumberInput({
       path: 'nodeWidth',
       name: 'Node width (px)',

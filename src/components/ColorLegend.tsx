@@ -5,31 +5,29 @@ import { GREEN_YELLOW_RED_STOPS } from '../utils/color';
 
 interface ColorLegendProps {
   colorScaleMode: 'linear' | 'log';
+  logScaleBase: number;
 }
 
 /** Return the utilization % at which color step i begins (i = 0..10). */
-function stepStartPct(i: number, mode: 'linear' | 'log'): number {
+function stepStartPct(i: number, mode: 'linear' | 'log', logScaleBase: number): number {
   if (mode === 'linear') {
     return i * 10;
   }
-  if (i === 0) {
-    return 0;
-  }
-  if (i === 10) {
-    return 100;
-  }
-  return Math.pow(10, (i * Math.log10(101)) / 10) - 1;
+  // Inverse of: step = floor(log_b(util × (b−1)/100 + 1) × 10)
+  // util = (b^(i/10) − 1) × 100 / (b−1)
+  const b = logScaleBase;
+  return (Math.pow(b, i / 10) - 1) * 100 / (b - 1);
 }
 
 const BAR_HEIGHT = 160;
 const BAR_WIDTH = 16;
 
-export function ColorLegend({ colorScaleMode }: ColorLegendProps) {
+export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) {
   const theme = useTheme2();
 
   const stops = GREEN_YELLOW_RED_STOPS.map((color, i) => ({
     color,
-    pct: stepStartPct(i, colorScaleMode),
+    pct: stepStartPct(i, colorScaleMode, logScaleBase),
   }));
 
   const gradient = `linear-gradient(to bottom, ${stops.map(({ color, pct }) => `${color} ${pct.toFixed(2)}%`).join(', ')})`;

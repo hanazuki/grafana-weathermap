@@ -46,17 +46,18 @@ export const GRAY_COLOR = '#808080';
 /**
  * Map a utilization percentage (0–100, clamped) to a color step index (0–10).
  *
- * Linear scale: step = floor(util / 10), clamped to 10.
- * Logarithmic scale: step = floor(log10(util + 1) / log10(101) × 10).
+ * Linear scale: step = min(10, floor(util / 10)).
+ * Logarithmic scale: step = floor(log_b(util × (b−1)/100 + 1) × 10)
+ *   where b = logScaleBase (default 10, integer in [2, 10]).
  */
-export function getColorStep(utilPct: number, mode: 'linear' | 'log'): number {
+export function getColorStep(utilPct: number, mode: 'linear' | 'log', logScaleBase = 10): number {
   const clamped = Math.min(100, Math.max(0, utilPct));
 
   if (mode === 'linear') {
     return Math.min(10, Math.floor(clamped / 10));
   } else {
-    // spec formula: floor(log10(util + 1) / log10(101) × 10)
-    return Math.min(10, Math.floor((Math.log10(clamped + 1) / Math.log10(101)) * 10));
+    const b = logScaleBase;
+    return Math.min(10, Math.floor((Math.log(clamped * (b - 1) / 100 + 1) / Math.log(b)) * 10));
   }
 }
 
@@ -67,12 +68,13 @@ export function getColorStep(utilPct: number, mode: 'linear' | 'log'): number {
 export function getUtilizationColor(
   trafficBps: number,
   capacityBps: number,
-  mode: 'linear' | 'log'
+  mode: 'linear' | 'log',
+  logScaleBase = 10
 ): string {
   if (!isFinite(trafficBps) || capacityBps <= 0) {
     return GRAY_COLOR;
   }
   const utilPct = (trafficBps / capacityBps) * 100;
-  const step = getColorStep(utilPct, mode);
+  const step = getColorStep(utilPct, mode, logScaleBase);
   return GREEN_YELLOW_RED_STOPS[step];
 }
