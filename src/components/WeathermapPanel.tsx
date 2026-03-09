@@ -14,11 +14,11 @@ import { formatBps } from '../utils/format';
 const NODE_TYPES = { weathermapNode: WeathermapNode };
 const EDGE_TYPES = { weathermapEdge: WeathermapEdge };
 
-function getLinkOffset(index: number): number {
+function getLinkOffset(index: number, parallelOffset: number): number {
   if (index === 0) {
     return 0;
   }
-  return Math.ceil(index / 2) * 6 * (index % 2 === 1 ? 1 : -1);
+  return Math.ceil(index / 2) * parallelOffset * (index % 2 === 1 ? 1 : -1);
 }
 
 export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height }) => {
@@ -29,6 +29,11 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const queries = options.queries ?? [];
   const nodeWidth = options.nodeWidth ?? 120;
   const nodeHeight = options.nodeHeight ?? 40;
+  const linkStrokeWidth = options.linkStrokeWidth ?? 4;
+  const linkTipLength = options.linkTipLength ?? 8;
+  const linkLabelDistance = options.linkLabelDistance ?? 40;
+  const linkParallelOffset = options.linkParallelOffset ?? 6;
+  const linkLabelFontSize = options.linkLabelFontSize ?? 10;
 
   // Fast lookup maps
   const nodeMap = useMemo(() => new Map<number, NodeConfig>(nodes.map((n) => [n.id, n])), [nodes]);
@@ -94,11 +99,11 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       const b = Math.max(link.source, link.target);
       const key = `${a}\0${b}`;
       const idx = pairCount.get(key) ?? 0;
-      offsets.set(link.id, getLinkOffset(idx));
+      offsets.set(link.id, getLinkOffset(idx, linkParallelOffset));
       pairCount.set(key, idx + 1);
     }
     return offsets;
-  }, [links]);
+  }, [links, linkParallelOffset]);
 
   // Build React Flow nodes (React Flow requires string IDs)
   const rfNodes: Node[] = useMemo(
@@ -184,10 +189,14 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             offsetPx,
             hasInvalidRefId: hasInvalidQuery,
             labelBgColor: theme.colors.background.canvas,
+            strokeWidth: linkStrokeWidth,
+            tipLength: linkTipLength,
+            labelDistance: linkLabelDistance,
+            labelFontSize: linkLabelFontSize,
           } satisfies WeathermapEdgeData,
         };
       });
-  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode, theme]);
+  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode, theme, linkStrokeWidth, linkTipLength, linkLabelDistance, linkLabelFontSize]);
 
   // Full-panel error state for invalid label transform config
   if (labelTransformError) {

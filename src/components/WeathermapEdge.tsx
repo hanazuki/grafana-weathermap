@@ -11,17 +11,19 @@ export interface WeathermapEdgeData {
   offsetPx: number;
   hasInvalidRefId: boolean;
   labelBgColor: string;
+  strokeWidth: number;
+  tipLength: number;
+  labelDistance: number;
+  labelFontSize: number;
   [key: string]: unknown;
 }
-
-const STROKE_WIDTH = 4
-const TIP_LEN = 8;   // length of the sharpened tip
-const LABEL_DIST = 40;   // px from midpoint along segment
 
 function drawPencilTip(
   ax: number, ay: number, // base of the half-arrow (source or target)
   bx: number, by: number, // tip (midpoint)
-  color: string
+  color: string,
+  strokeWidth: number,
+  tipLength: number,
 ): React.ReactElement {
   const len = Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2);
   if (len < 1) {
@@ -34,9 +36,9 @@ function drawPencilTip(
   const px = dy;
   const py = -dx;
 
-  const hw = STROKE_WIDTH / 2; // half-width at the base of the tip, matching stroke width
-  const baseX = bx - dx * TIP_LEN;
-  const baseY = by - dy * TIP_LEN;
+  const hw = strokeWidth / 2; // half-width at the base of the tip, matching stroke width
+  const baseX = bx - dx * tipLength;
+  const baseY = by - dy * tipLength;
 
   const lx = baseX + px * hw;
   const ly = baseY + py * hw;
@@ -46,9 +48,19 @@ function drawPencilTip(
   return <polygon points={`${lx},${ly} ${bx},${by} ${rx},${ry}`} fill={color} />;
 }
 
-export const WeathermapEdge: React.FC<EdgeProps> = ({ sourceX, sourceY, targetX, targetY, data }) => {
-  const { outColor = GRAY_COLOR, inColor = GRAY_COLOR, outSpeed = null, inSpeed = null, offsetPx = 0, labelBgColor = 'transparent' } =
-    (data as WeathermapEdgeData) ?? {};
+export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targetX, targetY, data }) => {
+  const {
+    outColor = GRAY_COLOR,
+    inColor = GRAY_COLOR,
+    outSpeed = null,
+    inSpeed = null,
+    offsetPx = 0,
+    labelBgColor = 'transparent',
+    strokeWidth = 4,
+    tipLength = 8,
+    labelDistance = 40,
+    labelFontSize = 10,
+  } = (data as WeathermapEdgeData) ?? {};
 
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
@@ -78,38 +90,49 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ sourceX, sourceY, targetX,
   const ny = dy / len;
 
   // Speed label positions: just inside midpoint along each segment
-  const outLabelX = mx - nx * LABEL_DIST;
-  const outLabelY = my - ny * LABEL_DIST;
-  const inLabelX = mx + nx * LABEL_DIST;
-  const inLabelY = my + ny * LABEL_DIST;
+  const outLabelX = mx - nx * labelDistance;
+  const outLabelY = my - ny * labelDistance;
+  const inLabelX = mx + nx * labelDistance;
+  const inLabelY = my + ny * labelDistance;
 
   // Label rotation: follow arrow angle, flip if pointing leftward to keep text readable
   const angleDeg = Math.atan2(ny, nx) * (180 / Math.PI);
   const labelAngle = Math.abs(angleDeg) > 90 ? angleDeg + 180 : angleDeg;
 
+  // Unique filter ID for this edge's label background
+  const filterId = `label-bg-${id}`;
+
   return (
     <g>
+      <defs>
+        <filter id={filterId} x="-2%" y="-10%" width="104%" height="120%">
+          <feFlood floodColor={labelBgColor} result="bg" />
+          <feMerge>
+            <feMergeNode in="bg" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
       {/* Source half-arrow: source → midpoint (out-traffic) */}
-      <path d={`M ${sx} ${sy} L ${mx - nx * TIP_LEN} ${my - ny * TIP_LEN}`} stroke={outColor} strokeWidth={STROKE_WIDTH} fill="none" strokeLinecap="butt" />
-      {drawPencilTip(sx, sy, mx, my, outColor)}
+      <path d={`M ${sx} ${sy} L ${mx - nx * tipLength} ${my - ny * tipLength}`} stroke={outColor} strokeWidth={strokeWidth} fill="none" strokeLinecap="butt" />
+      {drawPencilTip(sx, sy, mx, my, outColor, strokeWidth, tipLength)}
 
       {/* Target half-arrow: target → midpoint (in-traffic) */}
-      <path d={`M ${tx} ${ty} L ${mx + nx * TIP_LEN} ${my + ny * TIP_LEN}`} stroke={inColor} strokeWidth={STROKE_WIDTH} fill="none" strokeLinecap="butt" />
-      {drawPencilTip(tx, ty, mx, my, inColor)}
+      <path d={`M ${tx} ${ty} L ${mx + nx * tipLength} ${my + ny * tipLength}`} stroke={inColor} strokeWidth={strokeWidth} fill="none" strokeLinecap="butt" />
+      {drawPencilTip(tx, ty, mx, my, inColor, strokeWidth, tipLength)}
 
       {/* Speed labels (omitted when no data) */}
       {outSpeed && (
         <g transform={`rotate(${labelAngle}, ${outLabelX}, ${outLabelY})`}>
-          <rect x={outLabelX - 25} y={outLabelY - 7} width={50} height={14} rx={2} fill={labelBgColor} />
-          <text x={outLabelX} y={outLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={outColor}>
+          <text x={outLabelX} y={outLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={labelFontSize} fill={outColor} filter={`url(#${filterId})`}>
             {outSpeed}
           </text>
         </g>
       )}
       {inSpeed && (
         <g transform={`rotate(${labelAngle}, ${inLabelX}, ${inLabelY})`}>
-          <rect x={inLabelX - 25} y={inLabelY - 7} width={50} height={14} rx={2} fill={labelBgColor} />
-          <text x={inLabelX} y={inLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={inColor}>
+          <text x={inLabelX} y={inLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={labelFontSize} fill={inColor} filter={`url(#${filterId})`}>
             {inSpeed}
           </text>
         </g>

@@ -5,13 +5,34 @@ import { NodesEditor } from './components/editors/NodesEditor';
 import { LinksEditor } from './components/editors/LinksEditor';
 import { QueriesEditor } from './components/editors/QueriesEditor';
 
+const APPEARANCE = ['Appearance'];
+
 export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPanelOptions((builder) => {
   return builder
+    .addNumberInput({
+      path: 'defaultZoom',
+      name: 'Default zoom',
+      description: 'Initial zoom level (1.0 = 100%).',
+      defaultValue: 1.0,
+    })
+    .addTextInput({
+      path: 'nodeLabelPattern',
+      name: 'Node label pattern',
+      description: 'Regex applied to node name to produce display label. Must be set together with replacement.',
+      defaultValue: '',
+    })
+    .addTextInput({
+      path: 'nodeLabelReplacement',
+      name: 'Node label replacement',
+      description: 'Replacement string for node label pattern. Supports $1, $2 capture groups.',
+      defaultValue: '',
+    })
     .addSelect({
       path: 'colorScaleMode',
       name: 'Color scale mode',
       description: 'How utilization percentage is mapped to color steps.',
       defaultValue: 'linear',
+      category: APPEARANCE,
       settings: {
         options: [
           { value: 'linear', label: 'Linear' },
@@ -20,32 +41,51 @@ export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPan
       },
     })
     .addNumberInput({
-      path: 'defaultZoom',
-      name: 'Default zoom',
-      description: 'Initial zoom level (1.0 = 100%).',
-      defaultValue: 1.0,
-    })
-    .addNumberInput({
       path: 'nodeWidth',
       name: 'Node width (px)',
       defaultValue: 120,
+      category: APPEARANCE,
     })
     .addNumberInput({
       path: 'nodeHeight',
       name: 'Node height (px)',
       defaultValue: 40,
+      category: APPEARANCE,
     })
-    .addTextInput({
-      path: 'nodeLabelPattern',
-      name: 'Node label pattern',
-      description: 'Regex applied to node ID to produce display label. Must be set together with replacement.',
-      defaultValue: '',
+    .addNumberInput({
+      path: 'linkStrokeWidth',
+      name: 'Stroke width',
+      defaultValue: 4,
+      category: APPEARANCE,
+      settings: { min: 1, integer: true },
     })
-    .addTextInput({
-      path: 'nodeLabelReplacement',
-      name: 'Node label replacement',
-      description: 'Replacement string for node label pattern. Supports $1, $2 capture groups.',
-      defaultValue: '',
+    .addNumberInput({
+      path: 'linkTipLength',
+      name: 'Tip length',
+      defaultValue: 8,
+      category: APPEARANCE,
+      settings: { min: 1, integer: true },
+    })
+    .addNumberInput({
+      path: 'linkLabelDistance',
+      name: 'Label distance',
+      defaultValue: 40,
+      category: APPEARANCE,
+      settings: { min: 1, integer: true },
+    })
+    .addNumberInput({
+      path: 'linkParallelOffset',
+      name: 'Parallel offset',
+      defaultValue: 6,
+      category: APPEARANCE,
+      settings: { min: 1, integer: true },
+    })
+    .addNumberInput({
+      path: 'linkLabelFontSize',
+      name: 'Label font size',
+      defaultValue: 10,
+      category: APPEARANCE,
+      settings: { min: 1, integer: true },
     })
     .addCustomEditor({
       id: 'nodes',
