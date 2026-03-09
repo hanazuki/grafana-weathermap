@@ -38,12 +38,12 @@
         "defaultZoom": 1.0,
         "nodeWidth": 120,
         "nodeHeight": 40,
-        "nodeLabelPattern": "",
-        "nodeLabelReplacement": "",
+        "nodeLabelPattern": "^(.+)\\.example\\.com$",
+        "nodeLabelReplacement": "$1",
         "nodes": [
-          { "id": 1, "name": "host-0", "x": 200, "y": 200 },
-          { "id": 2, "name": "host-1", "x": 500, "y": 200 },
-          { "id": 3, "name": "host-2", "x": 800, "y": 200 }
+          { "id": 1, "name": "host-0.example.com", "x": 200, "y": 200 },
+          { "id": 2, "name": "host-1.example.com", "x": 500, "y": 200 },
+          { "id": 3, "name": "host-2.example.com", "x": 800, "y": 200 }
         ],
         "links": [
           {
@@ -90,7 +90,7 @@
           "refId": "A",
           "scenarioId": "random_walk",
           "seriesCount": 3,
-          "labels": "instance=host-$seriesIndex,ifName=eth0",
+          "labels": "instance=host-$seriesIndex.example.com,ifName=eth0",
           "startValue": 500000000,
           "spread": 10000000,
           "min": 1000000,
