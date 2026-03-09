@@ -26,5 +26,5 @@ export function formatBps(bps: number): string {
     formatted = value.toFixed(2);
   }
 
-  return `${formatted} ${SI_PREFIXES[prefixIndex]}bps`;
+  return `${formatted}\u202f${SI_PREFIXES[prefixIndex]}bps`;
 }
