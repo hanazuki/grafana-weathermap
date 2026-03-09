@@ -16,7 +16,7 @@ export interface WeathermapOptions {
   linkLabelFontSize?: number;   // font size of speed label text in pixels (default: 10; min: 1)
 }
 
-export type QueryConfig = LinkTrafficQueryConfig;
+export type QueryConfig = LinkTrafficQueryConfig | NodeHealthQueryConfig;
 
 export interface LinkTrafficQueryConfig {
   id: number;       // internal auto-incremented integer (≥1); never shown to users
@@ -26,11 +26,22 @@ export interface LinkTrafficQueryConfig {
   interfaceLabelKey: string;
 }
 
+export interface NodeHealthQueryConfig {
+  id: number;       // internal auto-incremented integer (≥1); never shown to users
+  refId: string;    // Grafana query refId
+  type: 'nodeHealth';
+  instanceLabelKey: string;  // e.g., "host", "instance"
+}
+
+// null = no statusQueryId configured on the node; indicator is hidden
+export type HealthStatus = 'up' | 'down' | 'unavailable' | null;
+
 export interface NodeConfig {
   id: number;   // internal auto-incremented integer (≥1); never shown to users; immutable once created
   name: string; // user-visible display name; also the string matched against metric labels
   x?: number;
   y?: number;
+  statusQueryId?: number;  // query internal ID for health status; matches series where labels[instanceLabelKey] === node.name
 }
 
 export interface LinkConfig {

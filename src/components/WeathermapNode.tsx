@@ -1,6 +1,9 @@
 import React from 'react';
 import { Handle, NodeProps, Position } from '@xyflow/react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { HealthStatus } from '../types';
+
+const HEALTH_INDICATOR_SIZE = 10;
 
 export interface WeathermapNodeData {
   label: string;
@@ -8,6 +11,7 @@ export interface WeathermapNodeData {
   nodeHeight: number;
   theme: GrafanaTheme2;
   hasInvalidRefId: boolean;
+  healthStatus: HealthStatus;
   [key: string]: unknown;
 }
 
@@ -25,7 +29,7 @@ const HANDLE_STYLE: React.CSSProperties = {
 };
 
 export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
-  const { label, nodeWidth, nodeHeight, theme, hasInvalidRefId } = data as WeathermapNodeData;
+  const { label, nodeWidth, nodeHeight, theme, hasInvalidRefId, healthStatus } = data as WeathermapNodeData;
   const t = theme as GrafanaTheme2;
 
   const style: React.CSSProperties = {
@@ -44,6 +48,51 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
     whiteSpace: 'nowrap',
     padding: '0 8px',
     boxSizing: 'border-box',
+    position: 'relative',
+  };
+
+  const r = HEALTH_INDICATOR_SIZE / 2;
+  const cx = HEALTH_INDICATOR_SIZE;
+  const cy = HEALTH_INDICATOR_SIZE;
+  const slash = r / Math.SQRT2;
+
+  const renderHealthIndicator = () => {
+    if (healthStatus === null) {
+      return null;
+    }
+
+    const color =
+      healthStatus === 'up'
+        ? t.colors.success.main
+        : healthStatus === 'down'
+          ? t.colors.error.main
+          : t.colors.secondary.text;
+
+    return (
+      <svg
+        width={HEALTH_INDICATOR_SIZE * 2}
+        height={HEALTH_INDICATOR_SIZE * 2}
+        style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+      >
+        {healthStatus === 'up' ? (
+          <circle cx={cx} cy={cy} r={r} fill={color} />
+        ) : (
+          <>
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={1.5} />
+            {healthStatus === 'down' && (
+              <line
+                x1={cx - slash}
+                y1={cy + slash}
+                x2={cx + slash}
+                y2={cy - slash}
+                stroke={color}
+                strokeWidth={1.5}
+              />
+            )}
+          </>
+        )}
+      </svg>
+    );
   };
 
   return (
@@ -51,6 +100,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
       <Handle type="source" position={Position.Top} style={HANDLE_STYLE} />
       <Handle type="target" position={Position.Top} style={HANDLE_STYLE} />
       <div style={style} title={String(label)}>
+        {renderHealthIndicator()}
         {label}
       </div>
     </>

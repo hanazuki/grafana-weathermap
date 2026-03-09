@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
 import { Button, Input, InlineField, InlineFieldRow, Select, FieldSet } from '@grafana/ui';
-import { NodeConfig } from '../../types';
+import { NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
   return items.length === 0 ? 1 : Math.max(...items.map((x) => x.id)) + 1;
@@ -9,10 +9,16 @@ function nextId(items: Array<{ id: number }>): number {
 
 type NodeEditorProps = {
   node: NodeConfig;
+  queries: QueryConfig[];
   update: (patch: Partial<NodeConfig>) => void;
 };
 
-const NodeEditor: React.FC<NodeEditorProps> = ({ node, update }) => {
+const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update }) => {
+  const healthQueryOptions = queries
+    .filter((q) => q.type === 'nodeHealth')
+    .map((q) => ({ label: `${q.refId} (#${q.id})`, value: q.id }));
+  const noQueryOption = { label: '— none —', value: 0 };
+
   return (
     <FieldSet>
       <InlineFieldRow>
@@ -42,11 +48,26 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ node, update }) => {
           />
         </InlineField>
       </InlineFieldRow>
+      <InlineFieldRow>
+        <InlineField label="Health query" grow>
+          <Select
+            options={[noQueryOption, ...healthQueryOptions]}
+            value={node.statusQueryId ?? 0}
+            onChange={(opt) => update({ statusQueryId: opt.value !== 0 ? opt.value : undefined })}
+            width={16}
+          />
+        </InlineField>
+      </InlineFieldRow>
     </FieldSet>
   );
 };
 
-export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[]>> = ({ value = [], onChange }) => {
+export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, WeathermapOptions>> = ({
+  value = [],
+  onChange,
+  context,
+}) => {
+  const queries: QueryConfig[] = context.options?.queries ?? [];
   const [index, setIndex] = useState<number | null>(value.length > 0 ? 0 : null);
 
   const add = () => {
@@ -87,7 +108,7 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[]>> = ({ value
         <Button variant="destructive" icon="trash-alt" aria-label="Remove node" onClick={remove} disabled={node === null} />
       </div>
       {node !== null ? (
-        <NodeEditor node={node} update={update} />
+        <NodeEditor node={node} queries={queries} update={update} />
       ) : (
         <div style={{ padding: '8px 0', color: 'gray' }}>No nodes yet — click + to add one</div>
       )}

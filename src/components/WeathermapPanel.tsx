@@ -4,11 +4,11 @@ import { usePanelContext, useTheme2 } from '@grafana/ui';
 import { ReactFlow, ReactFlowProvider, Background, type Node, type Edge, type NodeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { WeathermapOptions, NodeConfig, LinkTrafficQueryConfig } from '../types';
+import { WeathermapOptions, NodeConfig, QueryConfig } from '../types';
 import { WeathermapNode, type WeathermapNodeData } from './WeathermapNode';
 import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
 import { ColorLegend } from './ColorLegend';
-import { findTrafficSeries } from '../utils/matching';
+import { findTrafficSeries, findHealthSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR } from '../utils/color';
 import { formatBps } from '../utils/format';
 
@@ -42,7 +42,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   // Fast lookup maps
   const nodeMap = useMemo(() => new Map<number, NodeConfig>(nodes.map((n) => [n.id, n])), [nodes]);
   const queryMap = useMemo(
-    () => new Map<number, LinkTrafficQueryConfig>(queries.map((q) => [q.id, q])),
+    () => new Map<number, QueryConfig>(queries.map((q) => [q.id, q])),
     [queries]
   );
 
@@ -136,24 +136,37 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   // Build React Flow nodes (React Flow requires string IDs)
   const rfNodes: Node[] = useMemo(
     () =>
-      nodes.map((node) => ({
-        id: String(node.id),
-        type: 'weathermapNode',
-        position: { x: node.x ?? 0, y: node.y ?? 0 },
-        data: {
-          label: transformLabel(node.name),
-          nodeWidth,
-          nodeHeight,
-          theme,
-          hasInvalidRefId: false, // nodes have no query refs in Phase 1
-        } satisfies WeathermapNodeData,
-        width: nodeWidth,
-        height: nodeHeight,
-        selectable: false,
-        connectable: false,
-      })),
+      nodes.map((node) => {
+        const hasInvalidRefId = node.statusQueryId != null && !queryMap.has(node.statusQueryId);
+
+        let healthStatus = null;
+        if (node.statusQueryId != null) {
+          const qc = queryMap.get(node.statusQueryId);
+          healthStatus = qc && qc.type === 'nodeHealth'
+            ? findHealthSeries(data, qc, node.name)
+            : 'unavailable';
+        }
+
+        return {
+          id: String(node.id),
+          type: 'weathermapNode',
+          position: { x: node.x ?? 0, y: node.y ?? 0 },
+          data: {
+            label: transformLabel(node.name),
+            nodeWidth,
+            nodeHeight,
+            theme,
+            hasInvalidRefId,
+            healthStatus,
+          } satisfies WeathermapNodeData,
+          width: nodeWidth,
+          height: nodeHeight,
+          selectable: false,
+          connectable: false,
+        };
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodes, nodeWidth, nodeHeight, transformLabel, theme]
+    [nodes, nodeWidth, nodeHeight, transformLabel, theme, queryMap, data]
   );
 
   // Build React Flow edges
@@ -173,7 +186,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           // Out-traffic: source half-arrow (source→midpoint)
           if (link.outQueryId != null) {
             const qc = queryMap.get(link.outQueryId);
-            if (qc) {
+            if (qc && qc.type === 'linkTraffic') {
               const srcNode = nodeMap.get(link.source)!;
               const tgtNode = nodeMap.get(link.target)!;
               const instance = link.outReversed ? tgtNode.name : srcNode.name;
@@ -189,7 +202,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           // In-traffic: target half-arrow (target→midpoint)
           if (link.inQueryId != null) {
             const qc = queryMap.get(link.inQueryId);
-            if (qc) {
+            if (qc && qc.type === 'linkTraffic') {
               const srcNode = nodeMap.get(link.source)!;
               const tgtNode = nodeMap.get(link.target)!;
               const instance = link.inReversed ? srcNode.name : tgtNode.name;

@@ -1,20 +1,54 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
 import { Button, FieldSet, Input, InlineField, InlineFieldRow, Select } from '@grafana/ui';
-import { LinkTrafficQueryConfig } from '../../types';
+import { QueryConfig, LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
   return items.length === 0 ? 1 : Math.max(...items.map((x) => x.id)) + 1;
 }
 
+const TYPE_OPTIONS = [
+  { label: 'link traffic', value: 'linkTraffic' as const },
+  { label: 'node health', value: 'nodeHealth' as const },
+];
+
+const TYPE_LABELS: Record<string, string> = {
+  linkTraffic: 'link traffic',
+  nodeHealth: 'node health',
+};
+
 type QueryEditorProps = {
-  query: LinkTrafficQueryConfig;
+  query: QueryConfig;
   refIdOptions: Array<{ label: string; value: string }>;
   usedRefIds: Set<string>;
-  update: (patch: Partial<LinkTrafficQueryConfig>) => void;
+  update: (next: QueryConfig) => void;
 };
 
 const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefIds, update }) => {
+  const changeType = (newType: 'linkTraffic' | 'nodeHealth') => {
+    if (newType === query.type) {
+      return;
+    }
+    if (newType === 'linkTraffic') {
+      const next: LinkTrafficQueryConfig = {
+        id: query.id,
+        refId: query.refId,
+        type: 'linkTraffic',
+        instanceLabelKey: query.instanceLabelKey,
+        interfaceLabelKey: 'ifName',
+      };
+      update(next);
+    } else {
+      const next: NodeHealthQueryConfig = {
+        id: query.id,
+        refId: query.refId,
+        type: 'nodeHealth',
+        instanceLabelKey: query.instanceLabelKey,
+      };
+      update(next);
+    }
+  };
+
   return (
     <FieldSet>
       <InlineFieldRow>
@@ -22,33 +56,45 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
           <Select<string>
             options={refIdOptions.filter((o) => o.value === query.refId || !usedRefIds.has(o.value))}
             value={query.refId || null}
-            onChange={(opt) => update({ refId: opt.value! })}
+            onChange={(opt) => update({ ...query, refId: opt.value! })}
             placeholder="A"
             width={8}
           />
         </InlineField>
+        <InlineField label="Type">
+          <Select<'linkTraffic' | 'nodeHealth'>
+            options={TYPE_OPTIONS}
+            value={query.type}
+            onChange={(opt) => changeType(opt.value!)}
+            width={14}
+          />
+        </InlineField>
+      </InlineFieldRow>
+      <InlineFieldRow>
         <InlineField label="Instance label">
           <Input
             value={query.instanceLabelKey}
-            onChange={(e) => update({ instanceLabelKey: e.currentTarget.value })}
+            onChange={(e) => update({ ...query, instanceLabelKey: e.currentTarget.value })}
             placeholder="instance"
             width={12}
           />
         </InlineField>
-        <InlineField label="Interface label">
-          <Input
-            value={query.interfaceLabelKey}
-            onChange={(e) => update({ interfaceLabelKey: e.currentTarget.value })}
-            placeholder="ifName"
-            width={12}
-          />
-        </InlineField>
+        {query.type === 'linkTraffic' && (
+          <InlineField label="Interface label">
+            <Input
+              value={query.interfaceLabelKey}
+              onChange={(e) => update({ ...query, interfaceLabelKey: e.currentTarget.value } as LinkTrafficQueryConfig)}
+              placeholder="ifName"
+              width={12}
+            />
+          </InlineField>
+        )}
       </InlineFieldRow>
     </FieldSet>
   );
 };
 
-export const QueriesEditor: React.FC<StandardEditorProps<LinkTrafficQueryConfig[]>> = ({
+export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
   value = [],
   onChange,
   context,
@@ -77,15 +123,10 @@ export const QueriesEditor: React.FC<StandardEditorProps<LinkTrafficQueryConfig[
     onChange(value.filter((_, idx) => idx !== i));
   };
 
-  const update = (patch: Partial<LinkTrafficQueryConfig>) =>
-    onChange(value.map((q, idx) => (idx === index ? { ...q, ...patch } : q)));
+  const update = (next: QueryConfig) =>
+    onChange(value.map((q, idx) => (idx === index ? next : q)));
 
-  const query: LinkTrafficQueryConfig | null = index !== null ? value[index] : null;
-
-  const TYPE_LABELS: Record<string, string> = {
-    linkTraffic: 'link traffic',
-    nodeHealth: 'node health',
-  };
+  const query: QueryConfig | null = index !== null ? value[index] : null;
 
   const selectOptions = value
     .map((q, idx) => ({ label: `${q.refId || '(empty)'} \u2013 ${TYPE_LABELS[q.type] ?? q.type} (#${q.id})`, value: idx }))

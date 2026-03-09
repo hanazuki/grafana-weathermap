@@ -41,9 +41,9 @@
         "nodeLabelPattern": "^(.+)\\.example\\.com$",
         "nodeLabelReplacement": "$1",
         "nodes": [
-          { "id": 1, "name": "host-0.example.com", "x": 200, "y": 200 },
-          { "id": 2, "name": "host-1.example.com", "x": 500, "y": 200 },
-          { "id": 3, "name": "host-2.example.com", "x": 800, "y": 200 }
+          { "id": 1, "name": "host-0.example.com", "x": 200, "y": 200, "statusQueryId": 2 },
+          { "id": 2, "name": "host-1.example.com", "x": 500, "y": 200, "statusQueryId": 2 },
+          { "id": 3, "name": "host-2.example.com", "x": 800, "y": 200, "statusQueryId": 2 }
         ],
         "links": [
           {
@@ -74,10 +74,16 @@
         "queries": [
           {
             "id": 1,
-            "refId": "A",
+            "refId": "OutBits",
             "type": "linkTraffic",
             "instanceLabelKey": "instance",
             "interfaceLabelKey": "ifName"
+          },
+          {
+            "id": 2,
+            "refId": "Health",
+            "type": "nodeHealth",
+            "instanceLabelKey": "instance"
           }
         ]
       },
@@ -87,7 +93,7 @@
             "type": "grafana-testdata-datasource",
             "uid": "trlxrdZVk"
           },
-          "refId": "A",
+          "refId": "OutBits",
           "scenarioId": "random_walk",
           "seriesCount": 3,
           "labels": "instance=host-$seriesIndex.example.com,ifName=eth0",
@@ -95,6 +101,19 @@
           "spread": 10000000,
           "min": 1000000,
           "max": 1000000000
+        },
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "Health",
+          "scenarioId": "random_walk",
+          "seriesCount": 2,
+          "labels": "instance=host-$seriesIndex.example.com",
+          "startValue": 1,
+          "min": 0,
+          "max": 1
         }
       ],
       "title": "Network Weathermap",

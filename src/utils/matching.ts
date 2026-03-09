@@ -1,5 +1,5 @@
 import { PanelData } from '@grafana/data';
-import { LinkTrafficQueryConfig } from '../types';
+import { LinkTrafficQueryConfig, NodeHealthQueryConfig, HealthStatus } from '../types';
 
 export interface MatchResult {
   /** The last numeric value of the matched series, or null if the series has no data. */
@@ -45,4 +45,46 @@ export function findTrafficSeries(
   }
 
   return { value: null, found: false };
+}
+
+/**
+ * Find the time series matching a given node instance for health status.
+ *
+ * Frames are filtered by queryConfig.refId. Labels are checked on numeric fields.
+ * Matching is exact string comparison (case-sensitive, no normalization).
+ * Returns the last value in the matched series, or null if no series matches or has no data.
+ *
+ * The returned value is interpreted as: 1 → 'up', 0 → 'down', anything else → 'unavailable'.
+ */
+export function findHealthSeries(
+  data: PanelData,
+  queryConfig: NodeHealthQueryConfig,
+  nodeName: string
+): HealthStatus {
+  for (const frame of data.series) {
+    if (frame.refId !== queryConfig.refId) {
+      continue;
+    }
+
+    for (const field of frame.fields) {
+      if (field.type !== 'number') {
+        continue;
+      }
+
+      const labels = field.labels ?? {};
+      if (labels[queryConfig.instanceLabelKey] === nodeName) {
+        const len = field.values.length;
+        if (len === 0) {
+          return 'unavailable';
+        }
+        const lastValue = field.values[len - 1];
+        if (typeof lastValue === 'number' && isFinite(lastValue)) {
+          return lastValue > 0 ? 'up' : 'down';
+        }
+        return 'unavailable';
+      }
+    }
+  }
+
+  return 'unavailable';
 }
