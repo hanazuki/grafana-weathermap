@@ -78,7 +78,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
         height={HEALTH_INDICATOR_SIZE * 2}
         style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
         role="img"
-        aria-labelled-by={`#${labelId}`}
+        aria-labelledby={labelId}
       >
         <title id={labelId}>Health: {label}</title>
         <circle cx={cx} cy={cy} r={r} fill={healthStatus === 'up' ? color : "none"} stroke={color} strokeWidth={1.5} />

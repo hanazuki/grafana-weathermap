@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { useTheme2 } from '@grafana/ui';
 
 import { GREEN_YELLOW_RED_STOPS } from '../utils/color';
@@ -32,6 +32,8 @@ export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) 
 
   const gradient = `linear-gradient(to bottom, ${stops.map(({ color, pct }) => `${color} ${pct.toFixed(2)}%`).join(', ')})`;
 
+  const titleId = useId();
+
   return (
     <div
       style={{
@@ -42,8 +44,35 @@ export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) 
         display: 'flex',
         alignItems: 'flex-start',
         pointerEvents: 'none',
+        gap: 4,
       }}
+      role="figure"
+      aria-label="Legend"
     >
+      <div
+        style={{
+          position: 'relative',
+          width: theme.typography.bodySmall.fontSize,
+          height: BAR_HEIGHT,
+          flexShrink: 0,
+        }}
+        id={titleId}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) rotate(-90deg)',
+            whiteSpace: 'nowrap',
+            fontSize: theme.typography.bodySmall.fontSize,
+            color: theme.colors.text.secondary,
+            lineHeight: 1,
+          }}
+        >
+          Utilization (%)
+        </span>
+      </div>
       <div
         style={{
           width: BAR_WIDTH,
@@ -52,8 +81,10 @@ export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) 
           border: `1px solid ${theme.colors.border.medium}`,
           flexShrink: 0,
         }}
+        role="img"
+        aria-labelledby={titleId}
       />
-      <div style={{ position: 'relative', height: BAR_HEIGHT, marginLeft: 4 }}>
+      <div style={{ height: BAR_HEIGHT }} role="list">
         {stops.map(({ pct }, i) => {
           const label = String(Math.round(pct));
           const pad = '\u2007'.repeat(Math.max(0, 3 - label.length));
@@ -70,8 +101,9 @@ export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) 
                 lineHeight: 1,
                 whiteSpace: 'pre',
               }}
+              role="listitem"
             >
-              {pad}{label}%
+              <span aria-hidden>{pad}</span>{label}
             </span>
           );
         })}
