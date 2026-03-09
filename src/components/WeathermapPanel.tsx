@@ -7,6 +7,7 @@ import '@xyflow/react/dist/style.css';
 import { WeathermapOptions, NodeConfig, LinkTrafficQueryConfig } from '../types';
 import { WeathermapNode, type WeathermapNodeData } from './WeathermapNode';
 import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
+import { ColorLegend } from './ColorLegend';
 import { findTrafficSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR } from '../utils/color';
 import { formatBps } from '../utils/format';
@@ -273,6 +274,8 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             .join(', ')}
         </div>
       )}
+
+      <ColorLegend colorScaleMode={options.colorScaleMode ?? 'linear'} />
 
       <ReactFlowProvider>
         <ReactFlow
