@@ -54,22 +54,27 @@ export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) 
         }}
       />
       <div style={{ position: 'relative', height: BAR_HEIGHT, marginLeft: 4 }}>
-        {stops.map(({ pct }, i) => (
-          <span
-            key={i}
-            style={{
-              position: 'absolute',
-              top: `${(pct / 100) * BAR_HEIGHT}px`,
-              transform: 'translateY(-50%)',
-              fontSize: theme.typography.bodySmall.fontSize,
-              color: theme.colors.text.secondary,
-              lineHeight: 1,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {Math.round(pct)}%
-          </span>
-        ))}
+        {stops.map(({ pct }, i) => {
+          const label = String(Math.round(pct));
+          const pad = '\u2007'.repeat(Math.max(0, 3 - label.length));
+          return (
+            <span
+              key={i}
+              style={{
+                position: 'absolute',
+                top: `${(pct / 100) * BAR_HEIGHT}px`,
+                transform: 'translateY(-50%)',
+                fontSize: theme.typography.bodySmall.fontSize,
+                fontVariantNumeric: 'tabular-nums',
+                color: theme.colors.text.secondary,
+                lineHeight: 1,
+                whiteSpace: 'pre',
+              }}
+            >
+              {pad}{label}%
+            </span>
+          );
+        })}
       </div>
     </div>
   );
