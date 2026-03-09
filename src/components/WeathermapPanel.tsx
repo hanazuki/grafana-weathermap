@@ -71,7 +71,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     const bad = new Set<number>();
     for (const link of links) {
       if ((link.inQueryId != null && !queryMap.has(link.inQueryId)) ||
-          (link.outQueryId != null && !queryMap.has(link.outQueryId))) {
+        (link.outQueryId != null && !queryMap.has(link.outQueryId))) {
         bad.add(link.id);
       }
     }
@@ -183,10 +183,11 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             inSpeed,
             offsetPx,
             hasInvalidRefId: hasInvalidQuery,
+            labelBgColor: theme.colors.background.canvas,
           } satisfies WeathermapEdgeData,
         };
       });
-  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode]);
+  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode, theme]);
 
   // Full-panel error state for invalid label transform config
   if (labelTransformError) {

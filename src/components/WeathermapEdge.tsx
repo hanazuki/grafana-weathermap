@@ -10,33 +10,44 @@ export interface WeathermapEdgeData {
   /** Perpendicular offset in pixels (positive = right of source→target vector). */
   offsetPx: number;
   hasInvalidRefId: boolean;
+  labelBgColor: string;
   [key: string]: unknown;
 }
 
-const ARROW_LEN = 8;
-const ARROW_WIDTH = 5;
-const LABEL_DIST = 20; // px from midpoint along segment
+const STROKE_WIDTH = 4
+const TIP_LEN = 8;   // length of the sharpened tip
+const LABEL_DIST = 40;   // px from midpoint along segment
 
-function drawArrowhead(ax: number, ay: number, bx: number, by: number, color: string): React.ReactElement {
+function drawPencilTip(
+  ax: number, ay: number, // base of the half-arrow (source or target)
+  bx: number, by: number, // tip (midpoint)
+  color: string
+): React.ReactElement {
   const len = Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2);
   if (len < 1) {
     return <></>;
   }
+  // Unit forward vector
   const dx = (bx - ax) / len;
   const dy = (by - ay) / len;
+  // Perpendicular
+  const px = dy;
+  const py = -dx;
 
-  const baseX = bx - dx * ARROW_LEN;
-  const baseY = by - dy * ARROW_LEN;
-  const lx = baseX + dy * (ARROW_WIDTH / 2);
-  const ly = baseY - dx * (ARROW_WIDTH / 2);
-  const rx = baseX - dy * (ARROW_WIDTH / 2);
-  const ry = baseY + dx * (ARROW_WIDTH / 2);
+  const hw = STROKE_WIDTH / 2; // half-width at the base of the tip, matching stroke width
+  const baseX = bx - dx * TIP_LEN;
+  const baseY = by - dy * TIP_LEN;
 
-  return <polygon points={`${bx},${by} ${lx},${ly} ${rx},${ry}`} fill={color} />;
+  const lx = baseX + px * hw;
+  const ly = baseY + py * hw;
+  const rx = baseX - px * hw;
+  const ry = baseY - py * hw;
+
+  return <polygon points={`${lx},${ly} ${bx},${by} ${rx},${ry}`} fill={color} />;
 }
 
 export const WeathermapEdge: React.FC<EdgeProps> = ({ sourceX, sourceY, targetX, targetY, data }) => {
-  const { outColor = GRAY_COLOR, inColor = GRAY_COLOR, outSpeed = null, inSpeed = null, offsetPx = 0 } =
+  const { outColor = GRAY_COLOR, inColor = GRAY_COLOR, outSpeed = null, inSpeed = null, offsetPx = 0, labelBgColor = 'transparent' } =
     (data as WeathermapEdgeData) ?? {};
 
   const dx = targetX - sourceX;
@@ -72,26 +83,36 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ sourceX, sourceY, targetX,
   const inLabelX = mx + nx * LABEL_DIST;
   const inLabelY = my + ny * LABEL_DIST;
 
+  // Label rotation: follow arrow angle, flip if pointing leftward to keep text readable
+  const angleDeg = Math.atan2(ny, nx) * (180 / Math.PI);
+  const labelAngle = Math.abs(angleDeg) > 90 ? angleDeg + 180 : angleDeg;
+
   return (
     <g>
       {/* Source half-arrow: source → midpoint (out-traffic) */}
-      <path d={`M ${sx} ${sy} L ${mx} ${my}`} stroke={outColor} strokeWidth={2} fill="none" />
-      {drawArrowhead(sx, sy, mx, my, outColor)}
+      <path d={`M ${sx} ${sy} L ${mx - nx * TIP_LEN} ${my - ny * TIP_LEN}`} stroke={outColor} strokeWidth={STROKE_WIDTH} fill="none" strokeLinecap="butt" />
+      {drawPencilTip(sx, sy, mx, my, outColor)}
 
       {/* Target half-arrow: target → midpoint (in-traffic) */}
-      <path d={`M ${tx} ${ty} L ${mx} ${my}`} stroke={inColor} strokeWidth={2} fill="none" />
-      {drawArrowhead(tx, ty, mx, my, inColor)}
+      <path d={`M ${tx} ${ty} L ${mx + nx * TIP_LEN} ${my + ny * TIP_LEN}`} stroke={inColor} strokeWidth={STROKE_WIDTH} fill="none" strokeLinecap="butt" />
+      {drawPencilTip(tx, ty, mx, my, inColor)}
 
       {/* Speed labels (omitted when no data) */}
       {outSpeed && (
-        <text x={outLabelX} y={outLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={outColor}>
-          {outSpeed}
-        </text>
+        <g transform={`rotate(${labelAngle}, ${outLabelX}, ${outLabelY})`}>
+          <rect x={outLabelX - 25} y={outLabelY - 7} width={50} height={14} rx={2} fill={labelBgColor} />
+          <text x={outLabelX} y={outLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={outColor}>
+            {outSpeed}
+          </text>
+        </g>
       )}
       {inSpeed && (
-        <text x={inLabelX} y={inLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={inColor}>
-          {inSpeed}
-        </text>
+        <g transform={`rotate(${labelAngle}, ${inLabelX}, ${inLabelY})`}>
+          <rect x={inLabelX - 25} y={inLabelY - 7} width={50} height={14} rx={2} fill={labelBgColor} />
+          <text x={inLabelX} y={inLabelY} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill={inColor}>
+            {inSpeed}
+          </text>
+        </g>
       )}
     </g>
   );
