@@ -159,10 +159,15 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         setPinned(null); // click same node → unpin
       } else {
         setPreview(null);
-        setPinned({ type: 'node', id: rfNode.id });
+        // Store node center in flow (canvas) coordinates so the popup follows viewport changes.
+        const flowPos = {
+          x: rfNode.position.x + nodeWidth / 2,
+          y: rfNode.position.y + nodeHeight / 2,
+        };
+        setPinned({ type: 'node', id: rfNode.id }, flowPos);
       }
     },
-    [state.pinned, setPinned, setPreview, setCursorPos]
+    [state.pinned, setPinned, setPreview, setCursorPos, nodeWidth, nodeHeight]
   );
 
   // Open context menu on blank-canvas click in edit mode; close pinned popup first
@@ -418,8 +423,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           )}
         </ReactFlow>
         <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
+        <WeathermapPopup options={options} data={data} />
       </ReactFlowProvider>
-      <WeathermapPopup options={options} data={data} />
     </div>
   );
 };

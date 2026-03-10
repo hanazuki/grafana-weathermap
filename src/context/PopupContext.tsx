@@ -9,7 +9,7 @@ export interface PopupTarget {
 
 export interface PopupState {
   pinned: PopupTarget | null;
-  pinnedPos: { x: number; y: number } | null;  // panel-relative position captured at pin time
+  pinnedFlowPos: { x: number; y: number } | null;  // flow (canvas) coordinates captured at pin time
   preview: PopupTarget | null;
   contextMenu: { clientX: number; clientY: number } | null;
   cursorPos: { x: number; y: number };
@@ -29,7 +29,7 @@ const PopupContext = createContext<PopupContextValue | null>(null);
 export const PopupProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<PopupState>({
     pinned: null,
-    pinnedPos: null,
+    pinnedFlowPos: null,
     preview: null,
     contextMenu: null,
     cursorPos: { x: 0, y: 0 },
@@ -48,7 +48,7 @@ export const PopupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setState((prev) => ({
       ...prev,
       pinned: target,
-      pinnedPos: target != null ? (pos ?? prev.cursorPos) : null,
+      pinnedFlowPos: target != null ? (pos ?? null) : null,
       contextMenu: null,
     }));
   }, []);
