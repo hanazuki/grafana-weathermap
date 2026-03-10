@@ -1,9 +1,10 @@
 import React, { useId } from 'react';
 import { useTheme2 } from '@grafana/ui';
 
-import { GREEN_YELLOW_RED_STOPS } from '../utils/color';
+import { ColorScale } from '../utils/color';
 
 interface ColorLegendProps {
+  colorScale: ColorScale;
   colorScaleMode: 'linear' | 'log';
   logScaleBase: number;
 }
@@ -13,8 +14,8 @@ function stepStartPct(i: number, mode: 'linear' | 'log', logScaleBase: number): 
   if (mode === 'linear') {
     return i * 10;
   }
-  // Inverse of: step = floor(log_b(util × (b−1)/100 + 1) × 10)
-  // util = (b^(i/10) − 1) × 100 / (b−1)
+  // Inverse of: t = log_b(util × (b−1) + 1) at t = i/10
+  // util = (b^(i/10) − 1) / (b−1), expressed as a percentage
   const b = logScaleBase;
   return (Math.pow(b, i / 10) - 1) * 100 / (b - 1);
 }
@@ -22,11 +23,11 @@ function stepStartPct(i: number, mode: 'linear' | 'log', logScaleBase: number): 
 const BAR_HEIGHT = 160;
 const BAR_WIDTH = 16;
 
-export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) {
+export function ColorLegend({ colorScale, colorScaleMode, logScaleBase }: ColorLegendProps) {
   const theme = useTheme2();
 
-  const stops = GREEN_YELLOW_RED_STOPS.map((color, i) => ({
-    color,
+  const stops = Array.from({ length: 11 }, (_, i) => ({
+    color: colorScale(i / 10),
     pct: stepStartPct(i, colorScaleMode, logScaleBase),
   }));
 

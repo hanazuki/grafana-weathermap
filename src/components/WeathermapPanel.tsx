@@ -12,7 +12,7 @@ import { CanvasContextMenu } from './CanvasContextMenu';
 import { WeathermapPopup } from './WeathermapPopup';
 import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficSeries, findHealthSeries } from '../utils/matching';
-import { getUtilizationColor, GRAY_COLOR } from '../utils/color';
+import { getUtilizationColor, GRAY_COLOR, rainbow } from '../utils/color';
 import { formatBps } from '../utils/format';
 import useIsEditing from 'hooks/isEditing';
 
@@ -350,7 +350,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const iface = link.outReversed ? link.targetInterface : link.sourceInterface;
               const result = findTrafficSeries(data, qc, instance, iface);
               if (result.found && result.value !== null) {
-                outColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase);
+                outColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, rainbow);
                 outSpeed = formatBps(result.value);
               }
             }
@@ -366,7 +366,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const iface = link.inReversed ? link.sourceInterface : link.targetInterface;
               const result = findTrafficSeries(data, qc, instance, iface);
               if (result.found && result.value !== null) {
-                inColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase);
+                inColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, rainbow);
                 inSpeed = formatBps(result.value);
               }
             }
@@ -446,7 +446,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         </div>
       )}
 
-      <ColorLegend colorScaleMode={options.colorScaleMode ?? 'linear'} logScaleBase={logScaleBase} />
+      <ColorLegend colorScale={rainbow} colorScaleMode={options.colorScaleMode ?? 'linear'} logScaleBase={logScaleBase} />
 
       <ReactFlow
         nodes={rfNodes}
