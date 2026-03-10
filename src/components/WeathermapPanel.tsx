@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { PanelProps } from '@grafana/data';
 import { useTheme2 } from '@grafana/ui';
-import { ReactFlow, ReactFlowProvider, Background, type Node, type Edge, type NodeChange } from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, Background, useViewport, type Node, type Edge, type NodeChange, type Viewport } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { WeathermapOptions, NodeConfig, QueryConfig } from '../types';
@@ -28,7 +28,9 @@ function getLinkOffset(index: number, parallelOffset: number): number {
 
 export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) => (
   <PopupProvider>
-    <WeathermapPanelContent {...props} />
+    <ReactFlowProvider>
+      <WeathermapPanelContent {...props} />
+    </ReactFlowProvider>
   </PopupProvider>
 );
 
@@ -36,8 +38,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const theme = useTheme2();
   const isEditing = useIsEditing();
   const { state, setContextMenu, setPinned, setPreview, setCursorPos } = usePopup();
+  const { x: vpX, y: vpY, zoom } = useViewport();
   const panelRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const moveStartViewport = useRef<Viewport | null>(null);
 
   const nodes = options.nodes ?? [];
   const links = options.links ?? [];
@@ -147,27 +151,48 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     setPreview(null);
   }, [setPreview]);
 
-  // Node click: toggle pinned
+  // Node click: toggle pinned, anchoring at the click position in flow coordinates
   const onNodeClick = useCallback(
     (event: React.MouseEvent, rfNode: Node) => {
-      // On touch, mousemove doesn't fire — capture cursor pos from the click event
-      if ((event.nativeEvent as PointerEvent).pointerType === 'touch' && panelRef.current) {
-        const rect = panelRef.current.getBoundingClientRect();
-        setCursorPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
-      }
       if (state.pinned?.type === 'node' && state.pinned.id === rfNode.id) {
         setPinned(null); // click same node → unpin
       } else {
         setPreview(null);
-        // Store node center in flow (canvas) coordinates so the popup follows viewport changes.
-        const flowPos = {
-          x: rfNode.position.x + nodeWidth / 2,
-          y: rfNode.position.y + nodeHeight / 2,
-        };
+        // Convert click position from panel-relative to flow (canvas) coordinates.
+        // The popup will open at the click point and follow the node during pan/zoom.
+        let flowPos: { x: number; y: number };
+        if (panelRef.current) {
+          const rect = panelRef.current.getBoundingClientRect();
+          const panelX = event.clientX - rect.left;
+          const panelY = event.clientY - rect.top;
+          flowPos = { x: (panelX - vpX) / zoom, y: (panelY - vpY) / zoom };
+        } else {
+          // Fallback (should not occur in practice): use node center
+          flowPos = { x: rfNode.position.x + nodeWidth / 2, y: rfNode.position.y + nodeHeight / 2 };
+        }
         setPinned({ type: 'node', id: rfNode.id }, flowPos);
       }
     },
-    [state.pinned, setPinned, setPreview, setCursorPos, nodeWidth, nodeHeight]
+    [state.pinned, setPinned, setPreview, vpX, vpY, zoom, nodeWidth, nodeHeight]
+  );
+
+  // Viewport move: capture start viewport; dismiss context menu; dismiss preview on scroll (not zoom)
+  const onMoveStart = useCallback(
+    (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
+      setContextMenu(null);
+      moveStartViewport.current = viewport;
+    },
+    [setContextMenu]
+  );
+
+  const onMove = useCallback(
+    (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
+      const start = moveStartViewport.current;
+      if (start && (viewport.x !== start.x || viewport.y !== start.y) && viewport.zoom === start.zoom) {
+        setPreview(null);
+      }
+    },
+    [setPreview]
   );
 
   // Open context menu on blank-canvas click in edit mode; close pinned popup first
@@ -382,49 +407,48 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
 
       <ColorLegend colorScaleMode={options.colorScaleMode ?? 'linear'} logScaleBase={logScaleBase} />
 
-      <ReactFlowProvider>
-        <ReactFlow
-          nodes={rfNodes}
-          edges={rfEdges}
-          nodeTypes={NODE_TYPES}
-          edgeTypes={EDGE_TYPES}
-          nodesDraggable={isEditing}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          snapToGrid={true}
-          snapGrid={[10, 10]}
-          onNodesChange={onNodesChange}
-          onNodeDragStart={onNodeDragStart}
-          onNodeDragStop={onNodeDragStop}
-          onNodeMouseEnter={onNodeMouseEnter}
-          onNodeMouseLeave={onNodeMouseLeave}
-          onNodeClick={onNodeClick}
-          onPaneClick={onPaneClick}
-          onMoveStart={() => setContextMenu(null)}
-          defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
-          style={{ background: theme.colors.background.canvas }}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background color={theme.colors.border.weak} />
-          {nodes.length === 0 && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none',
-                color: theme.colors.text.secondary,
-              }}
-            >
-              Add nodes in the panel editor to get started.
-            </div>
-          )}
-        </ReactFlow>
-        <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
-        <WeathermapPopup options={options} data={data} />
-      </ReactFlowProvider>
+      <ReactFlow
+        nodes={rfNodes}
+        edges={rfEdges}
+        nodeTypes={NODE_TYPES}
+        edgeTypes={EDGE_TYPES}
+        nodesDraggable={isEditing}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        snapToGrid={true}
+        snapGrid={[10, 10]}
+        onNodesChange={onNodesChange}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDragStop={onNodeDragStop}
+        onNodeMouseEnter={onNodeMouseEnter}
+        onNodeMouseLeave={onNodeMouseLeave}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
+        onMoveStart={onMoveStart}
+        onMove={onMove}
+        defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
+        style={{ background: theme.colors.background.canvas }}
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background color={theme.colors.border.weak} />
+        {nodes.length === 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+              color: theme.colors.text.secondary,
+            }}
+          >
+            Add nodes in the panel editor to get started.
+          </div>
+        )}
+      </ReactFlow>
+      <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
+      <WeathermapPopup options={options} data={data} />
     </div>
   );
 };
