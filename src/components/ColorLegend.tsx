@@ -30,7 +30,7 @@ export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) 
     pct: stepStartPct(i, colorScaleMode, logScaleBase),
   }));
 
-  const gradient = `linear-gradient(to bottom, ${stops.map(({ color, pct }) => `${color} ${pct.toFixed(2)}%`).join(', ')})`;
+  const gradient = `linear-gradient(in oklch shorter hue to bottom, ${stops.map(({ color, pct }) => `${color} ${pct.toFixed(2)}%`).join(', ')})`;
 
   const titleId = useId();
 
@@ -78,6 +78,7 @@ export function ColorLegend({ colorScaleMode, logScaleBase }: ColorLegendProps) 
           width: BAR_WIDTH,
           height: BAR_HEIGHT,
           background: gradient,
+          backgroundOrigin: 'border-box',
           border: `1px solid ${theme.colors.border.medium}`,
           flexShrink: 0,
         }}
