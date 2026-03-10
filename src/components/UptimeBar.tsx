@@ -3,6 +3,7 @@ import { useTheme2 } from '@grafana/ui';
 import { HealthStatus } from '../types';
 
 const BAR_HEIGHT = 12;
+const PIXEL_UNKNOWN = 0, PIXEL_UP = 1, PIXEL_DOWN = 2;
 
 interface UptimeBarProps {
   statuses: HealthStatus[];
@@ -12,21 +13,22 @@ interface UptimeBarProps {
   maxDataPoints: number; // data.request?.maxDataPoints ?? 1080
 }
 
-const PIXEL_UP = 1, PIXEL_DOWN = 2;
-
 export const UptimeBar: React.FC<UptimeBarProps> = ({ statuses, timestamps, panelFrom, panelTo, maxDataPoints }) => {
   const theme = useTheme2();
-
   const colorFor = (v: number): string =>
-    v === PIXEL_DOWN ? theme.colors.error.main : v === PIXEL_UP ? theme.colors.success.main : theme.colors.secondary.text;;
+    v === PIXEL_DOWN
+      ? theme.colors.error.main
+      : v === PIXEL_UP
+        ? theme.colors.success.main
+        : theme.colors.secondary.text;
 
-  const N = maxDataPoints;
+  const N = maxDataPoints / 2; // Ensure every span includes datapoints.
   const totalSpan = panelTo - panelFrom;
 
   const generateSegments = () => {
     // Degenerate time range: show full gray bar.
-    if (totalSpan <= 0) {
-      return <rect x={0} y={0} width={N} height={BAR_HEIGHT} fill={colorFor(0)} />;
+    if (N <= 0 || totalSpan <= 0) {
+      return <rect x={0} y={0} width={N} height={BAR_HEIGHT} fill={colorFor(PIXEL_UNKNOWN)} />;
     }
 
     const interval = totalSpan / N;
