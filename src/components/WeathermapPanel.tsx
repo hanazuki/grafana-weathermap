@@ -8,6 +8,8 @@ import { WeathermapOptions, NodeConfig, QueryConfig } from '../types';
 import { WeathermapNode, type WeathermapNodeData } from './WeathermapNode';
 import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
 import { ColorLegend } from './ColorLegend';
+import { CanvasContextMenu } from './CanvasContextMenu';
+import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficSeries, findHealthSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR } from '../utils/color';
 import { formatBps } from '../utils/format';
@@ -22,10 +24,17 @@ function getLinkOffset(index: number, parallelOffset: number): number {
   return Math.ceil(index / 2) * parallelOffset * (index % 2 === 1 ? 1 : -1);
 }
 
-export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height, onOptionsChange }) => {
+export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) => (
+  <PopupProvider>
+    <WeathermapPanelContent {...props} />
+  </PopupProvider>
+);
+
+const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height, onOptionsChange }) => {
   const theme = useTheme2();
   const panelContext = usePanelContext();
   const canEdit = !!panelContext.canExecuteActions?.();
+  const { state, setContextMenu, setPinned } = usePopup();
 
   const nodes = options.nodes ?? [];
   const links = options.links ?? [];
@@ -94,8 +103,23 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     return `${srcName} → ${tgtName} (#${link.id})`;
   };
 
+  // Open context menu on blank-canvas click in edit mode; close pinned popup if one is open
+  const onPaneClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (!canEdit) {
+        return;
+      }
+      if (state.pinned) {
+        setPinned(null);
+        return;
+      }
+      setContextMenu({ clientX: event.clientX, clientY: event.clientY });
+    },
+    [canEdit, state.pinned, setPinned, setContextMenu]
+  );
+
   // Commit node positions to panel options on every drag position change (edit mode only)
-  const handleNodesChange = useCallback(
+  const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       if (!canEdit) {
         return;
@@ -302,7 +326,8 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           elementsSelectable={false}
           snapToGrid={true}
           snapGrid={[10, 10]}
-          onNodesChange={handleNodesChange}
+          onNodesChange={onNodesChange}
+          onPaneClick={onPaneClick}
           defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
           style={{ background: theme.colors.background.canvas }}
           proOptions={{ hideAttribution: true }}
@@ -324,6 +349,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             </div>
           )}
         </ReactFlow>
+        <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
       </ReactFlowProvider>
     </div>
   );
