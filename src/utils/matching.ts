@@ -89,6 +89,66 @@ export function findHealthSeries(
   return 'unavailable';
 }
 
+export interface TrafficStats {
+  avg: number;
+  peak: number;
+  latest: number;
+}
+
+/**
+ * Find avg/peak/latest statistics for a traffic series matching instance + interface.
+ *
+ * Returns null when no matching series is found or it has no finite values.
+ */
+export function findTrafficSeriesStats(
+  data: PanelData,
+  queryConfig: LinkTrafficQueryConfig,
+  instance: string,
+  iface: string
+): TrafficStats | null {
+  for (const frame of data.series) {
+    if (frame.refId !== queryConfig.refId) {
+      continue;
+    }
+
+    for (const field of frame.fields) {
+      if (field.type !== 'number') {
+        continue;
+      }
+
+      const labels = field.labels ?? {};
+      if (labels[queryConfig.instanceLabelKey] !== instance || labels[queryConfig.interfaceLabelKey] !== iface) {
+        continue;
+      }
+
+      const values: number[] = [];
+      for (let i = 0; i < field.values.length; i++) {
+        const v = field.values[i];
+        if (typeof v === 'number' && isFinite(v)) {
+          values.push(v);
+        }
+      }
+
+      if (values.length === 0) {
+        return null;
+      }
+
+      let sum = 0;
+      let peak = -Infinity;
+      for (const v of values) {
+        sum += v;
+        if (v > peak) {
+          peak = v;
+        }
+      }
+
+      return { avg: sum / values.length, peak, latest: values[values.length - 1] };
+    }
+  }
+
+  return null;
+}
+
 export interface HealthTimeSeries {
   statuses: HealthStatus[];
   timestamps: number[]; // ms epoch, same length as statuses

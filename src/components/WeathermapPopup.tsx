@@ -2,10 +2,11 @@ import React from 'react';
 import { PanelData } from '@grafana/data';
 import { useViewport } from '@xyflow/react';
 
-import { WeathermapOptions, NodeConfig, HealthStatus } from '../types';
+import { WeathermapOptions, NodeConfig, LinkConfig, HealthStatus } from '../types';
 import { usePopup } from '../context/PopupContext';
 import { NodePopup } from './NodePopup';
-import { findHealthSeries, findHealthTimeSeries, HealthTimeSeries } from '../utils/matching';
+import { LinkPopup } from './LinkPopup';
+import { findHealthSeries, findHealthTimeSeries, findTrafficSeriesStats, HealthTimeSeries, TrafficStats } from '../utils/matching';
 
 interface WeathermapPopupProps {
   options: WeathermapOptions;
@@ -31,25 +32,74 @@ function resolveNodeHealth(
   };
 }
 
+function resolveLinkTraffic(
+  link: LinkConfig,
+  options: WeathermapOptions,
+  data: PanelData,
+  nodeMap: Map<number, NodeConfig>
+): { outStats: TrafficStats | null; inStats: TrafficStats | null } {
+  const queries = options.queries ?? [];
+  const srcNode = nodeMap.get(link.source);
+  const tgtNode = nodeMap.get(link.target);
+
+  let outStats: TrafficStats | null = null;
+  let inStats: TrafficStats | null = null;
+
+  if (srcNode && tgtNode) {
+    if (link.outQueryId != null) {
+      const qc = queries.find((q) => q.id === link.outQueryId);
+      if (qc && qc.type === 'linkTraffic') {
+        const instance = link.outReversed ? tgtNode.name : srcNode.name;
+        const iface = link.outReversed ? link.targetInterface : link.sourceInterface;
+        outStats = findTrafficSeriesStats(data, qc, instance, iface);
+      }
+    }
+
+    if (link.inQueryId != null) {
+      const qc = queries.find((q) => q.id === link.inQueryId);
+      if (qc && qc.type === 'linkTraffic') {
+        const instance = link.inReversed ? srcNode.name : tgtNode.name;
+        const iface = link.inReversed ? link.sourceInterface : link.targetInterface;
+        inStats = findTrafficSeriesStats(data, qc, instance, iface);
+      }
+    }
+  }
+
+  return { outStats, inStats };
+}
+
 export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data }) => {
   const { state } = usePopup();
 
   const activeTarget = state.pinned ?? state.preview;
-  const isNodeTarget = activeTarget !== null && activeTarget.type === 'node';
 
-  const node = isNodeTarget
-    ? (options.nodes ?? []).find((n) => String(n.id) === activeTarget.id) ?? null
+  const nodes = options.nodes ?? [];
+  const links = options.links ?? [];
+  const nodeMap = new Map<number, NodeConfig>(nodes.map((n) => [n.id, n]));
+
+  // Resolve node or link data based on active target type
+  const node = activeTarget?.type === 'node'
+    ? nodes.find((n) => String(n.id) === activeTarget.id) ?? null
+    : null;
+
+  const link = activeTarget?.type === 'link'
+    ? links.find((l) => String(l.id) === activeTarget.id) ?? null
     : null;
 
   const { status: healthStatus, timeSeries: healthTimeSeries } =
     node != null ? resolveNodeHealth(node, options, data) : { status: null as HealthStatus, timeSeries: null };
+
+  const { outStats, inStats } =
+    link != null
+      ? resolveLinkTraffic(link, options, data, nodeMap)
+      : { outStats: null, inStats: null };
 
   const panelFrom = data.timeRange.from.valueOf();
   const panelTo = data.timeRange.to.valueOf();
   const maxDataPoints = data.request?.maxDataPoints ?? 1080;
 
   // Convert pinned flow (canvas) position to panel-relative coordinates using current viewport.
-  // This makes the popup follow the node in real-time as the canvas is panned or zoomed.
+  // This makes the popup follow the element in real-time as the canvas is panned or zoomed.
   const { x: vpX, y: vpY, zoom } = useViewport();
   const anchorPos =
     state.pinned != null && state.pinnedFlowPos != null
@@ -61,9 +111,12 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
   const GAP = 4;
   const translateY = anchorPos.y < ESTIMATED_POPUP_HEIGHT ? `${GAP}px` : `calc(-100% - ${GAP}px)`;
 
-  if (node == null) {
+  if (node == null && link == null) {
     return null;
   }
+
+  const sourceNode = link != null ? nodeMap.get(link.source) : undefined;
+  const targetNode = link != null ? nodeMap.get(link.target) : undefined;
 
   return (
     <div
@@ -76,14 +129,25 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
         zIndex: 100,
       }}
     >
-      <NodePopup
-        node={node}
-        healthStatus={healthStatus}
-        healthTimeSeries={healthTimeSeries ?? undefined}
-        panelFrom={panelFrom}
-        panelTo={panelTo}
-        maxDataPoints={maxDataPoints}
-      />
+      {node != null && (
+        <NodePopup
+          node={node}
+          healthStatus={healthStatus}
+          healthTimeSeries={healthTimeSeries ?? undefined}
+          panelFrom={panelFrom}
+          panelTo={panelTo}
+          maxDataPoints={maxDataPoints}
+        />
+      )}
+      {link != null && sourceNode != null && targetNode != null && (
+        <LinkPopup
+          link={link}
+          sourceNode={sourceNode}
+          targetNode={targetNode}
+          outStats={outStats}
+          inStats={inStats}
+        />
+      )}
     </div>
   );
 };

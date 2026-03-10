@@ -176,6 +176,47 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     [state.pinned, setPinned, setPreview, vpX, vpY, zoom, nodeWidth, nodeHeight]
   );
 
+  // Edge hover: set preview (mouse only, not when pinned)
+  const onEdgeMouseEnter = useCallback(
+    (event: React.MouseEvent, rfEdge: Edge) => {
+      if ((event.nativeEvent as PointerEvent).pointerType === 'touch') {
+        return;
+      }
+      if (state.pinned) {
+        return;
+      }
+      setPreview({ type: 'link', id: rfEdge.id });
+    },
+    [state.pinned, setPreview]
+  );
+
+  // Edge leave: clear preview
+  const onEdgeMouseLeave = useCallback(() => {
+    setPreview(null);
+  }, [setPreview]);
+
+  // Edge click: toggle pinned, anchoring at the click position in flow coordinates
+  const onEdgeClick = useCallback(
+    (event: React.MouseEvent, rfEdge: Edge) => {
+      if (state.pinned?.type === 'link' && state.pinned.id === rfEdge.id) {
+        setPinned(null); // click same edge → unpin
+      } else {
+        setPreview(null);
+        let flowPos: { x: number; y: number };
+        if (panelRef.current) {
+          const rect = panelRef.current.getBoundingClientRect();
+          const panelX = event.clientX - rect.left;
+          const panelY = event.clientY - rect.top;
+          flowPos = { x: (panelX - vpX) / zoom, y: (panelY - vpY) / zoom };
+        } else {
+          flowPos = { x: 0, y: 0 };
+        }
+        setPinned({ type: 'link', id: rfEdge.id }, flowPos);
+      }
+    },
+    [state.pinned, setPinned, setPreview, vpX, vpY, zoom]
+  );
+
   // Viewport move: capture start viewport; dismiss context menu; dismiss preview on scroll (not zoom)
   const onMoveStart = useCallback(
     (_event: MouseEvent | TouchEvent | null, viewport: Viewport) => {
@@ -423,6 +464,9 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         onNodeMouseEnter={onNodeMouseEnter}
         onNodeMouseLeave={onNodeMouseLeave}
         onNodeClick={onNodeClick}
+        onEdgeMouseEnter={onEdgeMouseEnter}
+        onEdgeMouseLeave={onEdgeMouseLeave}
+        onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         onMoveStart={onMoveStart}
         onMove={onMove}
