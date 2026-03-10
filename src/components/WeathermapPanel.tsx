@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { PanelProps } from '@grafana/data';
 import { usePanelContext, useTheme2 } from '@grafana/ui';
 import { ReactFlow, ReactFlowProvider, Background, type Node, type Edge, type NodeChange } from '@xyflow/react';
@@ -9,6 +9,7 @@ import { WeathermapNode, type WeathermapNodeData } from './WeathermapNode';
 import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
 import { ColorLegend } from './ColorLegend';
 import { CanvasContextMenu } from './CanvasContextMenu';
+import { WeathermapPopup } from './WeathermapPopup';
 import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficSeries, findHealthSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR } from '../utils/color';
@@ -34,7 +35,9 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const theme = useTheme2();
   const panelContext = usePanelContext();
   const canEdit = !!panelContext.canExecuteActions?.();
-  const { state, setContextMenu, setPinned } = usePopup();
+  const { state, setContextMenu, setPinned, setPreview, setCursorPos } = usePopup();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
 
   const nodes = options.nodes ?? [];
   const links = options.links ?? [];
@@ -103,14 +106,73 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     return `${srcName} → ${tgtName} (#${link.id})`;
   };
 
-  // Open context menu on blank-canvas click in edit mode; close pinned popup if one is open
-  const onPaneClick = useCallback(
-    (event: React.MouseEvent) => {
-      if (!canEdit) {
+  // Update cursor position (panel-relative) on mouse move
+  const onPanelMouseMove = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!panelRef.current) {
         return;
       }
+      const rect = panelRef.current.getBoundingClientRect();
+      setCursorPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    },
+    [setCursorPos]
+  );
+
+  // Drag lifecycle: clear preview on drag start; block preview during drag
+  const onNodeDragStart = useCallback(() => {
+    isDragging.current = true;
+    setPreview(null);
+  }, [setPreview]);
+
+  const onNodeDragStop = useCallback(() => {
+    isDragging.current = false;
+  }, []);
+
+  // Node hover: set preview (mouse only, not when pinned, not while dragging)
+  const onNodeMouseEnter = useCallback(
+    (event: React.MouseEvent, rfNode: Node) => {
+      if ((event.nativeEvent as PointerEvent).pointerType === 'touch') {
+        return;
+      }
+      if (state.pinned || isDragging.current) {
+        return;
+      }
+      setPreview({ type: 'node', id: rfNode.id });
+    },
+    [state.pinned, setPreview]
+  );
+
+  // Node leave: clear preview
+  const onNodeMouseLeave = useCallback(() => {
+    setPreview(null);
+  }, [setPreview]);
+
+  // Node click: toggle pinned
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, rfNode: Node) => {
+      // On touch, mousemove doesn't fire — capture cursor pos from the click event
+      if ((event.nativeEvent as PointerEvent).pointerType === 'touch' && panelRef.current) {
+        const rect = panelRef.current.getBoundingClientRect();
+        setCursorPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+      }
+      if (state.pinned?.type === 'node' && state.pinned.id === rfNode.id) {
+        setPinned(null); // click same node → unpin
+      } else {
+        setPreview(null);
+        setPinned({ type: 'node', id: rfNode.id });
+      }
+    },
+    [state.pinned, setPinned, setPreview, setCursorPos]
+  );
+
+  // Open context menu on blank-canvas click in edit mode; close pinned popup first
+  const onPaneClick = useCallback(
+    (event: React.MouseEvent) => {
       if (state.pinned) {
         setPinned(null);
+        return;
+      }
+      if (!canEdit) {
         return;
       }
       setContextMenu({ clientX: event.clientX, clientY: event.clientY });
@@ -288,7 +350,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   }
 
   return (
-    <div style={{ width, height, position: 'relative' }}>
+    <div ref={panelRef} style={{ width, height, position: 'relative' }} onMouseMove={onPanelMouseMove}>
       {/* Warning banner for invalid query references */}
       {linksWithInvalidQuery.size > 0 && (
         <div
@@ -327,6 +389,11 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           snapToGrid={true}
           snapGrid={[10, 10]}
           onNodesChange={onNodesChange}
+          onNodeDragStart={onNodeDragStart}
+          onNodeDragStop={onNodeDragStop}
+          onNodeMouseEnter={onNodeMouseEnter}
+          onNodeMouseLeave={onNodeMouseLeave}
+          onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           onMoveStart={() => setContextMenu(null)}
           defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
@@ -352,6 +419,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         </ReactFlow>
         <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
       </ReactFlowProvider>
+      <WeathermapPopup options={options} data={data} />
     </div>
   );
 };
