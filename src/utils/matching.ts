@@ -1,4 +1,4 @@
-import { PanelData, FieldType } from '@grafana/data';
+import { PanelData, FieldType, type Field } from '@grafana/data';
 import { LinkTrafficQueryConfig, NodeHealthQueryConfig, HealthStatus } from '../types';
 
 export interface MatchResult {
@@ -93,12 +93,18 @@ export interface TrafficStats {
   avg: number;
   peak: number;
   latest: number;
+  /** Raw numeric field from the matched series, suitable for use in a Sparkline. */
+  yField: Field<number>;
+  /** Time field from the matched frame (or null if absent). */
+  xField: Field<number> | null;
 }
 
 /**
- * Find avg/peak/latest statistics for a traffic series matching instance + interface.
+ * Find avg/peak/latest statistics and the raw time series for a traffic series matching
+ * instance + interface.
  *
  * Returns null when no matching series is found or it has no finite values.
+ * The yField and xField on the result are usable directly in @grafana/ui Sparkline.
  */
 export function findTrafficSeriesStats(
   data: PanelData,
@@ -111,8 +117,10 @@ export function findTrafficSeriesStats(
       continue;
     }
 
+    const timeField = frame.fields.find((f) => f.type === FieldType.time) ?? null;
+
     for (const field of frame.fields) {
-      if (field.type !== 'number') {
+      if (field.type !== FieldType.number) {
         continue;
       }
 
@@ -121,28 +129,35 @@ export function findTrafficSeriesStats(
         continue;
       }
 
-      const values: number[] = [];
+      // Collect finite values for stats; treat non-finite as NaN in the raw series.
+      const finiteValues: number[] = [];
       for (let i = 0; i < field.values.length; i++) {
         const v = field.values[i];
         if (typeof v === 'number' && isFinite(v)) {
-          values.push(v);
+          finiteValues.push(v);
         }
       }
 
-      if (values.length === 0) {
+      if (finiteValues.length === 0) {
         return null;
       }
 
       let sum = 0;
       let peak = -Infinity;
-      for (const v of values) {
+      for (const v of finiteValues) {
         sum += v;
         if (v > peak) {
           peak = v;
         }
       }
 
-      return { avg: sum / values.length, peak, latest: values[values.length - 1] };
+      return {
+        avg: sum / finiteValues.length,
+        peak,
+        latest: finiteValues[finiteValues.length - 1],
+        yField: field as Field<number>,
+        xField: timeField as Field<number> | null,
+      };
     }
   }
 
