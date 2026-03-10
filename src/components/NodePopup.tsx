@@ -1,6 +1,7 @@
 import React, { useId } from 'react';
 import { useTheme2 } from '@grafana/ui';
 import { NodeConfig, HealthStatus } from '../types';
+import { UptimeBar } from './UptimeBar';
 
 const INDICATOR_SIZE = 10;
 
@@ -64,30 +65,68 @@ const HealthIcon: React.FC<HealthIconProps> = ({ healthStatus }) => {
 interface NodePopupProps {
   node: NodeConfig;
   healthStatus: HealthStatus;
+  /** Full health time series for the uptime bar; only shown when statusQueryId is set. */
+  healthTimeSeries?: { statuses: HealthStatus[]; timestamps: number[] };
+  /** Panel time range and resolution for the uptime bar pixel-sweep algorithm. */
+  panelFrom?: number;
+  panelTo?: number;
+  maxDataPoints?: number;
 }
 
-export const NodePopup: React.FC<NodePopupProps> = ({ node, healthStatus }) => {
+export const NodePopup: React.FC<NodePopupProps> = ({
+  node,
+  healthStatus,
+  healthTimeSeries,
+  panelFrom,
+  panelTo,
+  maxDataPoints,
+}) => {
   const theme = useTheme2();
+
+  const showUptimeBar =
+    node.statusQueryId != null &&
+    healthTimeSeries != null &&
+    panelFrom != null &&
+    panelTo != null &&
+    maxDataPoints != null;
 
   return (
     <div
       style={{
         width: 220,
-        padding: '8px 12px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
         fontSize: theme.typography.bodySmall.fontSize,
         color: theme.colors.text.primary,
         background: theme.colors.background.secondary,
         border: `1px solid ${theme.colors.border.medium}`,
         borderRadius: theme.shape.radius.default,
+        overflow: 'hidden',
       }}
     >
-      {healthStatus !== null && <HealthIcon healthStatus={healthStatus} />}
-      <span style={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {node.name !== '' ? node.name : `#${node.id}`}
-      </span>
+      {/* Header: health icon + node name */}
+      <div
+        style={{
+          padding: '8px 12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        {healthStatus !== null && <HealthIcon healthStatus={healthStatus} />}
+        <span style={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {node.name !== '' ? node.name : `#${node.id}`}
+        </span>
+      </div>
+
+      {/* Uptime bar: only when statusQueryId is configured */}
+      {showUptimeBar && (
+        <UptimeBar
+          statuses={healthTimeSeries!.statuses}
+          timestamps={healthTimeSeries!.timestamps}
+          panelFrom={panelFrom!}
+          panelTo={panelTo!}
+          maxDataPoints={maxDataPoints!}
+        />
+      )}
     </div>
   );
 };

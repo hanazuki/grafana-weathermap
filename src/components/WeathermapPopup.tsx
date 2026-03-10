@@ -5,23 +5,30 @@ import { Popover } from '@grafana/ui';
 import { WeathermapOptions, NodeConfig, HealthStatus } from '../types';
 import { usePopup } from '../context/PopupContext';
 import { NodePopup } from './NodePopup';
-import { findHealthSeries } from '../utils/matching';
+import { findHealthSeries, findHealthTimeSeries, HealthTimeSeries } from '../utils/matching';
 
 interface WeathermapPopupProps {
   options: WeathermapOptions;
   data: PanelData;
 }
 
-function resolveNodeHealthStatus(node: NodeConfig, options: WeathermapOptions, data: PanelData): HealthStatus {
+function resolveNodeHealth(
+  node: NodeConfig,
+  options: WeathermapOptions,
+  data: PanelData
+): { status: HealthStatus; timeSeries: HealthTimeSeries | null } {
   if (node.statusQueryId == null) {
-    return null;
+    return { status: null, timeSeries: null };
   }
   const queries = options.queries ?? [];
   const qc = queries.find((q) => q.id === node.statusQueryId);
   if (!qc || qc.type !== 'nodeHealth') {
-    return 'unavailable';
+    return { status: 'unavailable', timeSeries: null };
   }
-  return findHealthSeries(data, qc, node.name);
+  return {
+    status: findHealthSeries(data, qc, node.name),
+    timeSeries: findHealthTimeSeries(data, qc, node.name),
+  };
 }
 
 export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data }) => {
@@ -35,7 +42,12 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
     ? (options.nodes ?? []).find((n) => String(n.id) === activeTarget.id) ?? null
     : null;
 
-  const healthStatus = node != null ? resolveNodeHealthStatus(node, options, data) : null;
+  const { status: healthStatus, timeSeries: healthTimeSeries } =
+    node != null ? resolveNodeHealth(node, options, data) : { status: null as HealthStatus, timeSeries: null };
+
+  const panelFrom = data.timeRange.from.valueOf();
+  const panelTo = data.timeRange.to.valueOf();
+  const maxDataPoints = data.request?.maxDataPoints ?? 1080;
 
   // Pinned popup stays at the position it was opened; preview follows the cursor.
   const anchorPos = state.pinned != null ? (state.pinnedPos ?? state.cursorPos) : state.cursorPos;
@@ -67,7 +79,16 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
           show={show}
           placement={placement}
           renderArrow={false}
-          content={<NodePopup node={node} healthStatus={healthStatus} />}
+          content={
+            <NodePopup
+              node={node}
+              healthStatus={healthStatus}
+              healthTimeSeries={healthTimeSeries ?? undefined}
+              panelFrom={panelFrom}
+              panelTo={panelTo}
+              maxDataPoints={maxDataPoints}
+            />
+          }
         />
       )}
     </>
