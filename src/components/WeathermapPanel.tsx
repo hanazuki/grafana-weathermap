@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { PanelProps } from '@grafana/data';
-import { usePanelContext, useTheme2 } from '@grafana/ui';
+import { useTheme2 } from '@grafana/ui';
 import { ReactFlow, ReactFlowProvider, Background, type Node, type Edge, type NodeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -14,6 +14,7 @@ import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficSeries, findHealthSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR } from '../utils/color';
 import { formatBps } from '../utils/format';
+import useIsEditing from 'hooks/isEditing';
 
 const NODE_TYPES = { weathermapNode: WeathermapNode };
 const EDGE_TYPES = { weathermapEdge: WeathermapEdge };
@@ -33,8 +34,7 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) 
 
 const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height, onOptionsChange }) => {
   const theme = useTheme2();
-  const panelContext = usePanelContext();
-  const canEdit = !!panelContext.canExecuteActions?.();
+  const isEditing = useIsEditing();
   const { state, setContextMenu, setPinned, setPreview, setCursorPos } = usePopup();
   const panelRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -177,18 +177,18 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         setPinned(null);
         return;
       }
-      if (!canEdit) {
+      if (!isEditing) {
         return;
       }
       setContextMenu({ clientX: event.clientX, clientY: event.clientY });
     },
-    [canEdit, state.pinned, setPinned, setContextMenu]
+    [isEditing, state.pinned, setPinned, setContextMenu]
   );
 
   // Commit node positions to panel options on every drag position change (edit mode only)
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      if (!canEdit) {
+      if (!isEditing) {
         return;
       }
       const posMap = new Map<string, { x: number; y: number }>();
@@ -206,7 +206,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       });
       onOptionsChange({ ...options, nodes: updatedNodes });
     },
-    [canEdit, nodes, options, onOptionsChange]
+    [isEditing, nodes, options, onOptionsChange]
   );
 
   // Compute parallel link offsets (keyed by link id)
@@ -388,7 +388,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           edges={rfEdges}
           nodeTypes={NODE_TYPES}
           edgeTypes={EDGE_TYPES}
-          nodesDraggable={canEdit}
+          nodesDraggable={isEditing}
           nodesConnectable={false}
           elementsSelectable={false}
           snapToGrid={true}
