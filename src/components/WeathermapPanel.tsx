@@ -328,6 +328,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           snapGrid={[10, 10]}
           onNodesChange={onNodesChange}
           onPaneClick={onPaneClick}
+          onMoveStart={() => setContextMenu(null)}
           defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
           style={{ background: theme.colors.background.canvas }}
           proOptions={{ hideAttribution: true }}
