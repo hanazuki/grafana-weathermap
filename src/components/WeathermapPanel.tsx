@@ -176,7 +176,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           type: 'weathermapNode',
           position: { x: node.x ?? 0, y: node.y ?? 0 },
           data: {
-            label: transformLabel(node.name),
+            label: node.name === '' ? `#${node.id}` : transformLabel(node.name),
             nodeWidth,
             nodeHeight,
             theme,
