@@ -14,6 +14,7 @@ export const rainbow = (t: number) => {
 
 export const cividis = (t: number) => {
   t = Math.max(0, Math.min(1, t));
+  t = t * 0.8 + 0.1; // Trim both ends to ensure contrast to white/black
 
   let l, c, h;
   if (t < 0.5) {
