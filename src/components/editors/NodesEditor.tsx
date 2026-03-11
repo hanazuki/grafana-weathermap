@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Input, InlineField, InlineFieldRow, Select, FieldSet } from '@grafana/ui';
+import { Button, Combobox, Input, InlineField, InlineFieldRow, FieldSet } from '@grafana/ui';
 import { NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -50,7 +50,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update }) => {
       </InlineFieldRow>
       <InlineFieldRow>
         <InlineField label="Health query" grow>
-          <Select
+          <Combobox
             options={[noQueryOption, ...healthQueryOptions]}
             value={node.statusQueryId ?? 0}
             onChange={(opt) => update({ statusQueryId: opt.value !== 0 ? opt.value : undefined })}
@@ -96,14 +96,14 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, We
   return (
     <>
       <div style={{ display: 'flex', gap: '4px' }}>
-        <Select
-          options={selectOptions}
-          value={index}
-          onChange={(opt) => setIndex(opt.value!)}
-          placeholder="— select a node —"
-          grow
-          isSearchable
-        />
+        <div style={{ flex: 1 }}>
+          <Combobox
+            options={selectOptions}
+            value={index}
+            onChange={(opt) => setIndex(opt.value)}
+            placeholder="— select a node —"
+          />
+        </div>
         <Button icon="plus" variant="secondary" aria-label="Add node" onClick={add} />
         <Button variant="destructive" icon="trash-alt" aria-label="Remove node" onClick={remove} disabled={node === null} />
       </div>

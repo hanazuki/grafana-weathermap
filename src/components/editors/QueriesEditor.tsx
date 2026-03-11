@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, FieldSet, Input, InlineField, InlineFieldRow, Select } from '@grafana/ui';
+import { Button, Combobox, FieldSet, Input, InlineField, InlineFieldRow } from '@grafana/ui';
 import { QueryConfig, LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -53,19 +53,19 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
     <FieldSet>
       <InlineFieldRow>
         <InlineField label="RefId">
-          <Select<string>
+          <Combobox<string>
             options={refIdOptions.filter((o) => o.value === query.refId || !usedRefIds.has(o.value))}
             value={query.refId || null}
-            onChange={(opt) => update({ ...query, refId: opt.value! })}
+            onChange={(opt) => update({ ...query, refId: opt.value })}
             placeholder="A"
             width={8}
           />
         </InlineField>
         <InlineField label="Type">
-          <Select<'linkTraffic' | 'nodeHealth'>
+          <Combobox<'linkTraffic' | 'nodeHealth'>
             options={TYPE_OPTIONS}
             value={query.type}
-            onChange={(opt) => changeType(opt.value!)}
+            onChange={(opt) => changeType(opt.value)}
             width={14}
           />
         </InlineField>
@@ -135,14 +135,14 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
   return (
     <>
       <div style={{ display: 'flex', gap: '4px' }}>
-        <Select
-          options={selectOptions}
-          value={index}
-          onChange={(opt) => setIndex(opt.value!)}
-          placeholder="— select a query config —"
-          grow
-          isSearchable
-        />
+        <div style={{ flex: 1 }}>
+          <Combobox
+            options={selectOptions}
+            value={index}
+            onChange={(opt) => setIndex(opt.value)}
+            placeholder="— select a query config —"
+          />
+        </div>
         <Button icon="plus" variant="secondary" aria-label="Add query config" onClick={add} />
         <Button variant="destructive" icon="trash-alt" aria-label="Remove query config" onClick={remove} disabled={query === null} />
       </div>

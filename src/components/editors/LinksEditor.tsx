@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, FieldSet, InlineField, InlineFieldRow, Input, Select, Switch } from '@grafana/ui';
+import { Button, Combobox, FieldSet, InlineField, InlineFieldRow, Input, Switch } from '@grafana/ui';
 import { LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -36,11 +36,10 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
     <FieldSet>
       <InlineFieldRow>
         <InlineField label="Source node" grow>
-          <Select
+          <Combobox
             options={nodeOpts}
             value={link.source}
-            onChange={(opt) => update({ source: opt.value! })}
-            isSearchable
+            onChange={(opt) => update({ source: opt.value })}
           />
         </InlineField>
         <InlineField label="Src iface">
@@ -55,11 +54,10 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
 
       <InlineFieldRow>
         <InlineField label="Target node" grow>
-          <Select
+          <Combobox
             options={nodeOpts}
             value={link.target}
-            onChange={(opt) => update({ target: opt.value! })}
-            isSearchable
+            onChange={(opt) => update({ target: opt.value })}
           />
         </InlineField>
         <InlineField label="Tgt iface">
@@ -85,7 +83,7 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
 
       <InlineFieldRow>
         <InlineField label="Out query" tooltip="Query for egress (source→target) traffic">
-          <Select
+          <Combobox
             options={[noQueryOption, ...queryOpts]}
             value={link.outQueryId ?? 0}
             onChange={(opt) => update({ outQueryId: opt.value || undefined })}
@@ -102,7 +100,7 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
 
       <InlineFieldRow>
         <InlineField label="In query" tooltip="Query for ingress (target→source) traffic">
-          <Select
+          <Combobox
             options={[noQueryOption, ...queryOpts]}
             value={link.inQueryId ?? 0}
             onChange={(opt) => update({ inQueryId: opt.value || undefined })}
@@ -170,14 +168,14 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
   return (
     <>
       <div style={{ display: 'flex', gap: '4px' }}>
-        <Select
-          options={selectOptions}
-          value={index}
-          onChange={(opt) => setIndex(opt.value!)}
-          placeholder="— select a link —"
-          grow
-          isSearchable
-        />
+        <div style={{ flex: 1 }}>
+          <Combobox
+            options={selectOptions}
+            value={index}
+            onChange={(opt) => setIndex(opt.value)}
+            placeholder="— select a link —"
+          />
+        </div>
         <Button icon="plus" variant="secondary" aria-label="Add link" onClick={add} />
         <Button variant="destructive" icon="trash-alt" aria-label="Remove link" onClick={remove} disabled={link === null} />
       </div>
