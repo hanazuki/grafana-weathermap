@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { PanelProps } from '@grafana/data';
 import { useTheme2, IconButton } from '@grafana/ui';
-import { ReactFlow, ReactFlowProvider, Background, useViewport, type Node, type Edge, type NodeChange, type Viewport } from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, Background, Controls, useViewport, type Node, type Edge, type NodeChange, type Viewport } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { WeathermapOptions, NodeConfig, QueryConfig } from '../types';
@@ -17,6 +17,10 @@ import { formatBps } from '../utils/format';
 import useIsEditing from 'hooks/isEditing';
 import useLocalStorage from 'hooks/useLocalStorage';
 import * as z from 'zod/v4/mini';
+
+// Total width of the color legend area (measured from ColorLegend.tsx):
+// 8 px left offset + 12 px axis-label div + 4 px gap + 16 px bar + 4 px gap + ~28 px tick-label text
+const COLOR_LEGEND_TOTAL_WIDTH = 72;
 
 const NODE_TYPES = { weathermapNode: WeathermapNode };
 const EDGE_TYPES = { weathermapEdge: WeathermapEdge };
@@ -497,25 +501,29 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         onMoveStart={onMoveStart}
         onMove={onMove}
         defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
+        colorMode={theme.isLight ? 'light' : theme.isDark ? 'dark' : undefined}
         style={{ background: theme.colors.background.canvas }}
         proOptions={{ hideAttribution: true }}
       >
         <Background color={theme.colors.border.weak} />
-        {nodes.length === 0 && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'none',
-              color: theme.colors.text.secondary,
-            }}
-          >
-            Add nodes in the panel editor to get started.
-          </div>
-        )}
+        <Controls fitViewOptions={{ padding: { left: `${COLOR_LEGEND_TOTAL_WIDTH}px` } }} />
+        {
+          nodes.length === 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+                color: theme.colors.text.secondary,
+              }}
+            >
+              Add nodes in the panel editor to get started.
+            </div>
+          )
+        }
       </ReactFlow>
       <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
       <WeathermapPopup options={options} data={data} />
