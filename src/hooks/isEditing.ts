@@ -8,18 +8,19 @@ const selectors = [
   '*[data-testid="data-testid Panel editor content"]',
 ].join(', ');
 
-export default () => useSyncExternalStore(
-  (onStoreChange) => {
-    const observer = new MutationObserver(() => onStoreChange());
+const subscribe = (onStoreChange: () => void) => {
+  const observer = new MutationObserver(() => onStoreChange());
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-      characterData: false,
-    });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: false,
+    characterData: false,
+  });
 
-    return () => observer.disconnect();
-  },
-  () => !!document.querySelector(selectors),
-);
+  return () => observer.disconnect();
+};
+
+const getSnapshot = () => !!document.querySelector(selectors);
+
+export default () => useSyncExternalStore(subscribe, getSnapshot);
