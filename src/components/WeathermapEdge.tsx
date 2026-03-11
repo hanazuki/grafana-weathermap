@@ -95,6 +95,8 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
     labelFontSize = 10,
   } = (data as WeathermapEdgeData) ?? {};
 
+  const filterId = useId();
+
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
   const len = Math.sqrt(dx * dx + dy * dy);
@@ -112,8 +114,6 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
 
   const halfLen = len / 2;
   const angleDeg = Math.atan2(dy, dx) * (180 / Math.PI);
-
-  const filterId = useId();
 
   const lshift = (color: string) =>
     `light-dark(oklch(from ${color} calc(l - 0.3) c h), oklch(from ${color} calc(l + 0.3) c h))`;

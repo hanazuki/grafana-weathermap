@@ -56,6 +56,8 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
   const cy = HEALTH_INDICATOR_SIZE;
   const slash = r / Math.SQRT2;
 
+  const healthIndicatorLabelId = useId();
+
   const healthIndicator = () => {
     if (healthStatus === null) {
       return null;
@@ -70,7 +72,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
 
     const label = healthStatus === 'up' ? 'Up' : healthStatus === 'down' ? 'Down' : 'Unknown';
 
-    const labelId = useId();
+    const labelId = healthIndicatorLabelId;
 
     return (
       <svg

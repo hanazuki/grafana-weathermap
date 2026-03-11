@@ -54,9 +54,9 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const isDragging = useRef(false);
   const moveStartViewport = useRef<Viewport | null>(null);
 
-  const nodes = options.nodes ?? [];
-  const links = options.links ?? [];
-  const queries = options.queries ?? [];
+  const nodes = useMemo(() => options.nodes ?? [], [options.nodes]);
+  const links = useMemo(() => options.links ?? [], [options.links]);
+  const queries = useMemo(() => options.queries ?? [], [options.queries]);
   const nodeWidth = options.nodeWidth ?? 120;
   const nodeHeight = options.nodeHeight ?? 40;
   const linkStrokeWidth = options.linkStrokeWidth ?? 4;
@@ -94,13 +94,15 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   }, [options.nodeLabelPattern, options.nodeLabelReplacement]);
 
   // Build label transform function (applied to node.name for canvas display only)
-  const transformLabel = useMemo<(name: string) => string>(() => {
-    if (!options.nodeLabelPattern || !options.nodeLabelReplacement) {
-      return (name) => name;
+  const nodeLabelPattern = options.nodeLabelPattern;
+  const nodeLabelReplacement = options.nodeLabelReplacement;
+  const transformLabel = useCallback((name: string): string => {
+    if (!nodeLabelPattern || !nodeLabelReplacement) {
+      return name;
     }
-    const regex = new RegExp(options.nodeLabelPattern);
-    return (name) => name.replace(regex, options.nodeLabelReplacement!);
-  }, [options.nodeLabelPattern, options.nodeLabelReplacement]);
+    const regex = new RegExp(nodeLabelPattern);
+    return name.replace(regex, nodeLabelReplacement);
+  }, [nodeLabelPattern, nodeLabelReplacement]);
 
   // Determine which links have invalid query references
   const linksWithInvalidQuery = useMemo(() => {
@@ -333,7 +335,6 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           connectable: false,
         };
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodes, nodeWidth, nodeHeight, transformLabel, theme, queryMap, data]
   );
 
