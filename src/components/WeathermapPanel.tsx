@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { PanelProps } from '@grafana/data';
-import { useTheme2, IconButton } from '@grafana/ui';
-import { ReactFlow, ReactFlowProvider, Background, Controls, useViewport, type Node, type Edge, type NodeChange, type Viewport } from '@xyflow/react';
+import { useTheme2, Icon } from '@grafana/ui';
+import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type Node, type Edge, type NodeChange, type Viewport } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { WeathermapOptions, NodeConfig, QueryConfig } from '../types';
@@ -459,25 +459,6 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
 
       <ColorLegend colorScale={colorScale} colorScaleMode={options.colorScaleMode ?? 'linear'} logScaleBase={logScaleBase} />
 
-      {/* Color scheme preference button: centered under the 16px gradient bar, below the legend */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 8 + 160 + 8,
-          left: `calc(8px + ${theme.typography.bodySmall.fontSize} + 14px)`,
-          transform: 'translateX(-50%)',
-          zIndex: 5,
-        }}
-      >
-        <IconButton
-          name="palette"
-          tooltip={`Color scheme: ${colorSchemeName}`}
-          aria-label={`Cycle color scheme (Current: ${colorSchemeName})`}
-          onClick={() => setColorSchemeIndex((colorSchemeIndex + 1) % colorScales.length)}
-          size="md"
-        />
-      </div>
-
       <ReactFlow
         nodes={rfNodes}
         edges={rfEdges}
@@ -506,7 +487,15 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         proOptions={{ hideAttribution: true }}
       >
         <Background color={theme.colors.border.weak} />
-        <Controls fitViewOptions={{ padding: { left: `${COLOR_LEGEND_TOTAL_WIDTH}px` } }} />
+        <Controls fitViewOptions={{ padding: { left: `${COLOR_LEGEND_TOTAL_WIDTH}px` } }}>
+          <ControlButton
+            title={`Color scheme: ${colorSchemeName}`}
+            aria-label={`Cycle color scheme (Current: ${colorSchemeName})`}
+            onClick={() => setColorSchemeIndex((colorSchemeIndex + 1) % colorScales.length)}
+          >
+            <Icon name="palette" aria-hidden />
+          </ControlButton>
+        </Controls>
         {
           nodes.length === 0 && (
             <div
