@@ -12,16 +12,16 @@ function getSet(key: string): Set<() => void> {
   return set;
 }
 
-function readValue<T extends z.$ZodType>(key: string, schema: T, defaultValue: z.infer<T>): z.infer<T> {
+function readValue<T extends z.$ZodType>(key: string, schema: T): z.infer<T> {
   const raw = localStorage.getItem(key);
   if (raw === null) {
-    return defaultValue;
+    return z.parse(schema, null);
   }
   const result = z.safeParse(schema, JSON.parse(raw));
-  return result.success ? result.data : defaultValue;
+  return result.success ? result.data : z.parse(schema, null);
 }
 
-export default <T extends z.$ZodType>(key: string, schema: T, defaultValue: z.infer<T>): [z.infer<T>, (value: z.infer<T>) => void] => {
+export default <T extends z.$ZodType>(key: string, schema: T): [z.infer<T>, (value: z.infer<T>) => void] => {
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
       getSet(key).add(onStoreChange);
@@ -41,7 +41,7 @@ export default <T extends z.$ZodType>(key: string, schema: T, defaultValue: z.in
     [key]
   );
 
-  const getSnapshot = useCallback(() => readValue(key, schema, defaultValue), [key, schema, defaultValue]);
+  const getSnapshot = useCallback(() => readValue(key, schema), [key, schema]);
 
   const value = useSyncExternalStore(subscribe, getSnapshot);
 

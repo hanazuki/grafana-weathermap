@@ -36,10 +36,12 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) 
   </PopupProvider>
 );
 
+const PreferredColorSchemeIndex = z._default(z.number(), 0);
+
 const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height, onOptionsChange }) => {
   const theme = useTheme2();
   const isEditing = useIsEditing();
-  const [colorSchemeIndex, setColorSchemeIndex] = useLocalStorage('iwm-preferences-color-scheme', z.number(), 0);
+  const [colorSchemeIndex, setColorSchemeIndex] = useLocalStorage('iwm-preferences-color-scheme', PreferredColorSchemeIndex);
   const colorScale = (colorScales[colorSchemeIndex] ?? colorScales[0]).getColor;
   const colorSchemeName = (colorScales[colorSchemeIndex] ?? colorScales[0]).name;
   const { state, setContextMenu, setPinned, setPreview, setCursorPos } = usePopup();
