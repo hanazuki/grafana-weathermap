@@ -487,7 +487,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         proOptions={{ hideAttribution: true }}
       >
         <Background color={theme.colors.border.weak} />
-        <Controls fitViewOptions={{ padding: { left: `${COLOR_LEGEND_TOTAL_WIDTH}px` } }}>
+        <Controls showInteractive={false} fitViewOptions={{ padding: { left: `${COLOR_LEGEND_TOTAL_WIDTH}px` } }}>
           <ControlButton
             title={`Color scheme: ${colorSchemeName}`}
             aria-label={`Cycle color scheme (Current: ${colorSchemeName})`}
