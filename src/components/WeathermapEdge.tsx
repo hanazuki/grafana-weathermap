@@ -22,6 +22,7 @@ function drawPencilTip(
   ax: number, ay: number, // base of the half-arrow (source or target)
   bx: number, by: number, // tip (midpoint)
   color: string,
+  borderColor: string,
   strokeWidth: number,
   tipLength: number,
 ): React.ReactElement {
@@ -102,6 +103,12 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
   // Unique filter ID for this edge's label background
   const filterId = `label-bg-${id}`;
 
+  const lshift = (color: string) => {
+    return `light-dark(oklch(from ${color} calc(l - 0.3) c h), oklch(from ${color} calc(l + 0.3) c h))`;
+  };
+  const outBorderColor = lshift(outColor);
+  const inBorderColor = lshift(inColor);
+
   return (
     <g>
       <defs>
@@ -115,12 +122,14 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
       </defs>
 
       {/* Source half-arrow: source → midpoint (out-traffic) */}
-      <path d={`M ${sx} ${sy} L ${mx - nx * tipLength} ${my - ny * tipLength}`} stroke={outColor} strokeWidth={strokeWidth} fill="none" strokeLinecap="butt" />
-      {drawPencilTip(sx, sy, mx, my, outColor, strokeWidth, tipLength)}
+      <path d={`M ${sx} ${sy} L ${mx - nx * tipLength} ${my - ny * tipLength}`} stroke={outBorderColor} strokeWidth={strokeWidth} fill="none" strokeLinecap="butt" />
+      <path d={`M ${sx} ${sy} L ${mx - nx * tipLength} ${my - ny * tipLength}`} stroke={outColor} strokeWidth={strokeWidth - 1} fill="none" strokeLinecap="butt" />
+      {drawPencilTip(sx, sy, mx, my, outColor, outBorderColor, strokeWidth, tipLength)}
 
       {/* Target half-arrow: target → midpoint (in-traffic) */}
-      <path d={`M ${tx} ${ty} L ${mx + nx * tipLength} ${my + ny * tipLength}`} stroke={inColor} strokeWidth={strokeWidth} fill="none" strokeLinecap="butt" />
-      {drawPencilTip(tx, ty, mx, my, inColor, strokeWidth, tipLength)}
+      <path d={`M ${tx} ${ty} L ${mx + nx * tipLength} ${my + ny * tipLength}`} stroke={inBorderColor} strokeWidth={strokeWidth} fill="none" strokeLinecap="butt" />
+      <path d={`M ${tx} ${ty} L ${mx + nx * tipLength} ${my + ny * tipLength}`} stroke={inColor} strokeWidth={strokeWidth - 1} fill="none" strokeLinecap="butt" />
+      {drawPencilTip(tx, ty, mx, my, inColor, inBorderColor, strokeWidth, tipLength)}
 
       {/* Speed labels (omitted when no data) */}
       {outSpeed && (
