@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { PanelProps } from '@grafana/data';
-import { useTheme2 } from '@grafana/ui';
+import { useTheme2, IconButton } from '@grafana/ui';
 import { ReactFlow, ReactFlowProvider, Background, useViewport, type Node, type Edge, type NodeChange, type Viewport } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -12,9 +12,11 @@ import { CanvasContextMenu } from './CanvasContextMenu';
 import { WeathermapPopup } from './WeathermapPopup';
 import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficSeries, findHealthSeries } from '../utils/matching';
-import { getUtilizationColor, GRAY_COLOR, rainbow } from '../utils/color';
+import { getUtilizationColor, GRAY_COLOR, colorScales } from '../utils/color';
 import { formatBps } from '../utils/format';
 import useIsEditing from 'hooks/isEditing';
+import useLocalStorage from 'hooks/useLocalStorage';
+import * as z from 'zod/v4/mini';
 
 const NODE_TYPES = { weathermapNode: WeathermapNode };
 const EDGE_TYPES = { weathermapEdge: WeathermapEdge };
@@ -37,6 +39,9 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) 
 const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height, onOptionsChange }) => {
   const theme = useTheme2();
   const isEditing = useIsEditing();
+  const [colorSchemeIndex, setColorSchemeIndex] = useLocalStorage('iwm-preferences-color-scheme', z.number(), 0);
+  const colorScale = (colorScales[colorSchemeIndex] ?? colorScales[0]).getColor;
+  const colorSchemeName = (colorScales[colorSchemeIndex] ?? colorScales[0]).name;
   const { state, setContextMenu, setPinned, setPreview, setCursorPos } = usePopup();
   const { x: vpX, y: vpY, zoom } = useViewport();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -350,7 +355,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const iface = link.outReversed ? link.targetInterface : link.sourceInterface;
               const result = findTrafficSeries(data, qc, instance, iface);
               if (result.found && result.value !== null) {
-                outColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, rainbow);
+                outColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
                 outSpeed = formatBps(result.value);
               }
             }
@@ -366,7 +371,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const iface = link.inReversed ? link.sourceInterface : link.targetInterface;
               const result = findTrafficSeries(data, qc, instance, iface);
               if (result.found && result.value !== null) {
-                inColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, rainbow);
+                inColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
                 inSpeed = formatBps(result.value);
               }
             }
@@ -393,7 +398,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           } satisfies WeathermapEdgeData,
         };
       });
-  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode, logScaleBase, theme, linkStrokeWidth, linkTipLength, linkLabelDistance, linkLabelFontSize]);
+  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode, logScaleBase, colorScale, theme, linkStrokeWidth, linkTipLength, linkLabelDistance, linkLabelFontSize]);
 
   // Full-panel error state for invalid label transform config
   if (labelTransformError) {
@@ -446,7 +451,26 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         </div>
       )}
 
-      <ColorLegend colorScale={rainbow} colorScaleMode={options.colorScaleMode ?? 'linear'} logScaleBase={logScaleBase} />
+      <ColorLegend colorScale={colorScale} colorScaleMode={options.colorScaleMode ?? 'linear'} logScaleBase={logScaleBase} />
+
+      {/* Color scheme preference button: centered under the 16px gradient bar, below the legend */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 8 + 160 + 8,
+          left: `calc(8px + ${theme.typography.bodySmall.fontSize} + 14px)`,
+          transform: 'translateX(-50%)',
+          zIndex: 5,
+        }}
+      >
+        <IconButton
+          name="palette"
+          tooltip={`Color scheme: ${colorSchemeName}`}
+          aria-label={`Cycle color scheme (Current: ${colorSchemeName})`}
+          onClick={() => setColorSchemeIndex((colorSchemeIndex + 1) % colorScales.length)}
+          size="md"
+        />
+      </div>
 
       <ReactFlow
         nodes={rfNodes}
