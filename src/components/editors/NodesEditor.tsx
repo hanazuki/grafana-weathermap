@@ -26,7 +26,8 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update }) => {
           <Input
             value={node.name}
             onChange={(e) => update({ name: e.currentTarget.value })}
-            placeholder="router-1"
+            placeholder="router-1.example.com"
+            data-testid="iwm-editor-node-name"
           />
         </InlineField>
       </InlineFieldRow>
@@ -37,6 +38,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update }) => {
             value={node.x ?? 0}
             onChange={(e) => update({ x: Number(e.currentTarget.value) })}
             width={8}
+            data-testid="iwm-editor-node-x"
           />
         </InlineField>
         <InlineField label="Y">
@@ -45,6 +47,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update }) => {
             value={node.y ?? 0}
             onChange={(e) => update({ y: Number(e.currentTarget.value) })}
             width={8}
+            data-testid="iwm-editor-node-y"
           />
         </InlineField>
       </InlineFieldRow>
@@ -104,8 +107,8 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, We
             placeholder="— select a node —"
           />
         </div>
-        <Button icon="plus" variant="secondary" aria-label="Add node" onClick={add} />
-        <Button variant="destructive" icon="trash-alt" aria-label="Remove node" onClick={remove} disabled={node === null} />
+        <Button icon="plus" variant="secondary" aria-label="Add node" onClick={add} data-testid="iwm-editor-node-add" />
+        <Button variant="destructive" icon="trash-alt" aria-label="Remove node" onClick={remove} disabled={node === null} data-testid="iwm-editor-node-delete" />
       </div>
       {node !== null ? (
         <NodeEditor node={node} queries={queries} update={update} />

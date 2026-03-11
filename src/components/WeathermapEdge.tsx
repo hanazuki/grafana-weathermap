@@ -134,7 +134,7 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
   );
 
   return (
-    <g>
+    <g data-testid={`iwm-edge-${id}`}>
       <defs>
         <filter id={filterId} x="-2%" y="-0%" width="104%" height="100%">
           <feFlood floodColor={labelBgColor} result="bg" />

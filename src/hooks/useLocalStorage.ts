@@ -15,10 +15,10 @@ function getSet(key: string): Set<() => void> {
 function readValue<T extends z.$ZodType>(key: string, schema: T): z.infer<T> {
   const raw = localStorage.getItem(key);
   if (raw === null) {
-    return z.parse(schema, null);
+    return z.parse(schema, undefined);
   }
   const result = z.safeParse(schema, JSON.parse(raw));
-  return result.success ? result.data : z.parse(schema, null);
+  return result.success ? result.data : z.parse(schema, undefined);
 }
 
 export default <T extends z.$ZodType>(key: string, schema: T): [z.infer<T>, (value: z.infer<T>) => void] => {

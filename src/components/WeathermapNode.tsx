@@ -6,6 +6,7 @@ import { HealthStatus } from '../types';
 const HEALTH_INDICATOR_SIZE = 10;
 
 export interface WeathermapNodeData {
+  id: number;
   label: string;
   nodeWidth: number;
   nodeHeight: number;
@@ -29,7 +30,7 @@ const HANDLE_STYLE: React.CSSProperties = {
 };
 
 export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
-  const { label, nodeWidth, nodeHeight, theme, hasConfigError, healthStatus } = data as WeathermapNodeData;
+  const { id, label, nodeWidth, nodeHeight, theme, hasConfigError, healthStatus } = data as WeathermapNodeData;
   const t = theme as GrafanaTheme2;
 
   const style: React.CSSProperties = {
@@ -102,7 +103,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
     <>
       <Handle type="source" position={Position.Top} style={HANDLE_STYLE} />
       <Handle type="target" position={Position.Top} style={HANDLE_STYLE} />
-      <div style={style} title={String(label)}>
+      <div style={style} title={String(label)} data-testid={`iwm-node-${id}`}>
         {healthIndicator()}
         <span style={{ fontWeight: "bold" }}>{label}</span>
       </div>

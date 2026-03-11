@@ -40,6 +40,7 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
             options={nodeOpts}
             value={link.source}
             onChange={(opt) => update({ source: opt.value })}
+            data-testid="iwm-editor-link-source"
           />
         </InlineField>
         <InlineField label="Src iface">
@@ -58,6 +59,7 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
             options={nodeOpts}
             value={link.target}
             onChange={(opt) => update({ target: opt.value })}
+            data-testid="iwm-editor-link-target"
           />
         </InlineField>
         <InlineField label="Tgt iface">
@@ -176,7 +178,7 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
             placeholder="— select a link —"
           />
         </div>
-        <Button icon="plus" variant="secondary" aria-label="Add link" onClick={add} />
+        <Button icon="plus" variant="secondary" aria-label="Add link" onClick={add} data-testid="iwm-editor-link-add" />
         <Button variant="destructive" icon="trash-alt" aria-label="Remove link" onClick={remove} disabled={link === null} />
       </div>
       {link !== null ? (
