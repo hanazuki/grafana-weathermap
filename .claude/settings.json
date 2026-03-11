@@ -1,8 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm typecheck:*)",
       "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm typecheck:*)",
+      "WebFetch(domain:grafana.com)",
       "WebFetch(domain:developers.grafana.com)"
     ]
   }
