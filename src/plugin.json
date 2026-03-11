@@ -2,18 +2,21 @@
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
   "name": "Interactive Network Weathermap",
-  "id": "hanazuki-interactiveweathermap-panel",
+  "id": "hanazuki-weathermap-panel",
   "info": {
     "keywords": ["panel"],
-    "description": "",
+    "description": "Interactive Network Weathermap visualizes computer network topology, traffic, and health.",
     "author": {
-      "name": "Kasumi Hanazuki"
+      "name": "Kasumi Hanazuki",
+      "url": "https://github.com/hanazuki"
     },
     "logos": {
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
-    "links": [],
+    "links": [
+      { "name": "GitHub", "url": "https://github.com/hanazuki/grafana-weathermap" }
+    ],
     "screenshots": [],
     "version": "%VERSION%",
     "updated": "%TODAY%"
