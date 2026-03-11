@@ -1,3 +1,5 @@
+import { interpolateCividis } from 'd3-scale-chromatic';
+
 export type ColorScale = (t: number) => string;
 
 export const rainbow = (t: number) => {
@@ -12,29 +14,10 @@ export const rainbow = (t: number) => {
   return `light-dark(oklch(${l_light.toFixed(3)} ${c_light.toFixed(3)} ${h.toFixed(1)}deg), oklch(${l_dark.toFixed(3)} ${c_dark.toFixed(3)} ${h.toFixed(1)}deg))`;
 };
 
-export const cividis = (t: number) => {
-  t = Math.max(0, Math.min(1, t));
-  t = t * 0.8 + 0.1; // Trim both ends to ensure contrast to white/black
-
-  let l, c, h;
-  if (t < 0.5) {
-    const nt = t * 2;
-    l = 0.21 + (0.55 - 0.21) * nt;
-    c = 0.07 + (0.01 - 0.07) * nt;
-    h = 265 + (100 - 265) * nt;
-  } else {
-    const nt = (t - 0.5) * 2;
-    l = 0.55 + (0.90 - 0.55) * nt;
-    c = 0.01 + (0.18 - 0.01) * nt;
-    h = 100;
-  }
-
-  return `oklch(${l.toFixed(3)} ${c.toFixed(3)} ${h.toFixed(1)})`;
-};
-
 export const colorScales = [
   { name: 'Rainbow', getColor: rainbow },
-  { name: 'Cividis', getColor: cividis },
+  { name: 'Cividis', getColor: interpolateCividis },
+  { name: 'Mono', getColor: () => `light-dark(rgb(36, 41, 46), rgb(204, 204, 220))`, }
 ];
 
 /** Color for links with no data or no query configured. */
