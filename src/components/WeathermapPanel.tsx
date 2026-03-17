@@ -2,11 +2,12 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import { GrafanaTheme2, PanelProps } from '@grafana/data';
 import { useTheme2, useStyles2, Icon } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type Node, type Edge, type NodeChange, type Viewport } from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type Node, type Edge, type NodeChange, type Viewport, type Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { WeathermapOptions, NodeConfig, QueryConfig } from '../types';
+import { WeathermapOptions, NodeConfig, QueryConfig, LinkConfig } from '../types';
 import { WeathermapNode, type WeathermapNodeData } from './WeathermapNode';
+import { ConnectionLine } from './ConnectionLine';
 import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
 import { ColorLegend } from './ColorLegend';
 import { CanvasContextMenu } from './CanvasContextMenu';
@@ -266,6 +267,32 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     [isEditing, state.pinned, setPinned, setContextMenu]
   );
 
+  // Prevent self-loop connections
+  const isValidConnection = useCallback(
+    (connection: Connection | Edge) => connection.source !== connection.target,
+    []
+  );
+
+  // Create a new link when a connection is dropped on a target node
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      const sourceId = Number(connection.source);
+      const targetId = Number(connection.target);
+      const existingLinks = options.links ?? [];
+      const maxId = existingLinks.reduce((max, l) => Math.max(max, l.id), 0);
+      const newLink: LinkConfig = {
+        id: maxId + 1,
+        source: sourceId,
+        target: targetId,
+        sourceInterface: '',
+        targetInterface: '',
+        capacity: 0,
+      };
+      onOptionsChange({ ...options, links: [...existingLinks, newLink] });
+    },
+    [options, onOptionsChange]
+  );
+
   // Commit node positions to panel options on every drag position change (edit mode only)
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -330,14 +357,16 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             nodeHeight,
             hasConfigError,
             healthStatus,
+            isEditing,
           } satisfies WeathermapNodeData,
           width: nodeWidth,
           height: nodeHeight,
           selectable: false,
-          connectable: false,
+          connectable: isEditing,
+          dragHandle: '.iwm-move-zone',
         };
       }),
-    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data]
+    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing]
   );
 
   // Build React Flow edges
@@ -446,7 +475,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         nodesDraggable={isEditing}
-        nodesConnectable={false}
+        nodesConnectable={isEditing}
         elementsSelectable={false}
         snapToGrid={true}
         snapGrid={[10, 10]}
@@ -462,6 +491,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         onPaneClick={onPaneClick}
         onMoveStart={onMoveStart}
         onMove={onMove}
+        isValidConnection={isValidConnection}
+        onConnect={onConnect}
+        connectionLineComponent={ConnectionLine}
+        connectionLineStyle={{ strokeWidth: linkStrokeWidth }}
         defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
         colorMode={theme.isLight ? 'light' : theme.isDark ? 'dark' : undefined}
         className={styles.reactFlow}
