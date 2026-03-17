@@ -138,11 +138,13 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     [setCursorPos]
   );
 
-  // Drag lifecycle: clear preview on drag start; block preview during drag
+  // Drag lifecycle: clear preview, context menu and pinned popup on drag start; block preview during drag
   const onNodeDragStart = useCallback(() => {
     isDragging.current = true;
     setPreview(null);
-  }, [setPreview]);
+    setContextMenu(null);
+    setPinned(null);
+  }, [setPreview, setContextMenu, setPinned]);
 
   const onNodeDragStop = useCallback(() => {
     isDragging.current = false;
@@ -272,6 +274,12 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     (connection: Connection | Edge) => connection.source !== connection.target,
     []
   );
+
+  // Dismiss context menu and pinned popup when a connection drag starts
+  const onConnectStart = useCallback(() => {
+    setContextMenu(null);
+    setPinned(null);
+  }, [setContextMenu, setPinned]);
 
   // Create a new link when a connection is dropped on a target node
   const onConnect = useCallback(
@@ -492,6 +500,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         onMoveStart={onMoveStart}
         onMove={onMove}
         isValidConnection={isValidConnection}
+        onConnectStart={onConnectStart}
         onConnect={onConnect}
         connectionLineComponent={ConnectionLine}
         connectionLineStyle={{ strokeWidth: linkStrokeWidth }}
