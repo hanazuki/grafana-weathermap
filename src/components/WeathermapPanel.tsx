@@ -27,11 +27,11 @@ const COLOR_LEGEND_TOTAL_WIDTH = 72;
 const NODE_TYPES = { weathermapNode: WeathermapNode };
 const EDGE_TYPES = { weathermapEdge: WeathermapEdge };
 
-function getLinkOffset(index: number, parallelOffset: number): number {
+function getLinkOffset(index: number): number {
   if (index === 0) {
     return 0;
   }
-  return Math.ceil(index / 2) * parallelOffset * (index % 2 === 1 ? 1 : -1);
+  return Math.ceil(index / 2) * (index % 2 === 1 ? 1 : -1);
 }
 
 export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) => (
@@ -326,11 +326,11 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       const b = Math.max(link.source, link.target);
       const key = `${a}\0${b}`;
       const idx = pairCount.get(key) ?? 0;
-      offsets.set(link.id, getLinkOffset(idx, linkParallelOffset));
+      offsets.set(link.id, getLinkOffset(idx));
       pairCount.set(key, idx + 1);
     }
     return offsets;
-  }, [links, linkParallelOffset]);
+  }, [links]);
 
   // Build React Flow nodes (React Flow requires string IDs)
   const rfNodes: Node[] = useMemo(
@@ -375,7 +375,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       .filter((link) => nodeMap.has(link.source) && nodeMap.has(link.target)) // skip orphaned links
       .map((link) => {
         const hasInvalidQuery = linksWithInvalidQuery.has(link.id);
-        const offsetPx = linkOffsets.get(link.id) ?? 0;
+        const offsetPx = (linkOffsets.get(link.id) ?? 0) * linkParallelOffset * (link.source < link.target ? 1 : -1);
 
         let outColor = GRAY_COLOR;
         let inColor = GRAY_COLOR;
@@ -436,7 +436,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           } satisfies WeathermapEdgeData,
         };
       });
-  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, options.colorScaleMode, logScaleBase, colorScale, theme, linkStrokeWidth, linkTipLength, linkLabelDistance, linkLabelFontSize]);
+  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, linkParallelOffset, options.colorScaleMode, logScaleBase, colorScale, theme, linkStrokeWidth, linkTipLength, linkLabelDistance, linkLabelFontSize]);
 
   // Full-panel error state for invalid label transform config
   if (labelTransformError) {
