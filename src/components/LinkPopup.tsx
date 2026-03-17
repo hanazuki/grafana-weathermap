@@ -38,7 +38,7 @@ function makeSparkline(stats: TrafficStats, color: string, sharedMax: number, da
     lineColor: color,
     lineWidth: 1.5,
     fillOpacity: 0,
-    lineStyle: dashed ? { fill: 'dash', dash: [20, 10] } : { fill: 'solid' },
+    lineStyle: dashed ? { fill: 'dot' } : { fill: 'solid' },
   };
 
   const yField: Field<number> = {
