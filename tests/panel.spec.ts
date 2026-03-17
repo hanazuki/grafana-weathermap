@@ -44,3 +44,45 @@ test('Add nodes and edges', async ({
   await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
   await expect(page.getByTestId('iwm-edge-2')).toBeVisible();
 });
+
+test('Drag to connect creates a new link', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add node A at x=50, y=100
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('node-a');
+  await page.getByTestId('iwm-editor-node-x').fill('50');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  // Add node B at x=300, y=100
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('node-b');
+  await page.getByTestId('iwm-editor-node-x').fill('300');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  await expect(page.getByTestId('iwm-node-1')).toHaveText('node-a');
+  await expect(page.getByTestId('iwm-node-2')).toHaveText('node-b');
+
+  // Drag from the connect zone of node A (x > 40px from its left edge) to node B
+  const nodeA = page.getByTestId('iwm-node-1');
+  const nodeB = page.getByTestId('iwm-node-2');
+
+  const nodeABox = await nodeA.boundingBox();
+  const nodeBBox = await nodeB.boundingBox();
+
+  // Start drag at x+60 (within connect zone, past the 40px move zone boundary)
+  await page.mouse.move(nodeABox!.x + 60, nodeABox!.y + nodeABox!.height / 2);
+  await page.mouse.down();
+  // Drag to the center of node B
+  await page.mouse.move(nodeBBox!.x + nodeBBox!.width / 2, nodeBBox!.y + nodeBBox!.height / 2, { steps: 10 });
+  await page.mouse.up();
+
+  // A new link connecting node A to node B should now exist
+  await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
+});
