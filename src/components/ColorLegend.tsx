@@ -53,7 +53,7 @@ export function ColorLegend({ colorScale, colorScaleMode, logScaleBase }: ColorL
       </div>
       <div
         className={styles.colorBar}
-        style={{ background: gradient }}
+        style={{ backgroundImage: gradient }}
         role="img"
         aria-labelledby={titleId}
       />
