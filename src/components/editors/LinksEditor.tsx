@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Combobox, FieldSet, InlineField, InlineFieldRow, Input, Switch } from '@grafana/ui';
+import { Button, Combobox, FieldSet, InlineField, InlineFieldRow, Input, Switch, useStyles2 } from '@grafana/ui';
+import { getStyles } from './styles';
 import { LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -125,6 +126,7 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
   onChange,
   context,
 }) => {
+  const styles = useStyles2(getStyles);
   const nodes: NodeConfig[] = context.options?.nodes ?? [];
   const queries: QueryConfig[] = context.options?.queries ?? [];
 
@@ -169,8 +171,8 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '4px' }}>
-        <div style={{ flex: 1 }}>
+      <div className={styles.toolbar}>
+        <div className={styles.comboboxWrapper}>
           <Combobox
             options={selectOptions}
             value={index}
@@ -184,7 +186,7 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
       {link !== null ? (
         <LinkEditor link={link} nodes={nodes} queries={queries} update={update} />
       ) : (
-        <div style={{ padding: '8px 0', color: 'gray' }}>No links yet — click + to add one</div>
+        <div className={styles.emptyState}>No links yet — click + to add one</div>
       )}
     </>
   );

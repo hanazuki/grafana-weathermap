@@ -1,8 +1,11 @@
 import React, { useId } from 'react';
-import { useTheme2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { NodeConfig, HealthStatus } from '../types';
 import { UptimeBar } from './UptimeBar';
 
+const POPUP_WIDTH = 220;
 const INDICATOR_SIZE = 10;
 
 interface HealthIconProps {
@@ -10,7 +13,7 @@ interface HealthIconProps {
 }
 
 const HealthIcon: React.FC<HealthIconProps> = ({ healthStatus }) => {
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles, healthStatus);
   const labelId = useId();
 
   if (healthStatus === null) {
@@ -22,13 +25,6 @@ const HealthIcon: React.FC<HealthIconProps> = ({ healthStatus }) => {
   const cy = INDICATOR_SIZE;
   const slash = r / Math.SQRT2;
 
-  const color =
-    healthStatus === 'up'
-      ? theme.colors.success.main
-      : healthStatus === 'down'
-        ? theme.colors.error.main
-        : theme.colors.secondary.text;
-
   const label = healthStatus === 'up' ? 'Up' : healthStatus === 'down' ? 'Down' : 'Unknown';
 
   return (
@@ -37,15 +33,15 @@ const HealthIcon: React.FC<HealthIconProps> = ({ healthStatus }) => {
       height={INDICATOR_SIZE * 2}
       role="img"
       aria-labelledby={labelId}
-      style={{ flexShrink: 0 }}
+      className={styles.healthIconSvg}
     >
       <title id={labelId}>Health: {label}</title>
       <circle
         cx={cx}
         cy={cy}
         r={r}
-        fill={healthStatus === 'up' ? color : 'none'}
-        stroke={color}
+        fill={healthStatus === 'up' ? styles.healthIconColor : 'none'}
+        stroke={styles.healthIconColor}
         strokeWidth={1.5}
       />
       {healthStatus === 'down' && (
@@ -54,7 +50,7 @@ const HealthIcon: React.FC<HealthIconProps> = ({ healthStatus }) => {
           y1={cy + slash}
           x2={cx + slash}
           y2={cy - slash}
-          stroke={color}
+          stroke={styles.healthIconColor}
           strokeWidth={1.5}
         />
       )}
@@ -81,7 +77,7 @@ export const NodePopup: React.FC<NodePopupProps> = ({
   panelTo,
   maxDataPoints,
 }) => {
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   const showUptimeBar =
     node.statusQueryId != null &&
@@ -91,28 +87,11 @@ export const NodePopup: React.FC<NodePopupProps> = ({
     maxDataPoints != null;
 
   return (
-    <div
-      style={{
-        width: 220,
-        fontSize: theme.typography.bodySmall.fontSize,
-        color: theme.colors.text.primary,
-        background: theme.colors.background.secondary,
-        border: `1px solid ${theme.colors.border.medium}`,
-        borderRadius: theme.shape.radius.default,
-        overflow: 'hidden',
-      }}
-    >
+    <div className={styles.popup}>
       {/* Header: health icon + node name */}
-      <div
-        style={{
-          padding: '8px 12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-        }}
-      >
+      <div className={styles.header}>
         {healthStatus !== null && <HealthIcon healthStatus={healthStatus} />}
-        <span style={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span className={styles.name}>
           {node.name !== '' ? node.name : `#${node.id}`}
         </span>
       </div>
@@ -129,4 +108,32 @@ export const NodePopup: React.FC<NodePopupProps> = ({
       )}
     </div>
   );
+};
+
+const getStyles = (theme: GrafanaTheme2, healthStatus?: HealthStatus) => {
+  const indicatorColor =
+    healthStatus === 'up'
+      ? theme.colors.success.main
+      : healthStatus === 'down'
+        ? theme.colors.error.main
+        : theme.colors.text.secondary; // was colors.secondary.text — bug fix
+
+  return {
+    // HealthIcon
+    healthIconSvg: css({ flexShrink: 0 }),
+    healthIconColor: indicatorColor, // plain string, used as SVG fill/stroke attribute
+
+    // NodePopup
+    popup: css({
+      width: POPUP_WIDTH,
+      fontSize: theme.typography.bodySmall.fontSize,
+      color: theme.colors.text.primary,
+      background: theme.colors.background.secondary,
+      border: `1px solid ${theme.colors.border.medium}`,
+      borderRadius: theme.shape.radius.default,
+      overflow: 'hidden',
+    }),
+    header: css({ padding: theme.spacing(1, 1.5), display: 'flex', alignItems: 'center', gap: theme.spacing(0.75) }),
+    name: css({ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }),
+  };
 };

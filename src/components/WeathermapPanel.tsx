@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { PanelProps } from '@grafana/data';
-import { useTheme2, Icon } from '@grafana/ui';
+import { GrafanaTheme2, PanelProps } from '@grafana/data';
+import { useTheme2, useStyles2, Icon } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type Node, type Edge, type NodeChange, type Viewport } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -44,6 +45,7 @@ const PreferredColorSchemeIndex = z._default(z.number(), 0);
 
 const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height, onOptionsChange }) => {
   const theme = useTheme2();
+  const styles = useStyles2(getStyles);
   const isEditing = useIsEditing();
   const [colorSchemeIndex, setColorSchemeIndex] = useLocalStorage('iwm-preferences-color-scheme', PreferredColorSchemeIndex);
   const colorScale = (colorScales[colorSchemeIndex] ?? colorScales[0]).getColor;
@@ -326,7 +328,6 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             label: node.name === '' ? `#${node.id}` : transformLabel(node.name),
             nodeWidth,
             nodeHeight,
-            theme,
             hasConfigError,
             healthStatus,
           } satisfies WeathermapNodeData,
@@ -336,7 +337,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           connectable: false,
         };
       }),
-    [nodes, nodeWidth, nodeHeight, transformLabel, theme, queryMap, data]
+    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data]
   );
 
   // Build React Flow edges
@@ -412,17 +413,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   if (labelTransformError) {
     return (
       <div
-        style={{
-          width,
-          height,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: theme.colors.background.primary,
-          color: theme.colors.error.text,
-          padding: 16,
-          textAlign: 'center',
-        }}
+        className={styles.errorState}
+        style={{ width, height }}
       >
         <div>
           <strong>Configuration error:</strong>
@@ -434,23 +426,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   }
 
   return (
-    <div ref={panelRef} style={{ width, height, position: 'relative' }} onMouseMove={onPanelMouseMove}>
+    <div ref={panelRef} className={styles.panelRoot} style={{ width, height }} onMouseMove={onPanelMouseMove}>
       {/* Warning banner for invalid query references */}
       {linksWithInvalidQuery.size > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 10,
-            background: theme.colors.warning.transparent,
-            borderBottom: `1px solid ${theme.colors.warning.border}`,
-            color: theme.colors.warning.text,
-            padding: '4px 8px',
-            fontSize: theme.typography.bodySmall.fontSize,
-          }}
-        >
+        <div className={styles.warningBanner}>
           <strong>Warning:</strong> Invalid query reference on:{' '}
           {links
             .filter((l) => linksWithInvalidQuery.has(l.id))
@@ -485,7 +464,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         onMove={onMove}
         defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
         colorMode={theme.isLight ? 'light' : theme.isDark ? 'dark' : undefined}
-        style={{ background: theme.colors.background.canvas }}
+        className={styles.reactFlow}
         proOptions={{ hideAttribution: true }}
       >
         <Background color={theme.colors.border.weak} />
@@ -500,17 +479,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         </Controls>
         {
           nodes.length === 0 && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none',
-                color: theme.colors.text.secondary,
-              }}
-            >
+            <div className={styles.emptyState}>
               Add nodes in the panel editor to get started.
             </div>
           )
@@ -521,3 +490,42 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  errorState: css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: theme.colors.background.primary,
+    color: theme.colors.error.text,
+    padding: theme.spacing(2),
+    textAlign: 'center',
+  }),
+  warningBanner: css({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    background: theme.colors.warning.transparent,
+    borderBottom: `1px solid ${theme.colors.warning.border}`,
+    color: theme.colors.warning.text,
+    padding: theme.spacing(0.5, 1),
+    fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  panelRoot: css({
+    position: 'relative',
+  }),
+  emptyState: css({
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+    color: theme.colors.text.secondary,
+  }),
+  reactFlow: css({
+    background: theme.colors.background.canvas,
+  }),
+});

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Combobox, FieldSet, Input, InlineField, InlineFieldRow } from '@grafana/ui';
+import { Button, Combobox, FieldSet, Input, InlineField, InlineFieldRow, useStyles2 } from '@grafana/ui';
+import { getStyles } from './styles';
 import { QueryConfig, LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -99,6 +100,7 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
   onChange,
   context,
 }) => {
+  const styles = useStyles2(getStyles);
   const usedRefIds = new Set(value.map((q) => q.refId));
   const refIdOptions: Array<{ label: string; value: string }> = Array.from(
     new Set((context.data ?? []).map((f) => f.refId).filter((r): r is string => !!r))
@@ -134,8 +136,8 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '4px' }}>
-        <div style={{ flex: 1 }}>
+      <div className={styles.toolbar}>
+        <div className={styles.comboboxWrapper}>
           <Combobox
             options={selectOptions}
             value={index}
@@ -149,7 +151,7 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
       {query !== null ? (
         <QueryEditor query={query} refIdOptions={refIdOptions} usedRefIds={usedRefIds} update={update} />
       ) : (
-        <div style={{ padding: '8px 0', color: 'gray' }}>No query configs yet — click + to add one</div>
+        <div className={styles.emptyState}>No query configs yet — click + to add one</div>
       )}
     </>
   );

@@ -1,6 +1,8 @@
 import React, { useId } from 'react';
-import { Handle, NodeProps, Position } from '@xyflow/react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { useTheme2, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+import { Handle, NodeProps, Position } from '@xyflow/react';
 import { HealthStatus } from '../types';
 
 const HEALTH_INDICATOR_SIZE = 10;
@@ -10,47 +12,15 @@ export interface WeathermapNodeData {
   label: string;
   nodeWidth: number;
   nodeHeight: number;
-  theme: GrafanaTheme2;
   hasConfigError: boolean;
   healthStatus: HealthStatus;
   [key: string]: unknown;
 }
 
-const HANDLE_STYLE: React.CSSProperties = {
-  width: 0,
-  height: 0,
-  minWidth: 0,
-  minHeight: 0,
-  background: 'transparent',
-  border: 'none',
-  borderRadius: 0,
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-};
-
 export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
-  const { id, label, nodeWidth, nodeHeight, theme, hasConfigError, healthStatus } = data as WeathermapNodeData;
-  const t = theme as GrafanaTheme2;
-
-  const style: React.CSSProperties = {
-    width: nodeWidth,
-    height: nodeHeight,
-    background: t.colors.background.secondary,
-    border: `2px solid ${hasConfigError ? t.colors.warning.main : t.colors.border.medium}`,
-    borderRadius: t.shape.radius.default,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: t.typography.bodySmall.fontSize,
-    color: t.colors.text.primary,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    padding: '0 8px',
-    boxSizing: 'border-box',
-    position: 'relative',
-  };
+  const { id, label, nodeWidth, nodeHeight, hasConfigError, healthStatus } = data as WeathermapNodeData;
+  const t = useTheme2();
+  const styles = useStyles2(getStyles, nodeWidth, nodeHeight, hasConfigError);
 
   const r = HEALTH_INDICATOR_SIZE / 2;
   const cx = HEALTH_INDICATOR_SIZE;
@@ -69,9 +39,9 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
         ? t.colors.success.main
         : healthStatus === 'down'
           ? t.colors.error.main
-          : t.colors.secondary.text;
+          : t.colors.text.secondary;
 
-    const label = healthStatus === 'up' ? 'Up' : healthStatus === 'down' ? 'Down' : 'Unknown';
+    const healthLabel = healthStatus === 'up' ? 'Up' : healthStatus === 'down' ? 'Down' : 'Unknown';
 
     const labelId = healthIndicatorLabelId;
 
@@ -79,11 +49,11 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
       <svg
         width={HEALTH_INDICATOR_SIZE * 2}
         height={HEALTH_INDICATOR_SIZE * 2}
-        style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+        className={styles.healthIndicator}
         role="img"
         aria-labelledby={labelId}
       >
-        <title id={labelId}>Health: {label}</title>
+        <title id={labelId}>Health: {healthLabel}</title>
         <circle cx={cx} cy={cy} r={r} fill={healthStatus === 'up' ? color : "none"} stroke={color} strokeWidth={1.5} />
         {healthStatus === 'down' && (
           <line
@@ -101,12 +71,36 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
 
   return (
     <>
-      <Handle type="source" position={Position.Top} style={HANDLE_STYLE} />
-      <Handle type="target" position={Position.Top} style={HANDLE_STYLE} />
-      <div style={style} title={String(label)} data-testid={`iwm-node-${id}`}>
+      <Handle type="source" position={Position.Top} className={styles.handle} style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+      <Handle type="target" position={Position.Top} className={styles.handle} style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+      <div className={styles.node} title={String(label)} data-testid={`iwm-node-${id}`}>
         {healthIndicator()}
-        <span style={{ fontWeight: "bold" }}>{label}</span>
+        <span className={styles.label}>{label}</span>
       </div>
     </>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2, nodeWidth: number, nodeHeight: number, hasConfigError: boolean) => ({
+  handle: css({ width: 0, height: 0, minWidth: 0, minHeight: 0, background: 'transparent', border: 'none', borderRadius: 0, top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }),
+  node: css({
+    width: nodeWidth,
+    height: nodeHeight,
+    background: theme.colors.background.secondary,
+    border: `2px solid ${hasConfigError ? theme.colors.warning.main : theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.default,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.text.primary,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    padding: `0 ${theme.spacing(1)}`,
+    boxSizing: 'border-box',
+    position: 'relative',
+  }),
+  healthIndicator: css({ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }),
+  label: css({ fontWeight: 'bold' }),
+});

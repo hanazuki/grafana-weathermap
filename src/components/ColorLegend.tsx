@@ -1,5 +1,7 @@
 import React, { useId } from 'react';
-import { useTheme2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { ColorScale } from '../utils/color';
 
@@ -24,7 +26,7 @@ const BAR_HEIGHT = 160;
 const BAR_WIDTH = 16;
 
 export function ColorLegend({ colorScale, colorScaleMode, logScaleBase }: ColorLegendProps) {
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   const stops = Array.from({ length: 11 }, (_, i) => ({
     color: colorScale(i / 10),
@@ -37,72 +39,33 @@ export function ColorLegend({ colorScale, colorScaleMode, logScaleBase }: ColorL
 
   return (
     <div
-      style={{
-        position: 'absolute',
-        top: 8,
-        left: 8,
-        zIndex: 5,
-        display: 'flex',
-        alignItems: 'flex-start',
-        pointerEvents: 'none',
-        gap: 4,
-      }}
+      className={styles.container}
       role="figure"
       aria-label="Legend"
     >
       <div
-        style={{
-          position: 'relative',
-          width: theme.typography.bodySmall.fontSize,
-          height: BAR_HEIGHT,
-          flexShrink: 0,
-        }}
+        className={styles.axisLabel}
         id={titleId}
       >
-        <span
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%) rotate(-90deg)',
-            whiteSpace: 'nowrap',
-            fontSize: theme.typography.bodySmall.fontSize,
-            color: theme.colors.text.secondary,
-            lineHeight: 1,
-          }}
-        >
+        <span className={styles.axisLabelText}>
           Utilization (%)
         </span>
       </div>
       <div
-        style={{
-          width: BAR_WIDTH,
-          height: BAR_HEIGHT,
-          background: gradient,
-          backgroundOrigin: 'border-box',
-          border: `1px solid ${theme.colors.border.medium}`,
-          flexShrink: 0,
-        }}
+        className={styles.colorBar}
+        style={{ background: gradient }}
         role="img"
         aria-labelledby={titleId}
       />
-      <div style={{ height: BAR_HEIGHT }} role="list">
+      <div className={styles.tickList} role="list">
         {stops.map(({ pct }, i) => {
           const label = String(Math.round(pct));
           const pad = '\u2007'.repeat(Math.max(0, 3 - label.length));
           return (
             <span
               key={i}
-              style={{
-                position: 'absolute',
-                top: `${(pct / 100) * BAR_HEIGHT}px`,
-                transform: 'translateY(-50%)',
-                fontSize: theme.typography.bodySmall.fontSize,
-                fontVariantNumeric: 'tabular-nums',
-                color: theme.colors.text.secondary,
-                lineHeight: 1,
-                whiteSpace: 'pre',
-              }}
+              className={styles.tick}
+              style={{ top: `${(pct / 100) * BAR_HEIGHT}px` }}
               role="listitem"
             >
               <span aria-hidden>{pad}</span>{label}
@@ -113,3 +76,52 @@ export function ColorLegend({ colorScale, colorScaleMode, logScaleBase }: ColorL
     </div>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css({
+    position: 'absolute',
+    top: theme.spacing(1),
+    left: theme.spacing(1),
+    zIndex: 5,
+    display: 'flex',
+    alignItems: 'flex-start',
+    pointerEvents: 'none',
+    gap: theme.spacing(0.5),
+  }),
+  axisLabel: css({
+    position: 'relative',
+    width: theme.typography.bodySmall.fontSize,
+    height: BAR_HEIGHT,
+    flexShrink: 0,
+  }),
+  axisLabelText: css({
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%) rotate(-90deg)',
+    whiteSpace: 'nowrap',
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.text.secondary,
+    lineHeight: 1,
+  }),
+  colorBar: css({
+    width: BAR_WIDTH,
+    height: BAR_HEIGHT,
+    backgroundOrigin: 'border-box',
+    border: `1px solid ${theme.colors.border.medium}`,
+    flexShrink: 0,
+  }),
+  tickList: css({
+    height: BAR_HEIGHT,
+    position: 'relative',
+  }),
+  tick: css({
+    position: 'absolute',
+    transform: 'translateY(-50%)',
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontVariantNumeric: 'tabular-nums',
+    color: theme.colors.text.secondary,
+    lineHeight: 1,
+    whiteSpace: 'pre',
+  }),
+});

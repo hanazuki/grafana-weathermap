@@ -1,5 +1,7 @@
 import React, { useId } from 'react';
-import { useTheme2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useTheme2, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { HealthStatus } from '../types';
 
 const BAR_HEIGHT = 12;
@@ -15,6 +17,7 @@ interface UptimeBarProps {
 
 export const UptimeBar: React.FC<UptimeBarProps> = ({ statuses, timestamps, panelFrom, panelTo, maxDataPoints }) => {
   const theme = useTheme2();
+  const styles = useStyles2(getStyles);
   const colorFor = (v: number): string =>
     v === PIXEL_DOWN
       ? theme.colors.error.main
@@ -63,7 +66,7 @@ export const UptimeBar: React.FC<UptimeBarProps> = ({ statuses, timestamps, pane
     preserveAspectRatio="none"
     width="100%"
     height={BAR_HEIGHT}
-    style={{ display: 'block' }}
+    className={styles.svg}
     role="img"
     aria-labelledby={titleId}
   >
@@ -72,3 +75,8 @@ export const UptimeBar: React.FC<UptimeBarProps> = ({ statuses, timestamps, pane
   </svg>
 
 };
+
+// The theme parameter is required by the useStyles2 signature but unused here.
+const getStyles = (_theme: GrafanaTheme2) => ({
+  svg: css({ display: 'block' }),
+});

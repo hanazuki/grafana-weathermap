@@ -1,7 +1,8 @@
 import React from 'react';
-import { FieldType, FieldSparkline, type Field } from '@grafana/data';
+import { GrafanaTheme2, FieldType, FieldSparkline, type Field } from '@grafana/data';
 import { type GraphFieldConfig } from '@grafana/schema';
-import { useTheme2, Sparkline } from '@grafana/ui';
+import { useTheme2, useStyles2, Sparkline } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { LinkConfig, NodeConfig } from '../types';
 import { TrafficStats } from '../utils/matching';
 import { formatBps } from '../utils/format';
@@ -63,65 +64,10 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
   inStats,
 }) => {
   const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   const srcName = sourceNode.name !== '' ? sourceNode.name : `#${sourceNode.id}`;
   const tgtName = targetNode.name !== '' ? targetNode.name : `#${targetNode.id}`;
-
-  const headerStyle: React.CSSProperties = {
-    padding: '8px 12px',
-    borderBottom: `1px solid ${theme.colors.border.weak}`,
-  };
-
-  const headerLineStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: 4,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    color: theme.colors.text.secondary,
-    flexShrink: 0,
-  };
-
-  const valueStyle: React.CSSProperties = {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  };
-
-  const endpointNameStyle: React.CSSProperties = {
-    fontWeight: 'bold',
-  };
-
-  const bodyStyle: React.CSSProperties = {
-    padding: '8px 12px',
-  };
-
-  const tableStyle: React.CSSProperties = {
-    width: '100%',
-    borderCollapse: 'collapse',
-  };
-
-  const thStyle: React.CSSProperties = {
-    color: theme.colors.text.secondary,
-    fontWeight: 'normal',
-    textAlign: 'center',
-  };
-
-  const tdStyle: React.CSSProperties = {
-    textAlign: 'right',
-    fontVariantNumeric: 'tabular-nums',
-  };
-
-  const tdLabelStyle: React.CSSProperties = {
-    color: theme.colors.text.secondary,
-    textAlign: 'left',
-  };
-
-  const bandwidthStyle: React.CSSProperties = {
-    marginTop: 6,
-    color: theme.colors.text.secondary,
-  };
 
   // Y-axis max is the link bandwidth; fall back to peak traffic if capacity is unset.
   const yMax = link.capacity > 0 ? link.capacity : Math.max(outStats?.peak ?? 0, inStats?.peak ?? 0);
@@ -143,56 +89,46 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
   const showChart = outSparkline != null || inSparkline != null;
 
   return (
-    <div
-      style={{
-        width: POPUP_WIDTH,
-        fontSize: theme.typography.bodySmall.fontSize,
-        color: theme.colors.text.primary,
-        background: theme.colors.background.secondary,
-        border: `1px solid ${theme.colors.border.medium}`,
-        borderRadius: theme.shape.radius.default,
-        overflow: 'hidden',
-      }}
-    >
+    <div className={styles.popup}>
       {/* Header: source and target with interfaces */}
-      <div style={headerStyle}>
-        <div style={headerLineStyle}>
-          <span style={labelStyle}>A:</span>
-          <span style={endpointNameStyle}>{srcName}</span>
-          <span style={valueStyle}>[{link.sourceInterface}]</span>
+      <div className={styles.header}>
+        <div className={styles.headerLine}>
+          <span className={styles.endpointLabel}>A:</span>
+          <span className={styles.endpointName}>{srcName}</span>
+          <span className={styles.endpointValue}>[{link.sourceInterface}]</span>
         </div>
-        <div style={headerLineStyle}>
-          <span style={labelStyle}>Z:</span>
-          <span style={endpointNameStyle}>{tgtName}</span>
-          <span style={valueStyle}>[{link.targetInterface}]</span>
+        <div className={styles.headerLine}>
+          <span className={styles.endpointLabel}>Z:</span>
+          <span className={styles.endpointName}>{tgtName}</span>
+          <span className={styles.endpointValue}>[{link.targetInterface}]</span>
         </div>
       </div>
 
       {/* Traffic values */}
-      <div style={bodyStyle}>
-        <table style={tableStyle}>
+      <div className={styles.body}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th />
-              <th style={thStyle}>A → Z</th>
-              <th style={thStyle}>Z → A</th>
+              <th className={styles.th}>A → Z</th>
+              <th className={styles.th}>Z → A</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <th style={tdLabelStyle}>Avg:</th>
-              <td style={tdStyle}>{fmtStat(outStats?.avg)}</td>
-              <td style={tdStyle}>{fmtStat(inStats?.avg)}</td>
+              <th className={styles.tdLabel}>Avg:</th>
+              <td className={styles.td}>{fmtStat(outStats?.avg)}</td>
+              <td className={styles.td}>{fmtStat(inStats?.avg)}</td>
             </tr>
             <tr>
-              <th style={tdLabelStyle}>Peak:</th>
-              <td style={tdStyle}>{fmtStat(outStats?.peak)}</td>
-              <td style={tdStyle}>{fmtStat(inStats?.peak)}</td>
+              <th className={styles.tdLabel}>Peak:</th>
+              <td className={styles.td}>{fmtStat(outStats?.peak)}</td>
+              <td className={styles.td}>{fmtStat(inStats?.peak)}</td>
             </tr>
             <tr>
-              <th style={tdLabelStyle}>Latest:</th>
-              <td style={tdStyle}>{fmtStat(outStats?.latest)}</td>
-              <td style={tdStyle}>{fmtStat(inStats?.latest)}</td>
+              <th className={styles.tdLabel}>Latest:</th>
+              <td className={styles.td}>{fmtStat(outStats?.latest)}</td>
+              <td className={styles.td}>{fmtStat(inStats?.latest)}</td>
             </tr>
           </tbody>
         </table>
@@ -200,9 +136,9 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
 
       {/* Mini chart: two overlaid Sparklines on a shared Y-axis */}
       {showChart && (
-        <div style={{ padding: `0 ${CHART_PADDING_H}px 8px` }}>
-          <div style={bandwidthStyle}>Bandwidth: {link.capacity > 0 ? formatBps(link.capacity) : DASH}</div>
-          <div style={{ position: 'relative', height: CHART_HEIGHT }}>
+        <div className={styles.chartWrapper}>
+          <div className={styles.bandwidth}>Bandwidth: {link.capacity > 0 ? formatBps(link.capacity) : DASH}</div>
+          <div className={styles.chartInner}>
             {/* Egress (A→Z) sparkline */}
             <Sparkline
               theme={theme}
@@ -211,7 +147,7 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
               sparkline={outSparkline ?? emptySparkline}
             />
             {/* Ingress (Z→A) sparkline overlaid */}
-            <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+            <div className={styles.sparklineOverlay}>
               <Sparkline
                 theme={theme}
                 width={CHART_WIDTH}
@@ -223,7 +159,7 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
             <svg
               width={CHART_WIDTH}
               height={CHART_HEIGHT}
-              style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+              className={styles.svgOverlay}
             >
               {/* Y-axis */}
               <line x1={0.5} y1={0.5} x2={5.5} y2={0.5} stroke={theme.colors.text.primary} strokeWidth={1} />
@@ -234,20 +170,13 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
           </div>
 
           {/* Chart legend */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              marginTop: 4,
-              fontSize: theme.typography.bodySmall.fontSize,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 16, height: 2, background: CHART_LINE_OUT, flexShrink: 0 }} role="img" />
+          <div className={styles.legendRow}>
+            <div className={styles.legendItem}>
+              <div className={styles.swatchOut} role="img" />
               <span>A → Z</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 16, height: 2, background: `repeating-linear-gradient(to right, ${CHART_LINE_IN} 0, ${CHART_LINE_IN} 6px, transparent 6px, transparent 10px)`, flexShrink: 0 }} role="img" />
+            <div className={styles.legendItem}>
+              <div className={styles.swatchIn} role="img" />
               <span>Z → A</span>
             </div>
           </div>
@@ -256,3 +185,102 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
     </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  popup: css({
+    width: POPUP_WIDTH,
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.text.primary,
+    background: theme.colors.background.secondary,
+    border: `1px solid ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.default,
+    overflow: 'hidden',
+  }),
+  header: css({
+    padding: theme.spacing(1, 1.5),
+    borderBottom: `1px solid ${theme.colors.border.weak}`,
+  }),
+  headerLine: css({
+    display: 'flex',
+    gap: theme.spacing(0.5),
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+  }),
+  endpointLabel: css({
+    color: theme.colors.text.secondary,
+    flexShrink: 0,
+  }),
+  endpointValue: css({
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  }),
+  endpointName: css({
+    fontWeight: 'bold',
+  }),
+  body: css({
+    padding: theme.spacing(1, 1.5),
+  }),
+  table: css({
+    width: '100%',
+    borderCollapse: 'collapse',
+  }),
+  th: css({
+    color: theme.colors.text.secondary,
+    fontWeight: 'normal',
+    textAlign: 'center',
+  }),
+  td: css({
+    textAlign: 'right',
+    fontVariantNumeric: 'tabular-nums',
+  }),
+  tdLabel: css({
+    color: theme.colors.text.secondary,
+    textAlign: 'left',
+  }),
+  bandwidth: css({
+    marginTop: theme.spacing(0.75),
+    color: theme.colors.text.secondary,
+  }),
+  chartWrapper: css({
+    padding: `0 ${CHART_PADDING_H}px ${theme.spacing(1)}`,
+  }),
+  chartInner: css({
+    position: 'relative',
+    height: CHART_HEIGHT,
+  }),
+  sparklineOverlay: css({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    pointerEvents: 'none',
+  }),
+  svgOverlay: css({
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    pointerEvents: 'none',
+  }),
+  legendRow: css({
+    display: 'flex',
+    gap: theme.spacing(1.5),
+    marginTop: theme.spacing(0.5),
+    fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  legendItem: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+  }),
+  swatchOut: css({
+    width: 16,
+    height: 2,
+    background: CHART_LINE_OUT,
+    flexShrink: 0,
+  }),
+  swatchIn: css({
+    width: 16,
+    height: 2,
+    background: `repeating-linear-gradient(to right, ${CHART_LINE_IN} 0, ${CHART_LINE_IN} 6px, transparent 6px, transparent 10px)`,
+    flexShrink: 0,
+  }),
+});

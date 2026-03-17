@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Combobox, Input, InlineField, InlineFieldRow, FieldSet } from '@grafana/ui';
+import { Button, Combobox, Input, InlineField, InlineFieldRow, FieldSet, useStyles2 } from '@grafana/ui';
+import { getStyles } from './styles';
 import { NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -70,6 +71,7 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, We
   onChange,
   context,
 }) => {
+  const styles = useStyles2(getStyles);
   const queries: QueryConfig[] = context.options?.queries ?? [];
   const [index, setIndex] = useState<number | null>(value.length > 0 ? 0 : null);
 
@@ -98,8 +100,8 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, We
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '4px' }}>
-        <div style={{ flex: 1 }}>
+      <div className={styles.toolbar}>
+        <div className={styles.comboboxWrapper}>
           <Combobox
             options={selectOptions}
             value={index}
@@ -113,7 +115,7 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, We
       {node !== null ? (
         <NodeEditor node={node} queries={queries} update={update} />
       ) : (
-        <div style={{ padding: '8px 0', color: 'gray' }}>No nodes yet — click + to add one</div>
+        <div className={styles.emptyState}>No nodes yet — click + to add one</div>
       )}
     </>
   );

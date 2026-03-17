@@ -1,5 +1,7 @@
 import React from 'react';
-import { PanelData } from '@grafana/data';
+import { GrafanaTheme2, PanelData } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { useViewport } from '@xyflow/react';
 
 import { WeathermapOptions, NodeConfig, LinkConfig, HealthStatus } from '../types';
@@ -70,6 +72,7 @@ function resolveLinkTraffic(
 
 export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data }) => {
   const { state } = usePopup();
+  const styles = useStyles2(getStyles);
 
   const activeTarget = state.pinned ?? state.preview;
 
@@ -120,13 +123,11 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
 
   return (
     <div
+      className={styles.popup}
       style={{
-        position: 'absolute',
         left: anchorPos.x,
         top: anchorPos.y,
         transform: `translate(-50%, ${translateY})`,
-        pointerEvents: 'none',
-        zIndex: 100,
       }}
     >
       {node != null && (
@@ -151,3 +152,11 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
     </div>
   );
 };
+
+const getStyles = (_theme: GrafanaTheme2) => ({
+  popup: css({
+    position: 'absolute',
+    pointerEvents: 'none',
+    zIndex: 100,
+  }),
+});
