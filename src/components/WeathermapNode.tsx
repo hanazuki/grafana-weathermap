@@ -25,10 +25,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
   const styles = useStyles2(getStyles, nodeWidth, nodeHeight, hasConfigError);
   const theme = useTheme2();
   const connection = useConnection();
-  const isDropTarget = connection.inProgress && connection.toNode?.id === String(id);
-  // Raise the full-node target handle to the top only while a connection drag is in progress
-  // from another node, so elementFromPoint() finds it anywhere on the node rectangle.
-  const isDropEligible = connection.inProgress && connection.fromNode?.id !== String(id);
+  const isDropTarget = connection.inProgress && connection.isValid && connection.toNode?.id === String(id);
 
   const gripColor = hasConfigError ? theme.colors.warning.main : theme.colors.border.medium;
 
@@ -38,7 +35,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
         type="target"
         position={Position.Left}
         id="connect-target"
-        className={cx(styles.connectTarget, isDropEligible && styles.connectTargetActive)}
+        className={cx(styles.connectTarget, connection.inProgress && styles.connectTargetActive)}
       />
       <div className={cx('iwm-move-zone', styles.moveZone)}>
         <svg width={MOVE_ZONE_WIDTH} height={nodeHeight} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
