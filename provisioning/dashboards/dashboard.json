@@ -114,7 +114,7 @@
         }
       ],
       "title": "Network Weathermap",
-      "type": "hanazuki-interactiveweathermap-panel"
+      "type": "hanazuki-weathermap-panel"
     }
   ],
   "refresh": "30s",
