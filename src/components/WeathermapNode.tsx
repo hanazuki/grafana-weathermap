@@ -84,6 +84,8 @@ const getStyles = (theme: GrafanaTheme2, nodeWidth: number, nodeHeight: number, 
     '&&': {
       width: 0,
       height: 0,
+      minWidth: 0,
+      minHeight: 0,
       background: 'transparent',
       border: 'none',
       borderRadius: 0,
