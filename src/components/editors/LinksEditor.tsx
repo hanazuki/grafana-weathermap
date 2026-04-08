@@ -39,8 +39,8 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
         <InlineField label="A node" grow>
           <Combobox
             options={nodeOpts}
-            value={link.aNode}
-            onChange={(opt) => update({ aNode: opt.value })}
+            value={link.aNodeId}
+            onChange={(opt) => update({ aNodeId: opt.value })}
             data-testid="iwm-editor-link-anode"
           />
         </InlineField>
@@ -58,8 +58,8 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
         <InlineField label="Z node" grow>
           <Combobox
             options={nodeOpts}
-            value={link.zNode}
-            onChange={(opt) => update({ zNode: opt.value })}
+            value={link.zNodeId}
+            onChange={(opt) => update({ zNodeId: opt.value })}
             data-testid="iwm-editor-link-znode"
           />
         </InlineField>
@@ -137,8 +137,8 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
       ...value,
       {
         id: nextId(value),
-        aNode: nodes[0]?.id ?? 0,
-        zNode: nodes[1]?.id ?? 0,
+        aNodeId: nodes[0]?.id ?? 0,
+        zNodeId: nodes[1]?.id ?? 0,
         aInterface: '',
         zInterface: '',
         capacity: 1_000_000_000,
@@ -163,8 +163,8 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
 
   const selectOptions = value
     .map((l, idx) => {
-      const aName = nodeName(nodes, l.aNode);
-      const zName = nodeName(nodes, l.zNode);
+      const aName = nodeName(nodes, l.aNodeId);
+      const zName = nodeName(nodes, l.zNodeId);
       return { label: `${aName} → ${zName} (#${l.id})`, value: idx };
     })
     .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));

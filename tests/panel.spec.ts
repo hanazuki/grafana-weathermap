@@ -29,7 +29,7 @@ test('Add nodes and edges', async ({
   await expect(page.getByTestId('iwm-node-2')).toHaveText('node-1');
   await expect(page.getByTestId('iwm-node-3')).toHaveText('node-2');
 
-  // Add edge node-0 → node-1 (defaults: aNode=nodes[0], zNode=nodes[1])
+  // Add edge node-0 → node-1 (defaults: aNodeId=nodes[0], zNodeId=nodes[1])
   await page.getByTestId('iwm-editor-link-add').click();
 
   // Add edge node-1 → node-2
@@ -68,7 +68,7 @@ test('parallel offset is symmetric for reversed edges', async ({
   await page.getByTestId('iwm-editor-node-y').fill('100');
 
   // Edge 1 (A→B, index 0): zero offset — serves as baseline.
-  // Defaults: aNode=nodes[0]=node-a, zNode=nodes[1]=node-b.
+  // Defaults: aNodeId=nodes[0]=node-a, zNodeId=nodes[1]=node-b.
   await page.getByTestId('iwm-editor-link-add').click();
 
   // Edge 2 (A→B, index 1): same direction, receives a non-zero offset.

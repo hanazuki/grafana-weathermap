@@ -42,8 +42,8 @@ function resolveLinkTraffic(
   nodeMap: Map<number, NodeConfig>
 ): { atozTraffic: TimeSeries<number> | null; ztoaTraffic: TimeSeries<number> | null } {
   const queries = options.queries ?? [];
-  const aNode = nodeMap.get(link.aNode);
-  const zNode = nodeMap.get(link.zNode);
+  const aNode = nodeMap.get(link.aNodeId);
+  const zNode = nodeMap.get(link.zNodeId);
 
   let atozTraffic: TimeSeries<number> | null = null;
   let ztoaTraffic: TimeSeries<number> | null = null;
@@ -119,8 +119,8 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
     return null;
   }
 
-  const aNode = link != null ? nodeMap.get(link.aNode) : undefined;
-  const zNode = link != null ? nodeMap.get(link.zNode) : undefined;
+  const aNode = link != null ? nodeMap.get(link.aNodeId) : undefined;
+  const zNode = link != null ? nodeMap.get(link.zNodeId) : undefined;
 
   return (
     <div

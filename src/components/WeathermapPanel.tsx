@@ -121,8 +121,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
 
   // Human-readable link label for warning banner
   const linkLabel = (link: (typeof links)[number]): string => {
-    const aName = nodeMap.get(link.aNode)?.name ?? `#${link.aNode}`;
-    const zName = nodeMap.get(link.zNode)?.name ?? `#${link.zNode}`;
+    const aName = nodeMap.get(link.aNodeId)?.name ?? `#${link.aNodeId}`;
+    const zName = nodeMap.get(link.zNodeId)?.name ?? `#${link.zNodeId}`;
     return `${aName} → ${zName} (#${link.id})`;
   };
 
@@ -288,8 +288,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       const maxId = existingLinks.reduce((max, l) => Math.max(max, l.id), 0);
       const newLink: LinkConfig = {
         id: maxId + 1,
-        aNode: Number(connection.source),
-        zNode: Number(connection.target),
+        aNodeId: Number(connection.source),
+        zNodeId: Number(connection.target),
         aInterface: '',
         zInterface: '',
         capacity: 0,
@@ -328,8 +328,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     const pairCount = new Map<string, number>();
     const offsets = new Map<number, number>();
     for (const link of links) {
-      const a = Math.min(link.aNode, link.zNode);
-      const b = Math.max(link.aNode, link.zNode);
+      const a = Math.min(link.aNodeId, link.zNodeId);
+      const b = Math.max(link.aNodeId, link.zNodeId);
       const key = `${a}\0${b}`;
       const idx = pairCount.get(key) ?? 0;
       offsets.set(link.id, getLinkOffset(idx));
@@ -378,13 +378,13 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   // Build React Flow edges
   const rfEdges: Edge[] = useMemo(() => {
     return links
-      .filter((link) => nodeMap.has(link.aNode) && nodeMap.has(link.zNode)) // skip orphaned links
+      .filter((link) => nodeMap.has(link.aNodeId) && nodeMap.has(link.zNodeId)) // skip orphaned links
       .map((link) => {
-        const aNode = nodeMap.get(link.aNode)!;
-        const zNode = nodeMap.get(link.zNode)!;
+        const aNode = nodeMap.get(link.aNodeId)!;
+        const zNode = nodeMap.get(link.zNodeId)!;
 
         const hasInvalidQuery = linksWithInvalidQuery.has(link.id);
-        const offsetPx = (linkOffsets.get(link.id) ?? 0) * linkParallelOffset * (link.aNode < link.zNode ? 1 : -1);
+        const offsetPx = (linkOffsets.get(link.id) ?? 0) * linkParallelOffset * (link.aNodeId < link.zNodeId ? 1 : -1);
 
         let atozColor = GRAY_COLOR;
         let ztoaColor = GRAY_COLOR;
@@ -423,8 +423,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
 
         return {
           id: String(link.id),
-          source: String(link.aNode),
-          target: String(link.zNode),
+          source: String(link.aNodeId),
+          target: String(link.zNodeId),
           type: 'weathermapEdge',
           data: {
             atozColor,

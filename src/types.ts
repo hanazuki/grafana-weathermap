@@ -52,9 +52,9 @@ export interface NodeConfig {
 
 export interface LinkConfig {
   id: number;             // internal auto-incremented integer (≥1); never shown to users
-  aNode: number;          // A node's internal ID
+  aNodeId: number;        // A node's internal ID
   aInterface: string;
-  zNode: number;          // Z node's internal ID
+  zNodeId: number;        // Z node's internal ID
   zInterface: string;
   capacity: number;       // bps, denominator for utilization coloring
   atozQueryId?: number;    // query internal ID for A-to-Z traffic
