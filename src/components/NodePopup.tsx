@@ -2,7 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { NodeConfig, HealthStatus } from '../types';
+import { NodeConfig, HealthStatus, TimeSeries } from '../types';
 import { UptimeBar } from './UptimeBar';
 import { HealthIndicator } from './HealthIndicator';
 
@@ -10,9 +10,9 @@ const POPUP_WIDTH = 220;
 
 interface NodePopupProps {
   node: NodeConfig;
-  healthStatus: HealthStatus;
+  healthStatus: HealthStatus | null | undefined;
   /** Full health time series for the uptime bar; only shown when statusQueryId is set. */
-  healthTimeSeries?: { statuses: HealthStatus[]; timestamps: number[] };
+  healthTimeSeries?: TimeSeries<HealthStatus>;
   /** Panel time range and resolution for the uptime bar pixel-sweep algorithm. */
   panelFrom?: number;
   panelTo?: number;
@@ -40,22 +40,25 @@ export const NodePopup: React.FC<NodePopupProps> = ({
     <div className={styles.popup}>
       {/* Header: health icon + node name */}
       <div className={styles.header}>
-        <HealthIndicator healthStatus={healthStatus} className={styles.healthIcon} />
+        {healthStatus !== undefined ? <HealthIndicator healthStatus={healthStatus} className={styles.healthIcon} /> : null}
         <span className={styles.name}>
           {node.name !== '' ? node.name : `#${node.id}`}
         </span>
       </div>
 
       {/* Uptime bar: only when statusQueryId is configured */}
-      {showUptimeBar && (
-        <UptimeBar
-          statuses={healthTimeSeries!.statuses}
-          timestamps={healthTimeSeries!.timestamps}
-          panelFrom={panelFrom!}
-          panelTo={panelTo!}
-          maxDataPoints={maxDataPoints!}
-        />
-      )}
+      {showUptimeBar && (() => {
+        const { values, timestamps } = healthTimeSeries!.getValues();
+        return (
+          <UptimeBar
+            statuses={values}
+            timestamps={timestamps}
+            panelFrom={panelFrom!}
+            panelTo={panelTo!}
+            maxDataPoints={maxDataPoints!}
+          />
+        );
+      })()}
     </div>
   );
 };

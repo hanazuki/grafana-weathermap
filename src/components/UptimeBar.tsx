@@ -43,7 +43,7 @@ export const UptimeBar: React.FC<UptimeBarProps> = ({ statuses, timestamps, pane
       if (i < 0 || i >= N) {
         continue;
       }
-      const v = statuses[k] === 'down' ? PIXEL_DOWN : statuses[k] === 'up' ? PIXEL_UP : 0;
+      const v = statuses[k] === 'down' ? PIXEL_DOWN : PIXEL_UP;
       pixelValues[i] = Math.max(pixelValues[i], v);
     }
 

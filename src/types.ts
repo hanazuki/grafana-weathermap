@@ -33,8 +33,14 @@ export interface NodeHealthQueryConfig {
   instanceLabelKey: string;  // e.g., "host", "instance"
 }
 
-// null = no statusQueryId configured on the node; indicator is hidden
-export type HealthStatus = 'up' | 'down' | 'unavailable' | null;
+// null (at use sites) = health series is configured but has no current data → gray indicator
+// undefined (at use sites) = no health series configured → indicator not rendered
+export type HealthStatus = 'up' | 'down';
+
+export interface TimeSeries<T> {
+  getLatestValue(): { value: T; timestamp: number } | null;
+  getValues(): { values: T[]; timestamps: number[] };
+}
 
 export interface NodeConfig {
   id: number;   // internal auto-incremented integer (≥1); never shown to users; immutable once created

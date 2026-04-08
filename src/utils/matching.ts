@@ -1,123 +1,58 @@
-import { PanelData, FieldType, type Field } from '@grafana/data';
-import { LinkTrafficQueryConfig, NodeHealthQueryConfig, HealthStatus } from '../types';
+import { PanelData, FieldType, getTimeField, type Field } from '@grafana/data';
+import { LinkTrafficQueryConfig, NodeHealthQueryConfig, HealthStatus, TimeSeries } from '../types';
 
-export interface MatchResult {
-  /** The last numeric value of the matched series, or null if the series has no data. */
-  value: number | null;
-  /** True if a matching series was found (even if it has no data points). */
-  found: boolean;
+function makeTimeSeries<T>(
+  field: Field,
+  timeField: Field,
+  decode: (v: unknown) => T | null
+): TimeSeries<T> {
+  return {
+    getLatestValue() {
+      const len = field.values.length;
+      if (len === 0) {
+        return null;
+      }
+      const value = decode(field.values[len - 1]);
+      if (value === null) {
+        return null;
+      }
+      return { value, timestamp: timeField.values[len - 1] as number };
+    },
+    getValues() {
+      const values: T[] = [];
+      const timestamps: number[] = [];
+      for (let i = 0; i < field.values.length; i++) {
+        const value = decode(field.values[i]);
+        if (value !== null) {
+          values.push(value);
+          timestamps.push(timeField.values[i] as number);
+        }
+      }
+      return { values, timestamps };
+    },
+  };
 }
 
 /**
- * Find the time series matching a given instance + interface combination.
+ * Find the traffic time series for a link instance + interface combination.
  *
  * Frames are filtered by queryConfig.refId. Labels are checked on numeric fields.
  * Matching is exact string comparison (case-sensitive, no normalization).
- * Returns { found: false } when no series matches; no fallback to the other side.
+ * Returns null when no matching series is found.
  */
-export function findTrafficSeries(
+export function findTrafficTimeSeries(
   data: PanelData,
   queryConfig: LinkTrafficQueryConfig,
   instance: string,
   iface: string
-): MatchResult {
+): TimeSeries<number> | null {
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {
       continue;
     }
 
-    for (const field of frame.fields) {
-      if (field.type !== 'number') {
-        continue;
-      }
-
-      const labels = field.labels ?? {};
-      if (labels[queryConfig.instanceLabelKey] === instance && labels[queryConfig.interfaceLabelKey] === iface) {
-        const len = field.values.length;
-        if (len === 0) {
-          return { value: null, found: true };
-        }
-        const lastValue = field.values[len - 1];
-        const numeric = typeof lastValue === 'number' && isFinite(lastValue) ? lastValue : null;
-        return { value: numeric, found: true };
-      }
-    }
-  }
-
-  return { value: null, found: false };
-}
-
-/**
- * Find the time series matching a given node instance for health status.
- *
- * Frames are filtered by queryConfig.refId. Labels are checked on numeric fields.
- * Matching is exact string comparison (case-sensitive, no normalization).
- * Returns the last value in the matched series, or null if no series matches or has no data.
- *
- * The returned value is interpreted as: 1 → 'up', 0 → 'down', anything else → 'unavailable'.
- */
-export function findHealthSeries(
-  data: PanelData,
-  queryConfig: NodeHealthQueryConfig,
-  nodeName: string
-): HealthStatus {
-  for (const frame of data.series) {
-    if (frame.refId !== queryConfig.refId) {
-      continue;
-    }
-
-    for (const field of frame.fields) {
-      if (field.type !== 'number') {
-        continue;
-      }
-
-      const labels = field.labels ?? {};
-      if (labels[queryConfig.instanceLabelKey] === nodeName) {
-        const len = field.values.length;
-        if (len === 0) {
-          return 'unavailable';
-        }
-        const lastValue = field.values[len - 1];
-        if (typeof lastValue === 'number' && isFinite(lastValue)) {
-          return lastValue > 0 ? 'up' : 'down';
-        }
-        return 'unavailable';
-      }
-    }
-  }
-
-  return 'unavailable';
-}
-
-export interface TrafficStats {
-  avg: number;
-  peak: number;
-  latest: number;
-  /** Raw numeric field from the matched series, suitable for use in a Sparkline. */
-  yField: Field<number>;
-  /** Time field from the matched frame (or null if absent). */
-  xField: Field<number> | null;
-}
-
-/**
- * Find avg/peak/latest statistics and the raw time series for a traffic series matching
- * instance + interface.
- *
- * Returns null when no matching series is found or it has no finite values.
- * The yField and xField on the result are usable directly in @grafana/ui Sparkline.
- */
-export function findTrafficSeriesStats(
-  data: PanelData,
-  queryConfig: LinkTrafficQueryConfig,
-  instance: string,
-  iface: string
-): TrafficStats | null {
-  for (const frame of data.series) {
-    if (frame.refId !== queryConfig.refId) {
-      continue;
-    }
-
-    const timeField = frame.fields.find((f) => f.type === FieldType.time) ?? null;
+    const { timeField } = getTimeField(frame);
+    if (!timeField) { return null; }
 
     for (const field of frame.fields) {
       if (field.type !== FieldType.number) {
@@ -125,68 +60,40 @@ export function findTrafficSeriesStats(
       }
 
       const labels = field.labels ?? {};
-      if (labels[queryConfig.instanceLabelKey] !== instance || labels[queryConfig.interfaceLabelKey] !== iface) {
-        continue;
+      if (labels[queryConfig.instanceLabelKey] === instance && labels[queryConfig.interfaceLabelKey] === iface) {
+        return makeTimeSeries(field, timeField, v => Number.isFinite(v) ? v as number : null);
       }
-
-      // Collect finite values for stats; treat non-finite as NaN in the raw series.
-      const finiteValues: number[] = [];
-      for (let i = 0; i < field.values.length; i++) {
-        const v = field.values[i];
-        if (typeof v === 'number' && isFinite(v)) {
-          finiteValues.push(v);
-        }
-      }
-
-      if (finiteValues.length === 0) {
-        return null;
-      }
-
-      let sum = 0;
-      let peak = -Infinity;
-      for (const v of finiteValues) {
-        sum += v;
-        if (v > peak) {
-          peak = v;
-        }
-      }
-
-      return {
-        avg: sum / finiteValues.length,
-        peak,
-        latest: finiteValues[finiteValues.length - 1],
-        yField: field as Field<number>,
-        xField: timeField as Field<number> | null,
-      };
     }
   }
 
   return null;
 }
 
-export interface HealthTimeSeries {
-  statuses: HealthStatus[];
-  timestamps: number[]; // ms epoch, same length as statuses
+function decodeHealthValue(v: unknown): HealthStatus | null {
+  return typeof v === 'number' && isFinite(v) ? (v > 0 ? 'up' : 'down') : null;
 }
 
+
 /**
- * Extract the full health time series for a node.
+ * Find the health time series for a node instance.
  *
- * Returns parallel arrays of HealthStatus values and timestamps (ms).
- * Returns empty arrays when no matching series is found.
- * Values are encoded the same as findHealthSeries: >0 → 'up', 0 → 'down', else → 'unavailable'.
+ * Frames are filtered by queryConfig.refId. Labels are checked on numeric fields.
+ * Matching is exact string comparison (case-sensitive, no normalization).
+ * Returns null when no matching series is found.
+ * Values are decoded as: >0 → 'up', 0 → 'down', non-finite → omitted.
  */
 export function findHealthTimeSeries(
   data: PanelData,
   queryConfig: NodeHealthQueryConfig,
   nodeName: string
-): HealthTimeSeries {
+): TimeSeries<HealthStatus> | null {
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {
       continue;
     }
 
-    const timeField = frame.fields.find((f) => f.type === FieldType.time);
+    const { timeField } = getTimeField(frame);
+    if (!timeField) { return null; }
 
     for (const field of frame.fields) {
       if (field.type !== FieldType.number) {
@@ -198,25 +105,9 @@ export function findHealthTimeSeries(
         continue;
       }
 
-      const len = field.values.length;
-      const statuses: HealthStatus[] = [];
-      const timestamps: number[] = [];
-
-      for (let i = 0; i < len; i++) {
-        const v = field.values[i];
-        let status: HealthStatus;
-        if (typeof v === 'number' && isFinite(v)) {
-          status = v > 0 ? 'up' : 'down';
-        } else {
-          status = 'unavailable';
-        }
-        statuses.push(status);
-        timestamps.push(timeField != null ? (timeField.values[i] as number) : i);
-      }
-
-      return { statuses, timestamps };
+      return makeTimeSeries(field, timeField, decodeHealthValue);
     }
   }
 
-  return { statuses: [], timestamps: [] };
+  return null;
 }
