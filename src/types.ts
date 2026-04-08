@@ -52,13 +52,13 @@ export interface NodeConfig {
 
 export interface LinkConfig {
   id: number;             // internal auto-incremented integer (≥1); never shown to users
-  source: number;         // source node's internal ID
-  target: number;         // target node's internal ID
-  sourceInterface: string;
-  targetInterface: string;
+  aNode: number;          // A node's internal ID
+  aInterface: string;
+  zNode: number;          // Z node's internal ID
+  zInterface: string;
   capacity: number;       // bps, denominator for utilization coloring
-  inQueryId?: number;     // query internal ID for ingress (target→source) traffic
-  inReversed?: boolean;
-  outQueryId?: number;    // query internal ID for egress (source→target) traffic
-  outReversed?: boolean;
+  atozQueryId?: number;    // query internal ID for A-to-Z traffic
+  atozReversed?: boolean;
+  ztoaQueryId?: number;     // query internal ID for Z-to-A traffic
+  ztoaReversed?: boolean;
 }

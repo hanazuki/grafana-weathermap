@@ -1,15 +1,14 @@
 import React, { useId } from 'react';
 import { EdgeProps } from '@xyflow/react';
-import { GRAY_COLOR } from '../utils/color';
 
 const BORDER_WIDTH = 0.5;
 
 export interface WeathermapEdgeData {
-  outColor: string;
-  inColor: string;
-  outSpeed: string | null;
-  inSpeed: string | null;
-  /** Perpendicular offset in pixels (positive = right of source→target vector). */
+  atozColor: string;
+  ztoaColor: string;
+  atozSpeed: string | null;
+  ztoaSpeed: string | null;
+  /** Perpendicular offset in pixels (positive = right of A→Z vector). */
   offsetPx: number;
   hasConfigError: boolean;
   labelBgColor: string;
@@ -53,7 +52,7 @@ const PencilTip: React.FC<PencilTipProps> = ({ color, borderColor, strokeWidth, 
 };
 
 interface ArrowProps {
-  /** Distance from tip (midpoint) to the far end (source or target). */
+  /** Distance from tip (midpoint) to the far end (A or Z node). */
   len: number;
   /** Rotation angle in degrees: direction from far end toward tip. */
   angleDeg: number;
@@ -83,10 +82,10 @@ const Arrow: React.FC<ArrowProps> = ({
 
 export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targetX, targetY, data }) => {
   const {
-    outColor = GRAY_COLOR,
-    inColor = GRAY_COLOR,
-    outSpeed = null,
-    inSpeed = null,
+    atozColor,
+    ztoaColor,
+    atozSpeed,
+    ztoaSpeed,
     offsetPx = 0,
     labelBgColor = 'transparent',
     strokeWidth = 4,
@@ -117,8 +116,8 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
 
   const lshift = (color: string) =>
     `light-dark(oklch(from ${color} calc(l - 0.3) c h), oklch(from ${color} calc(l + 0.3) c h))`;
-  const outBorderColor = lshift(outColor);
-  const inBorderColor = lshift(inColor);
+  const outBorderColor = lshift(atozColor);
+  const inBorderColor = lshift(ztoaColor);
 
   // Text flip: when the arrow points leftward the rotated text is upside-down.
   // The out-arrow points at angleDeg; the in-arrow points the opposite way.
@@ -146,16 +145,16 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
       </defs>
 
       <g transform={`translate(${ox}, ${oy})`}>
-        {/* Source half-arrow: source → midpoint (out-traffic) */}
+        {/* A half-arrow: A node → midpoint (A→Z traffic) */}
         <Arrow len={halfLen} angleDeg={angleDeg} tipX={mx} tipY={my}
-          color={outColor} borderColor={outBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
-          {outSpeed && label(outSpeed, outColor, outNeedsFlip)}
+          color={atozColor} borderColor={outBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
+          {atozSpeed && label(atozSpeed, atozColor, outNeedsFlip)}
         </Arrow>
 
-        {/* Target half-arrow: target → midpoint (in-traffic) */}
+        {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
         <Arrow len={halfLen} angleDeg={angleDeg + 180} tipX={mx} tipY={my}
-          color={inColor} borderColor={inBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
-          {inSpeed && label(inSpeed, inColor, inNeedsFlip)}
+          color={ztoaColor} borderColor={inBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
+          {ztoaSpeed && label(ztoaSpeed, ztoaColor, inNeedsFlip)}
         </Arrow>
       </g>
     </g>

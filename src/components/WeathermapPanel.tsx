@@ -111,19 +111,19 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const linksWithInvalidQuery = useMemo(() => {
     const bad = new Set<number>();
     for (const link of links) {
-      if ((link.inQueryId != null && !queryMap.has(link.inQueryId)) ||
-        (link.outQueryId != null && !queryMap.has(link.outQueryId))) {
+      if ((link.ztoaQueryId != null && !queryMap.has(link.ztoaQueryId)) ||
+        (link.atozQueryId != null && !queryMap.has(link.atozQueryId))) {
         bad.add(link.id);
       }
     }
     return bad;
   }, [links, queryMap]);
 
-  // Human-readable link label for warning banner: "Source name → Target name (#id)"
+  // Human-readable link label for warning banner
   const linkLabel = (link: (typeof links)[number]): string => {
-    const srcName = nodeMap.get(link.source)?.name ?? `#${link.source}`;
-    const tgtName = nodeMap.get(link.target)?.name ?? `#${link.target}`;
-    return `${srcName} → ${tgtName} (#${link.id})`;
+    const aName = nodeMap.get(link.aNode)?.name ?? `#${link.aNode}`;
+    const zName = nodeMap.get(link.zNode)?.name ?? `#${link.zNode}`;
+    return `${aName} → ${zName} (#${link.id})`;
   };
 
   // Update cursor position (panel-relative) on mouse move
@@ -284,16 +284,14 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   // Create a new link when a connection is dropped on a target node
   const onConnect = useCallback(
     (connection: Connection) => {
-      const sourceId = Number(connection.source);
-      const targetId = Number(connection.target);
       const existingLinks = options.links ?? [];
       const maxId = existingLinks.reduce((max, l) => Math.max(max, l.id), 0);
       const newLink: LinkConfig = {
         id: maxId + 1,
-        source: sourceId,
-        target: targetId,
-        sourceInterface: '',
-        targetInterface: '',
+        aNode: Number(connection.source),
+        zNode: Number(connection.target),
+        aInterface: '',
+        zInterface: '',
         capacity: 0,
       };
       onOptionsChange({ ...options, links: [...existingLinks, newLink] });
@@ -330,8 +328,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     const pairCount = new Map<string, number>();
     const offsets = new Map<number, number>();
     for (const link of links) {
-      const a = Math.min(link.source, link.target);
-      const b = Math.max(link.source, link.target);
+      const a = Math.min(link.aNode, link.zNode);
+      const b = Math.max(link.aNode, link.zNode);
       const key = `${a}\0${b}`;
       const idx = pairCount.get(key) ?? 0;
       offsets.set(link.id, getLinkOffset(idx));
@@ -380,45 +378,44 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   // Build React Flow edges
   const rfEdges: Edge[] = useMemo(() => {
     return links
-      .filter((link) => nodeMap.has(link.source) && nodeMap.has(link.target)) // skip orphaned links
+      .filter((link) => nodeMap.has(link.aNode) && nodeMap.has(link.zNode)) // skip orphaned links
       .map((link) => {
-        const hasInvalidQuery = linksWithInvalidQuery.has(link.id);
-        const offsetPx = (linkOffsets.get(link.id) ?? 0) * linkParallelOffset * (link.source < link.target ? 1 : -1);
+        const aNode = nodeMap.get(link.aNode)!;
+        const zNode = nodeMap.get(link.zNode)!;
 
-        let outColor = GRAY_COLOR;
-        let inColor = GRAY_COLOR;
-        let outSpeed: string | null = null;
-        let inSpeed: string | null = null;
+        const hasInvalidQuery = linksWithInvalidQuery.has(link.id);
+        const offsetPx = (linkOffsets.get(link.id) ?? 0) * linkParallelOffset * (link.aNode < link.zNode ? 1 : -1);
+
+        let atozColor = GRAY_COLOR;
+        let ztoaColor = GRAY_COLOR;
+        let atozSpeed: string | null = null;
+        let ztoaSpeed: string | null = null;
 
         if (!hasInvalidQuery) {
-          // Out-traffic: source half-arrow (source→midpoint)
-          if (link.outQueryId != null) {
-            const qc = queryMap.get(link.outQueryId);
+          // A→Z traffic: A half-arrow (A node → midpoint)
+          if (link.atozQueryId != null) {
+            const qc = queryMap.get(link.atozQueryId);
             if (qc && qc.type === 'linkTraffic') {
-              const srcNode = nodeMap.get(link.source)!;
-              const tgtNode = nodeMap.get(link.target)!;
-              const instance = link.outReversed ? tgtNode.name : srcNode.name;
-              const iface = link.outReversed ? link.targetInterface : link.sourceInterface;
+              const instance = link.atozReversed ? zNode.name : aNode.name;
+              const iface = link.atozReversed ? link.zInterface : link.aInterface;
               const latest = findTrafficTimeSeries(data, qc, instance, iface)?.getLatestValue() ?? null;
               if (latest !== null) {
-                outColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
-                outSpeed = formatBps(latest.value);
+                atozColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
+                atozSpeed = formatBps(latest.value);
               }
             }
           }
 
-          // In-traffic: target half-arrow (target→midpoint)
-          if (link.inQueryId != null) {
-            const qc = queryMap.get(link.inQueryId);
+          // Z→A traffic: Z half-arrow (Z node → midpoint)
+          if (link.ztoaQueryId != null) {
+            const qc = queryMap.get(link.ztoaQueryId);
             if (qc && qc.type === 'linkTraffic') {
-              const srcNode = nodeMap.get(link.source)!;
-              const tgtNode = nodeMap.get(link.target)!;
-              const instance = link.inReversed ? srcNode.name : tgtNode.name;
-              const iface = link.inReversed ? link.sourceInterface : link.targetInterface;
+              const instance = link.ztoaReversed ? aNode.name : zNode.name;
+              const iface = link.ztoaReversed ? link.aInterface : link.zInterface;
               const latest = findTrafficTimeSeries(data, qc, instance, iface)?.getLatestValue() ?? null;
               if (latest !== null) {
-                inColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
-                inSpeed = formatBps(latest.value);
+                ztoaColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
+                ztoaSpeed = formatBps(latest.value);
               }
             }
           }
@@ -426,14 +423,14 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
 
         return {
           id: String(link.id),
-          source: String(link.source),
-          target: String(link.target),
+          source: String(link.aNode),
+          target: String(link.zNode),
           type: 'weathermapEdge',
           data: {
-            outColor,
-            inColor,
-            outSpeed,
-            inSpeed,
+            atozColor,
+            ztoaColor,
+            atozSpeed,
+            ztoaSpeed,
             offsetPx,
             hasConfigError: hasInvalidQuery,
             labelBgColor: theme.colors.background.canvas,

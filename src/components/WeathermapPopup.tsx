@@ -40,35 +40,35 @@ function resolveLinkTraffic(
   options: WeathermapOptions,
   data: PanelData,
   nodeMap: Map<number, NodeConfig>
-): { outTraffic: TimeSeries<number> | null; inTraffic: TimeSeries<number> | null } {
+): { atozTraffic: TimeSeries<number> | null; ztoaTraffic: TimeSeries<number> | null } {
   const queries = options.queries ?? [];
-  const srcNode = nodeMap.get(link.source);
-  const tgtNode = nodeMap.get(link.target);
+  const aNode = nodeMap.get(link.aNode);
+  const zNode = nodeMap.get(link.zNode);
 
-  let outTraffic: TimeSeries<number> | null = null;
-  let inTraffic: TimeSeries<number> | null = null;
+  let atozTraffic: TimeSeries<number> | null = null;
+  let ztoaTraffic: TimeSeries<number> | null = null;
 
-  if (srcNode && tgtNode) {
-    if (link.outQueryId != null) {
-      const qc = queries.find((q) => q.id === link.outQueryId);
+  if (aNode && zNode) {
+    if (link.atozQueryId != null) {
+      const qc = queries.find((q) => q.id === link.atozQueryId);
       if (qc && qc.type === 'linkTraffic') {
-        const instance = link.outReversed ? tgtNode.name : srcNode.name;
-        const iface = link.outReversed ? link.targetInterface : link.sourceInterface;
-        outTraffic = findTrafficTimeSeries(data, qc, instance, iface);
+        const instance = link.atozReversed ? zNode.name : aNode.name;
+        const iface = link.atozReversed ? link.zInterface : link.aInterface;
+        atozTraffic = findTrafficTimeSeries(data, qc, instance, iface);
       }
     }
 
-    if (link.inQueryId != null) {
-      const qc = queries.find((q) => q.id === link.inQueryId);
+    if (link.ztoaQueryId != null) {
+      const qc = queries.find((q) => q.id === link.ztoaQueryId);
       if (qc && qc.type === 'linkTraffic') {
-        const instance = link.inReversed ? srcNode.name : tgtNode.name;
-        const iface = link.inReversed ? link.sourceInterface : link.targetInterface;
-        inTraffic = findTrafficTimeSeries(data, qc, instance, iface);
+        const instance = link.ztoaReversed ? aNode.name : zNode.name;
+        const iface = link.ztoaReversed ? link.aInterface : link.zInterface;
+        ztoaTraffic = findTrafficTimeSeries(data, qc, instance, iface);
       }
     }
   }
 
-  return { outTraffic, inTraffic };
+  return { atozTraffic, ztoaTraffic };
 }
 
 export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data }) => {
@@ -93,10 +93,10 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
   const { status: healthStatus, timeSeries: healthTimeSeries } =
     node != null ? resolveNodeHealth(node, options, data) : { status: undefined, timeSeries: null };
 
-  const { outTraffic, inTraffic } =
+  const { atozTraffic, ztoaTraffic } =
     link != null
       ? resolveLinkTraffic(link, options, data, nodeMap)
-      : { outTraffic: null, inTraffic: null };
+      : { atozTraffic: null, ztoaTraffic: null };
 
   const panelFrom = data.timeRange.from.valueOf();
   const panelTo = data.timeRange.to.valueOf();
@@ -119,8 +119,8 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
     return null;
   }
 
-  const sourceNode = link != null ? nodeMap.get(link.source) : undefined;
-  const targetNode = link != null ? nodeMap.get(link.target) : undefined;
+  const aNode = link != null ? nodeMap.get(link.aNode) : undefined;
+  const zNode = link != null ? nodeMap.get(link.zNode) : undefined;
 
   return (
     <div
@@ -141,13 +141,13 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
           maxDataPoints={maxDataPoints}
         />
       )}
-      {link != null && sourceNode != null && targetNode != null && (
+      {link != null && aNode != null && zNode != null && (
         <LinkPopup
           link={link}
-          sourceNode={sourceNode}
-          targetNode={targetNode}
-          outTraffic={outTraffic}
-          inTraffic={inTraffic}
+          aNode={aNode}
+          zNode={zNode}
+          atozTraffic={atozTraffic}
+          ztoaTraffic={ztoaTraffic}
         />
       )}
     </div>
