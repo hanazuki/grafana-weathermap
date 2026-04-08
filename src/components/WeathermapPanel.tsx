@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type Node, type Edge, type NodeChange, type Viewport, type Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { WeathermapOptions, NodeConfig, QueryConfig, LinkConfig } from '../types';
+import { WeathermapOptions, NodeConfig, QueryConfig, LinkConfig, HealthStatus } from '../types';
 import { WeathermapNode, type WeathermapNodeData } from './WeathermapNode';
 import { ConnectionLine } from './ConnectionLine';
 import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
@@ -13,7 +13,7 @@ import { ColorLegend } from './ColorLegend';
 import { CanvasContextMenu } from './CanvasContextMenu';
 import { WeathermapPopup } from './WeathermapPopup';
 import { PopupProvider, usePopup } from '../context/PopupContext';
-import { findTrafficSeries, findHealthSeries } from '../utils/matching';
+import { findTrafficTimeSeries, findHealthTimeSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR, colorScales } from '../utils/color';
 import { formatBps } from '../utils/format';
 import useIsEditing from 'hooks/isEditing';
@@ -346,12 +346,12 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       nodes.map((node) => {
         const hasConfigError = node.statusQueryId != null && !queryMap.has(node.statusQueryId);
 
-        let healthStatus = null;
+        let healthStatus: HealthStatus | null | undefined;
         if (node.statusQueryId != null) {
           const qc = queryMap.get(node.statusQueryId);
           healthStatus = qc && qc.type === 'nodeHealth'
-            ? findHealthSeries(data, qc, node.name)
-            : 'unavailable';
+            ? findHealthTimeSeries(data, qc, node.name)?.getLatestValue()?.value ?? null
+            : null;
         }
 
         return {
@@ -399,10 +399,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const tgtNode = nodeMap.get(link.target)!;
               const instance = link.outReversed ? tgtNode.name : srcNode.name;
               const iface = link.outReversed ? link.targetInterface : link.sourceInterface;
-              const result = findTrafficSeries(data, qc, instance, iface);
-              if (result.found && result.value !== null) {
-                outColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
-                outSpeed = formatBps(result.value);
+              const latest = findTrafficTimeSeries(data, qc, instance, iface)?.getLatestValue() ?? null;
+              if (latest !== null) {
+                outColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
+                outSpeed = formatBps(latest.value);
               }
             }
           }
@@ -415,10 +415,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const tgtNode = nodeMap.get(link.target)!;
               const instance = link.inReversed ? srcNode.name : tgtNode.name;
               const iface = link.inReversed ? link.sourceInterface : link.targetInterface;
-              const result = findTrafficSeries(data, qc, instance, iface);
-              if (result.found && result.value !== null) {
-                inColor = getUtilizationColor(result.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
-                inSpeed = formatBps(result.value);
+              const latest = findTrafficTimeSeries(data, qc, instance, iface)?.getLatestValue() ?? null;
+              if (latest !== null) {
+                inColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
+                inSpeed = formatBps(latest.value);
               }
             }
           }

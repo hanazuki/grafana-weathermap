@@ -6,17 +6,13 @@ import { HealthStatus } from '../types';
 const SIZE = 10;
 
 interface HealthIndicatorProps {
-  healthStatus: HealthStatus;
+  healthStatus: HealthStatus | null;
   className?: string;
 }
 
 export const HealthIndicator: React.FC<HealthIndicatorProps> = ({ healthStatus, className }) => {
   const styles = useStyles2(getStyles, healthStatus);
   const labelId = useId();
-
-  if (healthStatus === null) {
-    return null;
-  }
 
   const r = SIZE / 2;
   const cx = SIZE;
@@ -41,13 +37,12 @@ export const HealthIndicator: React.FC<HealthIndicatorProps> = ({ healthStatus, 
   );
 };
 
-const getStyles = (theme: GrafanaTheme2, healthStatus: HealthStatus) => {
-  const color =
-    healthStatus === 'up'
-      ? theme.colors.success.main
-      : healthStatus === 'down'
-        ? theme.colors.error.main
-        : theme.colors.text.secondary;
+const getStyles = (theme: GrafanaTheme2, healthStatus: HealthStatus | null) => {
+  const color = healthStatus === 'up'
+    ? theme.colors.success.main
+    : healthStatus === 'down'
+      ? theme.colors.error.main
+      : theme.colors.text.secondary;
 
   return { color };
 };

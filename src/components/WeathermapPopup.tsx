@@ -4,11 +4,11 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useViewport } from '@xyflow/react';
 
-import { WeathermapOptions, NodeConfig, LinkConfig, HealthStatus } from '../types';
+import { WeathermapOptions, NodeConfig, LinkConfig, HealthStatus, TimeSeries } from '../types';
 import { usePopup } from '../context/PopupContext';
 import { NodePopup } from './NodePopup';
 import { LinkPopup } from './LinkPopup';
-import { findHealthSeries, findHealthTimeSeries, findTrafficSeriesStats, HealthTimeSeries, TrafficStats } from '../utils/matching';
+import { findHealthTimeSeries, findTrafficTimeSeries } from '../utils/matching';
 
 interface WeathermapPopupProps {
   options: WeathermapOptions;
@@ -19,18 +19,19 @@ function resolveNodeHealth(
   node: NodeConfig,
   options: WeathermapOptions,
   data: PanelData
-): { status: HealthStatus; timeSeries: HealthTimeSeries | null } {
+): { status: HealthStatus | null | undefined; timeSeries: TimeSeries<HealthStatus> | null } {
   if (node.statusQueryId == null) {
-    return { status: null, timeSeries: null };
+    return { status: undefined, timeSeries: null };
   }
   const queries = options.queries ?? [];
   const qc = queries.find((q) => q.id === node.statusQueryId);
   if (!qc || qc.type !== 'nodeHealth') {
-    return { status: 'unavailable', timeSeries: null };
+    return { status: null, timeSeries: null };
   }
+  const timeSeries = findHealthTimeSeries(data, qc, node.name);
   return {
-    status: findHealthSeries(data, qc, node.name),
-    timeSeries: findHealthTimeSeries(data, qc, node.name),
+    status: timeSeries?.getLatestValue()?.value ?? null,
+    timeSeries,
   };
 }
 
@@ -39,13 +40,13 @@ function resolveLinkTraffic(
   options: WeathermapOptions,
   data: PanelData,
   nodeMap: Map<number, NodeConfig>
-): { outStats: TrafficStats | null; inStats: TrafficStats | null } {
+): { outTraffic: TimeSeries<number> | null; inTraffic: TimeSeries<number> | null } {
   const queries = options.queries ?? [];
   const srcNode = nodeMap.get(link.source);
   const tgtNode = nodeMap.get(link.target);
 
-  let outStats: TrafficStats | null = null;
-  let inStats: TrafficStats | null = null;
+  let outTraffic: TimeSeries<number> | null = null;
+  let inTraffic: TimeSeries<number> | null = null;
 
   if (srcNode && tgtNode) {
     if (link.outQueryId != null) {
@@ -53,7 +54,7 @@ function resolveLinkTraffic(
       if (qc && qc.type === 'linkTraffic') {
         const instance = link.outReversed ? tgtNode.name : srcNode.name;
         const iface = link.outReversed ? link.targetInterface : link.sourceInterface;
-        outStats = findTrafficSeriesStats(data, qc, instance, iface);
+        outTraffic = findTrafficTimeSeries(data, qc, instance, iface);
       }
     }
 
@@ -62,12 +63,12 @@ function resolveLinkTraffic(
       if (qc && qc.type === 'linkTraffic') {
         const instance = link.inReversed ? srcNode.name : tgtNode.name;
         const iface = link.inReversed ? link.sourceInterface : link.targetInterface;
-        inStats = findTrafficSeriesStats(data, qc, instance, iface);
+        inTraffic = findTrafficTimeSeries(data, qc, instance, iface);
       }
     }
   }
 
-  return { outStats, inStats };
+  return { outTraffic, inTraffic };
 }
 
 export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data }) => {
@@ -90,12 +91,12 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
     : null;
 
   const { status: healthStatus, timeSeries: healthTimeSeries } =
-    node != null ? resolveNodeHealth(node, options, data) : { status: null as HealthStatus, timeSeries: null };
+    node != null ? resolveNodeHealth(node, options, data) : { status: undefined, timeSeries: null };
 
-  const { outStats, inStats } =
+  const { outTraffic, inTraffic } =
     link != null
       ? resolveLinkTraffic(link, options, data, nodeMap)
-      : { outStats: null, inStats: null };
+      : { outTraffic: null, inTraffic: null };
 
   const panelFrom = data.timeRange.from.valueOf();
   const panelTo = data.timeRange.to.valueOf();
@@ -145,8 +146,8 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
           link={link}
           sourceNode={sourceNode}
           targetNode={targetNode}
-          outStats={outStats}
-          inStats={inStats}
+          outTraffic={outTraffic}
+          inTraffic={inTraffic}
         />
       )}
     </div>

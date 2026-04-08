@@ -3,16 +3,15 @@ import { GrafanaTheme2, FieldType, FieldSparkline, type Field } from '@grafana/d
 import { type GraphFieldConfig } from '@grafana/schema';
 import { useTheme2, useStyles2, Sparkline } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { LinkConfig, NodeConfig } from '../types';
-import { TrafficStats } from '../utils/matching';
+import { LinkConfig, NodeConfig, TimeSeries } from '../types';
 import { formatBps } from '../utils/format';
 
 interface LinkPopupProps {
   link: LinkConfig;
   sourceNode: NodeConfig;
   targetNode: NodeConfig;
-  outStats: TrafficStats | null; // A→Z (egress, source→target)
-  inStats: TrafficStats | null;  // Z→A (ingress, target→source)
+  outTraffic: TimeSeries<number> | null; // A→Z (egress, source→target)
+  inTraffic: TimeSeries<number> | null;  // Z→A (ingress, target→source)
 }
 
 const CHART_LINE_OUT = '#fa4d56'; // A→Z line color
@@ -32,8 +31,21 @@ function fmtStat(value: number | null | undefined): string {
   return formatBps(value);
 }
 
+function computeStats(values: number[]): { avg: number; peak: number; latest: number } | null {
+  let sum = 0, peak = -Infinity, count = 0, latest = 0;
+  for (const v of values) {
+    if (Number.isFinite(v)) {
+      sum += v;
+      if (v > peak) { peak = v; }
+      latest = v;
+      count++;
+    }
+  }
+  return count > 0 ? { avg: sum / count, peak, latest } : null;
+}
+
 /** Build a FieldSparkline for one traffic direction with a fixed line color and shared Y max. */
-function makeSparkline(stats: TrafficStats, color: string, sharedMax: number, dashed = false): FieldSparkline {
+function makeSparkline(values: number[], timestamps: number[], color: string, sharedMax: number, dashed = false): FieldSparkline {
   const custom: GraphFieldConfig = {
     lineColor: color,
     lineWidth: 1.5,
@@ -41,27 +53,33 @@ function makeSparkline(stats: TrafficStats, color: string, sharedMax: number, da
     lineStyle: dashed ? { fill: 'dot' } : { fill: 'solid' },
   };
 
+  const effectiveMax = sharedMax > 0 ? sharedMax : 1;
   const yField: Field<number> = {
-    ...stats.yField,
-    config: {
-      min: 0,
-      max: sharedMax > 0 ? sharedMax : 1,
-      custom,
-    },
+    name: '',
+    type: FieldType.number,
+    config: { min: 0, max: effectiveMax, custom },
+    values,
+    labels: {},
+    state: { range: { min: 0, max: effectiveMax, delta: effectiveMax } },
   };
 
-  return {
-    y: yField,
-    x: stats.xField ?? undefined,
+  const xField: Field<number> = {
+    name: '',
+    type: FieldType.time,
+    config: {},
+    values: timestamps,
+    labels: {},
   };
+
+  return { y: yField, x: xField };
 }
 
 export const LinkPopup: React.FC<LinkPopupProps> = ({
   link,
   sourceNode,
   targetNode,
-  outStats,
-  inStats,
+  outTraffic,
+  inTraffic,
 }) => {
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
@@ -69,11 +87,16 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
   const srcName = sourceNode.name !== '' ? sourceNode.name : `#${sourceNode.id}`;
   const tgtName = targetNode.name !== '' ? targetNode.name : `#${targetNode.id}`;
 
+  const outValues = outTraffic?.getValues() ?? null;
+  const inValues = inTraffic?.getValues() ?? null;
+  const outStats = outValues != null ? computeStats(outValues.values) : null;
+  const inStats = inValues != null ? computeStats(inValues.values) : null;
+
   // Y-axis max is the link bandwidth; fall back to peak traffic if capacity is unset.
   const yMax = link.capacity > 0 ? link.capacity : Math.max(outStats?.peak ?? 0, inStats?.peak ?? 0);
 
-  const outSparkline = outStats != null ? makeSparkline(outStats, CHART_LINE_OUT, yMax, false) : null;
-  const inSparkline = inStats != null ? makeSparkline(inStats, CHART_LINE_IN, yMax, true) : null;
+  const outSparkline = outValues != null ? makeSparkline(outValues.values, outValues.timestamps, CHART_LINE_OUT, yMax, false) : null;
+  const inSparkline = inValues != null ? makeSparkline(inValues.values, inValues.timestamps, CHART_LINE_IN, yMax, true) : null;
 
   // Build a flat-line placeholder field when one direction has no data.
   const emptyField: Field<number> = {

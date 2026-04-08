@@ -15,7 +15,7 @@ export interface WeathermapNodeData {
   nodeWidth: number;
   nodeHeight: number;
   hasConfigError: boolean;
-  healthStatus: HealthStatus;
+  healthStatus: HealthStatus | null | undefined;
   isEditing: boolean;
   [key: string]: unknown;
 }
@@ -72,7 +72,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
       <Handle type="target" position={Position.Top} className={styles.handle} />
       <div className={cx(styles.node, isDropTarget && styles.dropTarget)} title={String(label)} data-testid={`iwm-node-${id}`}>
         {editOverlay}
-        <HealthIndicator healthStatus={healthStatus} className={styles.healthIndicator} />
+        {healthStatus !== undefined ? <HealthIndicator healthStatus={healthStatus} className={styles.healthIndicator} /> : null}
         <span className={styles.label}>{label}</span>
       </div>
     </>
