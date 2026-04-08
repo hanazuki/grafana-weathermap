@@ -45,27 +45,27 @@
         "links": [
           {
             "id": 1,
-            "source": 1,
-            "target": 2,
-            "sourceInterface": "eth0",
-            "targetInterface": "eth0",
+            "aNodeId": 1,
+            "zNodeId": 2,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
             "capacity": 1000000000,
-            "outQueryId": 1,
-            "outReversed": false,
-            "inQueryId": 1,
-            "inReversed": false
+            "atozQueryId": 1,
+            "atozReversed": false,
+            "ztoaQueryId": 1,
+            "ztoaReversed": false
           },
           {
             "id": 2,
-            "source": 2,
-            "target": 3,
-            "sourceInterface": "eth0",
-            "targetInterface": "eth0",
+            "aNodeId": 2,
+            "zNodeId": 3,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
             "capacity": 1000000000,
-            "outQueryId": 1,
-            "outReversed": false,
-            "inQueryId": 1,
-            "inReversed": false
+            "atozQueryId": 1,
+            "atozReversed": false,
+            "ztoaQueryId": 1,
+            "ztoaReversed": false
           }
         ],
         "queries": [

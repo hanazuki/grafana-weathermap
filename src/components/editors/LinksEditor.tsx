@@ -36,18 +36,18 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
   return (
     <FieldSet>
       <InlineFieldRow>
-        <InlineField label="Source node" grow>
+        <InlineField label="A node" grow>
           <Combobox
             options={nodeOpts}
-            value={link.source}
-            onChange={(opt) => update({ source: opt.value })}
-            data-testid="iwm-editor-link-source"
+            value={link.aNodeId}
+            onChange={(opt) => update({ aNodeId: opt.value })}
+            data-testid="iwm-editor-link-anode"
           />
         </InlineField>
-        <InlineField label="Src iface">
+        <InlineField label="A iface">
           <Input
-            value={link.sourceInterface}
-            onChange={(e) => update({ sourceInterface: e.currentTarget.value })}
+            value={link.aInterface}
+            onChange={(e) => update({ aInterface: e.currentTarget.value })}
             placeholder="eth0"
             width={10}
           />
@@ -55,18 +55,18 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
       </InlineFieldRow>
 
       <InlineFieldRow>
-        <InlineField label="Target node" grow>
+        <InlineField label="Z node" grow>
           <Combobox
             options={nodeOpts}
-            value={link.target}
-            onChange={(opt) => update({ target: opt.value })}
-            data-testid="iwm-editor-link-target"
+            value={link.zNodeId}
+            onChange={(opt) => update({ zNodeId: opt.value })}
+            data-testid="iwm-editor-link-znode"
           />
         </InlineField>
-        <InlineField label="Tgt iface">
+        <InlineField label="Z iface">
           <Input
-            value={link.targetInterface}
-            onChange={(e) => update({ targetInterface: e.currentTarget.value })}
+            value={link.zInterface}
+            onChange={(e) => update({ zInterface: e.currentTarget.value })}
             placeholder="eth0"
             width={10}
           />
@@ -85,35 +85,35 @@ const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update })
       </InlineFieldRow>
 
       <InlineFieldRow>
-        <InlineField label="Out query" tooltip="Query for egress (source→target) traffic">
+        <InlineField label="A→Z query" tooltip="Query for A→Z traffic">
           <Combobox
             options={[noQueryOption, ...queryOpts]}
-            value={link.outQueryId ?? 0}
-            onChange={(opt) => update({ outQueryId: opt.value || undefined })}
+            value={link.atozQueryId ?? 0}
+            onChange={(opt) => update({ atozQueryId: opt.value || undefined })}
             width={12}
           />
         </InlineField>
-        <InlineField label="Reversed" tooltip="Match target side instead of source side">
+        <InlineField label="Reversed" tooltip="Match Z side instead of A side">
           <Switch
-            value={link.outReversed ?? false}
-            onChange={(e) => update({ outReversed: e.currentTarget.checked })}
+            value={link.atozReversed ?? false}
+            onChange={(e) => update({ atozReversed: e.currentTarget.checked })}
           />
         </InlineField>
       </InlineFieldRow>
 
       <InlineFieldRow>
-        <InlineField label="In query" tooltip="Query for ingress (target→source) traffic">
+        <InlineField label="Z→A query" tooltip="Query for Z→A traffic">
           <Combobox
             options={[noQueryOption, ...queryOpts]}
-            value={link.inQueryId ?? 0}
-            onChange={(opt) => update({ inQueryId: opt.value || undefined })}
+            value={link.ztoaQueryId ?? 0}
+            onChange={(opt) => update({ ztoaQueryId: opt.value || undefined })}
             width={12}
           />
         </InlineField>
-        <InlineField label="Reversed" tooltip="Match source side instead of target side">
+        <InlineField label="Reversed" tooltip="Match A side instead of Z side">
           <Switch
-            value={link.inReversed ?? false}
-            onChange={(e) => update({ inReversed: e.currentTarget.checked })}
+            value={link.ztoaReversed ?? false}
+            onChange={(e) => update({ ztoaReversed: e.currentTarget.checked })}
           />
         </InlineField>
       </InlineFieldRow>
@@ -137,10 +137,10 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
       ...value,
       {
         id: nextId(value),
-        source: nodes[0]?.id ?? 0,
-        target: nodes[1]?.id ?? 0,
-        sourceInterface: '',
-        targetInterface: '',
+        aNodeId: nodes[0]?.id ?? 0,
+        zNodeId: nodes[1]?.id ?? 0,
+        aInterface: '',
+        zInterface: '',
         capacity: 1_000_000_000,
       },
     ]);
@@ -163,9 +163,9 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
 
   const selectOptions = value
     .map((l, idx) => {
-      const src = nodeName(nodes, l.source);
-      const tgt = nodeName(nodes, l.target);
-      return { label: `${src} → ${tgt} (#${l.id})`, value: idx };
+      const aName = nodeName(nodes, l.aNodeId);
+      const zName = nodeName(nodes, l.zNodeId);
+      return { label: `${aName} → ${zName} (#${l.id})`, value: idx };
     })
     .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
 

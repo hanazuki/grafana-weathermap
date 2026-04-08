@@ -29,16 +29,16 @@ test('Add nodes and edges', async ({
   await expect(page.getByTestId('iwm-node-2')).toHaveText('node-1');
   await expect(page.getByTestId('iwm-node-3')).toHaveText('node-2');
 
-  // Add edge node-0 → node-1 (defaults: source=nodes[0], target=nodes[1])
+  // Add edge node-0 → node-1 (defaults: aNodeId=nodes[0], zNodeId=nodes[1])
   await page.getByTestId('iwm-editor-link-add').click();
 
   // Add edge node-1 → node-2
   await page.getByTestId('iwm-editor-link-add').click();
-  // Change source from node-0 to node-1
-  await page.getByTestId('iwm-editor-link-source').fill('node-1');
+  // Change A node from node-0 to node-1
+  await page.getByTestId('iwm-editor-link-anode').fill('node-1');
   await page.getByRole('option', { name: 'node-1 (#2)' }).click();
-  // Change target from node-1 to node-2
-  await page.getByTestId('iwm-editor-link-target').fill('node-2');
+  // Change Z node from node-1 to node-2
+  await page.getByTestId('iwm-editor-link-znode').fill('node-2');
   await page.getByRole('option', { name: 'node-2 (#3)' }).click();
 
   await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
@@ -68,7 +68,7 @@ test('parallel offset is symmetric for reversed edges', async ({
   await page.getByTestId('iwm-editor-node-y').fill('100');
 
   // Edge 1 (A→B, index 0): zero offset — serves as baseline.
-  // Defaults: source=nodes[0]=node-a, target=nodes[1]=node-b.
+  // Defaults: aNodeId=nodes[0]=node-a, zNodeId=nodes[1]=node-b.
   await page.getByTestId('iwm-editor-link-add').click();
 
   // Edge 2 (A→B, index 1): same direction, receives a non-zero offset.
@@ -78,9 +78,9 @@ test('parallel offset is symmetric for reversed edges', async ({
   // After the fix the offset sign is flipped vs edge 2,
   // so the two edges end up on opposite sides of the A-B axis.
   await page.getByTestId('iwm-editor-link-add').click();
-  await page.getByTestId('iwm-editor-link-source').fill('node-b');
+  await page.getByTestId('iwm-editor-link-anode').fill('node-b');
   await page.getByRole('option', { name: 'node-b (#2)' }).click();
-  await page.getByTestId('iwm-editor-link-target').fill('node-a');
+  await page.getByTestId('iwm-editor-link-znode').fill('node-a');
   await page.getByRole('option', { name: 'node-a (#1)' }).click();
 
   await expect(page.getByTestId('iwm-edge-1')).toBeVisible();

@@ -8,14 +8,14 @@ import { formatBps } from '../utils/format';
 
 interface LinkPopupProps {
   link: LinkConfig;
-  sourceNode: NodeConfig;
-  targetNode: NodeConfig;
-  outTraffic: TimeSeries<number> | null; // A→Z (egress, source→target)
-  inTraffic: TimeSeries<number> | null;  // Z→A (ingress, target→source)
+  aNode: NodeConfig;
+  zNode: NodeConfig;
+  atozTraffic: TimeSeries<number> | null;
+  ztoaTraffic: TimeSeries<number> | null;
 }
 
-const CHART_LINE_OUT = '#fa4d56'; // A→Z line color
-const CHART_LINE_IN = '#1192e8';  // Z→A line color
+const CHART_LINE_AZ = '#fa4d56';
+const CHART_LINE_ZA = '#1192e8';
 
 const POPUP_WIDTH = 220;
 const CHART_PADDING_H = 12;
@@ -76,27 +76,27 @@ function makeSparkline(values: number[], timestamps: number[], color: string, sh
 
 export const LinkPopup: React.FC<LinkPopupProps> = ({
   link,
-  sourceNode,
-  targetNode,
-  outTraffic,
-  inTraffic,
+  aNode,
+  zNode,
+  atozTraffic,
+  ztoaTraffic,
 }) => {
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
 
-  const srcName = sourceNode.name !== '' ? sourceNode.name : `#${sourceNode.id}`;
-  const tgtName = targetNode.name !== '' ? targetNode.name : `#${targetNode.id}`;
+  const aName = aNode.name !== '' ? aNode.name : `#${aNode.id}`;
+  const zName = zNode.name !== '' ? zNode.name : `#${zNode.id}`;
 
-  const outValues = outTraffic?.getValues() ?? null;
-  const inValues = inTraffic?.getValues() ?? null;
-  const outStats = outValues != null ? computeStats(outValues.values) : null;
-  const inStats = inValues != null ? computeStats(inValues.values) : null;
+  const atozValues = atozTraffic?.getValues() ?? null;
+  const ztoaValues = ztoaTraffic?.getValues() ?? null;
+  const outStats = atozValues != null ? computeStats(atozValues.values) : null;
+  const inStats = ztoaValues != null ? computeStats(ztoaValues.values) : null;
 
   // Y-axis max is the link bandwidth; fall back to peak traffic if capacity is unset.
   const yMax = link.capacity > 0 ? link.capacity : Math.max(outStats?.peak ?? 0, inStats?.peak ?? 0);
 
-  const outSparkline = outValues != null ? makeSparkline(outValues.values, outValues.timestamps, CHART_LINE_OUT, yMax, false) : null;
-  const inSparkline = inValues != null ? makeSparkline(inValues.values, inValues.timestamps, CHART_LINE_IN, yMax, true) : null;
+  const outSparkline = atozValues != null ? makeSparkline(atozValues.values, atozValues.timestamps, CHART_LINE_AZ, yMax, false) : null;
+  const inSparkline = ztoaValues != null ? makeSparkline(ztoaValues.values, ztoaValues.timestamps, CHART_LINE_ZA, yMax, true) : null;
 
   // Build a flat-line placeholder field when one direction has no data.
   const emptyField: Field<number> = {
@@ -113,17 +113,16 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
 
   return (
     <div className={styles.popup}>
-      {/* Header: source and target with interfaces */}
       <div className={styles.header}>
         <div className={styles.headerLine}>
           <span className={styles.endpointLabel}>A:</span>
-          <span className={styles.endpointName}>{srcName}</span>
-          <span className={styles.endpointValue}>[{link.sourceInterface}]</span>
+          <span className={styles.endpointName}>{aName}</span>
+          <span className={styles.endpointValue}>[{link.aInterface}]</span>
         </div>
         <div className={styles.headerLine}>
           <span className={styles.endpointLabel}>Z:</span>
-          <span className={styles.endpointName}>{tgtName}</span>
-          <span className={styles.endpointValue}>[{link.targetInterface}]</span>
+          <span className={styles.endpointName}>{zName}</span>
+          <span className={styles.endpointValue}>[{link.zInterface}]</span>
         </div>
       </div>
 
@@ -162,14 +161,12 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
         <div className={styles.chartWrapper}>
           <div className={styles.bandwidth}>Bandwidth: {link.capacity > 0 ? formatBps(link.capacity) : DASH}</div>
           <div className={styles.chartInner}>
-            {/* Egress (A→Z) sparkline */}
             <Sparkline
               theme={theme}
               width={CHART_WIDTH}
               height={CHART_HEIGHT}
               sparkline={outSparkline ?? emptySparkline}
             />
-            {/* Ingress (Z→A) sparkline overlaid */}
             <div className={styles.sparklineOverlay}>
               <Sparkline
                 theme={theme}
@@ -297,13 +294,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
   swatchOut: css({
     width: 16,
     height: 2,
-    background: CHART_LINE_OUT,
+    background: CHART_LINE_AZ,
     flexShrink: 0,
   }),
   swatchIn: css({
     width: 16,
     height: 2,
-    background: `repeating-linear-gradient(to right, ${CHART_LINE_IN} 0, ${CHART_LINE_IN} 6px, transparent 6px, transparent 10px)`,
+    background: `repeating-linear-gradient(to right, ${CHART_LINE_ZA} 0, ${CHART_LINE_ZA} 6px, transparent 6px, transparent 10px)`,
     flexShrink: 0,
   }),
 });
