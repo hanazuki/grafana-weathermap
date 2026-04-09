@@ -519,7 +519,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         {
           nodes.length === 0 && (
             <div className={styles.emptyState}>
-              Add nodes in the panel editor to get started.
+              Click/tap the canvas to add a node.
             </div>
           )
         }
