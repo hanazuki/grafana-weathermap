@@ -22,15 +22,15 @@ export interface LinkTrafficQueryConfig {
   id: number;       // internal auto-incremented integer (≥1); never shown to users
   refId: string;    // Grafana query refId (e.g. "A") — must match the panel's data query
   type: 'linkTraffic';
-  instanceLabelKey: string;
-  interfaceLabelKey: string;
+  instanceLabelKey: string | null;
+  interfaceLabelKey: string | null;
 }
 
 export interface NodeHealthQueryConfig {
   id: number;       // internal auto-incremented integer (≥1); never shown to users
   refId: string;    // Grafana query refId
   type: 'nodeHealth';
-  instanceLabelKey: string;  // e.g., "host", "instance"
+  instanceLabelKey: string | null;  // e.g., "host", "instance"
 }
 
 // null (at use sites) = health series is configured but has no current data → gray indicator

@@ -74,8 +74,8 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
       <InlineFieldRow>
         <InlineField label="Instance label">
           <Input
-            value={query.instanceLabelKey}
-            onChange={(e) => update({ ...query, instanceLabelKey: e.currentTarget.value })}
+            value={query.instanceLabelKey ?? ''}
+            onChange={(e) => update({ ...query, instanceLabelKey: e.currentTarget.value || null })}
             placeholder="instance"
             width={12}
           />
@@ -83,8 +83,8 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
         {query.type === 'linkTraffic' && (
           <InlineField label="Interface label">
             <Input
-              value={query.interfaceLabelKey}
-              onChange={(e) => update({ ...query, interfaceLabelKey: e.currentTarget.value } as LinkTrafficQueryConfig)}
+              value={query.interfaceLabelKey ?? ''}
+              onChange={(e) => update({ ...query, interfaceLabelKey: e.currentTarget.value || null })}
               placeholder="ifName"
               width={12}
             />

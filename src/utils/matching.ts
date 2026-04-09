@@ -60,9 +60,13 @@ export function findTrafficTimeSeries(
       }
 
       const labels = field.labels ?? {};
-      if (labels[queryConfig.instanceLabelKey] === instance && labels[queryConfig.interfaceLabelKey] === iface) {
-        return makeTimeSeries(field, timeField, v => Number.isFinite(v) ? v as number : null);
+      if (queryConfig.instanceLabelKey !== null && labels[queryConfig.instanceLabelKey] !== instance) {
+        continue;
       }
+      if (queryConfig.interfaceLabelKey !== null && labels[queryConfig.interfaceLabelKey] !== iface) {
+        continue;
+      }
+      return makeTimeSeries(field, timeField, v => Number.isFinite(v) ? v as number : null);
     }
   }
 
@@ -101,7 +105,7 @@ export function findHealthTimeSeries(
       }
 
       const labels = field.labels ?? {};
-      if (labels[queryConfig.instanceLabelKey] !== nodeName) {
+      if (queryConfig.instanceLabelKey !== null && labels[queryConfig.instanceLabelKey] !== nodeName) {
         continue;
       }
 
