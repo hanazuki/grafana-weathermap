@@ -3,6 +3,8 @@
     "allow": [
       "Bash(pnpm build:*)",
       "Bash(pnpm lint:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm test:ci:*)",
       "Bash(pnpm typecheck:*)",
       "WebFetch(domain:grafana.com)",
       "WebFetch(domain:developers.grafana.com)"
