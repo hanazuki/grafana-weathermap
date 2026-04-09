@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { IconButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -17,9 +17,9 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
   const styles = useStyles2(getStyles);
   const { state: { inlineEdit }, setInlineEdit } = usePopup();
 
-  const nodes = options.nodes ?? [];
-  const links = options.links ?? [];
-  const queries = options.queries ?? [];
+  const nodes = useMemo(() => options.nodes ?? [], [options.nodes]);
+  const links = useMemo(() => options.links ?? [], [options.links]);
+  const queries = useMemo(() => options.queries ?? [], [options.queries]);
 
   // Auto-close when the edited element is deleted from options
   useEffect(() => {
@@ -84,7 +84,6 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
       >
         <div className={styles.header} onPointerDown={onHeaderPointerDown} data-testid="iwm-inline-editor-header">
           <span className={styles.title} title={title}>{title}</span>
-          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <span className={styles.closeButtonWrapper} onPointerDown={(e) => e.stopPropagation()}>
             <IconButton name="times" tooltip="Close editor" onClick={() => setInlineEdit(null)} />
           </span>
@@ -118,7 +117,6 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
     >
       <div className={styles.header} onPointerDown={onHeaderPointerDown} data-testid="iwm-inline-editor-header">
         <span className={styles.title} title={title}>{title}</span>
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <span className={styles.closeButtonWrapper} onPointerDown={(e) => e.stopPropagation()}>
           <IconButton name="times" tooltip="Close editor" onClick={() => setInlineEdit(null)} />
         </span>
