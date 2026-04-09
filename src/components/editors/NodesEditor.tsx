@@ -8,13 +8,13 @@ function nextId(items: Array<{ id: number }>): number {
   return items.length === 0 ? 1 : Math.max(...items.map((x) => x.id)) + 1;
 }
 
-type NodeEditorProps = {
+export type NodeEditorProps = {
   node: NodeConfig;
   queries: QueryConfig[];
   update: (patch: Partial<NodeConfig>) => void;
 };
 
-const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update }) => {
+export const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update }) => {
   const healthQueryOptions = queries
     .filter((q) => q.type === 'nodeHealth')
     .map((q) => ({ label: `${q.refId} (#${q.id})`, value: q.id }));

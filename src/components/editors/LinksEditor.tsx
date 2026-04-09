@@ -21,14 +21,14 @@ function queryOptions(queries: QueryConfig[]) {
   return queries.map((q) => ({ label: q.refId, value: q.id }));
 }
 
-type LinkEditorProps = {
+export type LinkEditorProps = {
   link: LinkConfig;
   nodes: NodeConfig[];
   queries: QueryConfig[];
   update: (patch: Partial<LinkConfig>) => void;
 };
 
-const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update }) => {
+export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update }) => {
   const nodeOpts = nodeOptions(nodes);
   const queryOpts = queryOptions(queries);
   const noQueryOption = { label: '— none —', value: 0 };

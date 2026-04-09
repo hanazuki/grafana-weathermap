@@ -13,6 +13,7 @@ export interface PopupState {
   preview: PopupTarget | null;
   contextMenu: { clientX: number; clientY: number } | null;
   cursorPos: { x: number; y: number };
+  inlineEdit: PopupTarget | null;
 }
 
 interface PopupContextValue {
@@ -21,6 +22,7 @@ interface PopupContextValue {
   setPinned: (target: PopupTarget | null, pos?: { x: number; y: number }) => void;
   setPreview: (target: PopupTarget | null) => void;
   setCursorPos: (pos: { x: number; y: number }) => void;
+  setInlineEdit: (target: PopupTarget | null) => void;
   closeAll: () => void;
 }
 
@@ -33,6 +35,7 @@ export const PopupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     preview: null,
     contextMenu: null,
     cursorPos: { x: 0, y: 0 },
+    inlineEdit: null,
   });
 
   const setContextMenu = useCallback((pos: { clientX: number; clientY: number } | null) => {
@@ -61,12 +64,16 @@ export const PopupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setState((prev) => ({ ...prev, cursorPos: pos }));
   }, []);
 
+  const setInlineEdit = useCallback((target: PopupTarget | null) => {
+    setState((prev) => ({ ...prev, inlineEdit: target }));
+  }, []);
+
   const closeAll = useCallback(() => {
     setState((prev) => ({ ...prev, pinned: null, preview: null, contextMenu: null }));
   }, []);
 
   return (
-    <PopupContext.Provider value={{ state, setContextMenu, setPinned, setPreview, setCursorPos, closeAll }}>
+    <PopupContext.Provider value={{ state, setContextMenu, setPinned, setPreview, setCursorPos, setInlineEdit, closeAll }}>
       {children}
     </PopupContext.Provider>
   );
