@@ -19,7 +19,7 @@ function makeFrame(refId: string, timeValues: number[], numericFields: Array<{ l
   };
 }
 
-function makeData(frames: ReturnType<typeof makeFrame>[]): PanelData {
+function makeData(frames: Array<ReturnType<typeof makeFrame>>): PanelData {
   return { series: frames } as unknown as PanelData;
 }
 

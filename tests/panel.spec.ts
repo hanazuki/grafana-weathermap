@@ -114,6 +114,68 @@ test('parallel offset is symmetric for reversed edges', async ({
   expect(oy3).toBeCloseTo(-oy2);
 });
 
+test('double-clicking a node opens inline editor and editing the name field renames the node', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add a node
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('original-name');
+  await expect(page.getByTestId('iwm-node-1')).toHaveText('original-name');
+
+  // Double-click the node to open the inline editor
+  await page.getByTestId('iwm-node-1').dblclick();
+  const inlineEditor = page.getByTestId('iwm-inline-editor');
+  await expect(inlineEditor).toBeVisible();
+  await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('original-name (#1)');
+
+  // Edit the name in the inline editor's name field
+  const nameInput = inlineEditor.getByTestId('iwm-editor-node-name');
+  await nameInput.fill('renamed-node');
+
+  // The canvas label and inline editor title should reflect the new name
+  await expect(page.getByTestId('iwm-node-1')).toHaveText('renamed-node');
+  await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('renamed-node (#1)');
+});
+
+test('double-clicking a link opens inline editor with correct title', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add two nodes with distinct positions
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('alpha');
+  await page.getByTestId('iwm-editor-node-x').fill('100');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('beta');
+  await page.getByTestId('iwm-editor-node-x').fill('400');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  // Add a link between them
+  await page.getByTestId('iwm-editor-link-add').click();
+  await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
+
+  // Double-click the link to open the inline editor.
+  // Click the center of the edge bounding box to land on a path element.
+  const edgeBox = await page.getByTestId('iwm-edge-1').boundingBox();
+  await page.mouse.dblclick(edgeBox!.x + edgeBox!.width / 2, edgeBox!.y + edgeBox!.height / 2);
+  const inlineEditor = page.getByTestId('iwm-inline-editor');
+  await expect(inlineEditor).toBeVisible();
+  await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('alpha → beta (#1)');
+});
+
 test('Drag to connect creates a new link', async ({
   panelEditPage,
   readProvisionedDataSource,

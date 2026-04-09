@@ -12,6 +12,7 @@ import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
 import { ColorLegend } from './ColorLegend';
 import { CanvasContextMenu } from './CanvasContextMenu';
 import { WeathermapPopup } from './WeathermapPopup';
+import { InlineEditor } from './InlineEditor';
 import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficTimeSeries, findHealthTimeSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR, colorScales } from '../utils/color';
@@ -51,7 +52,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const [colorSchemeIndex, setColorSchemeIndex] = useLocalStorage('iwm-preferences-color-scheme', PreferredColorSchemeIndex);
   const colorScale = (colorScales[colorSchemeIndex] ?? colorScales[0]).getColor;
   const colorSchemeName = (colorScales[colorSchemeIndex] ?? colorScales[0]).name;
-  const { state, setContextMenu, setPinned, setPreview, setCursorPos } = usePopup();
+  const { state, setContextMenu, setPinned, setPreview, setCursorPos, setInlineEdit } = usePopup();
   const { x: vpX, y: vpY, zoom } = useViewport();
   const panelRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -233,6 +234,36 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       }
     },
     [state.pinned, setPinned, setPreview, vpX, vpY, zoom]
+  );
+
+  // Node double-click: toggle inline editor (edit mode only)
+  const onNodeDoubleClick = useCallback(
+    (_event: React.MouseEvent, rfNode: Node) => {
+      if (!isEditing) {
+        return;
+      }
+      setInlineEdit(
+        state.inlineEdit?.type === 'node' && state.inlineEdit.id === rfNode.id
+          ? null
+          : { type: 'node', id: rfNode.id }
+      );
+    },
+    [isEditing, state.inlineEdit, setInlineEdit]
+  );
+
+  // Edge double-click: toggle inline editor (edit mode only)
+  const onEdgeDoubleClick = useCallback(
+    (_event: React.MouseEvent, rfEdge: Edge) => {
+      if (!isEditing) {
+        return;
+      }
+      setInlineEdit(
+        state.inlineEdit?.type === 'link' && state.inlineEdit.id === rfEdge.id
+          ? null
+          : { type: 'link', id: rfEdge.id }
+      );
+    },
+    [isEditing, state.inlineEdit, setInlineEdit]
   );
 
   // Viewport move: capture start viewport; dismiss context menu; dismiss preview on scroll (not zoom)
@@ -493,6 +524,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         onEdgeMouseEnter={onEdgeMouseEnter}
         onEdgeMouseLeave={onEdgeMouseLeave}
         onEdgeClick={onEdgeClick}
+        onNodeDoubleClick={onNodeDoubleClick}
+        onEdgeDoubleClick={onEdgeDoubleClick}
         onPaneClick={onPaneClick}
         onMoveStart={onMoveStart}
         onMove={onMove}
@@ -526,6 +559,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       </ReactFlow>
       <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
       <WeathermapPopup options={options} data={data} />
+      <InlineEditor options={options} onOptionsChange={onOptionsChange} />
     </div>
   );
 };
