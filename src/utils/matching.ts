@@ -34,18 +34,27 @@ function makeTimeSeries<T>(
 }
 
 /**
- * Find the traffic time series for a link instance + interface combination.
+ * Find the traffic time series for a link.
  *
- * Frames are filtered by queryConfig.refId. Labels are checked on numeric fields.
- * Matching is exact string comparison (case-sensitive, no normalization).
- * Returns null when no matching series is found.
+ * Frames are filtered by queryConfig.refId. The A-side or Z-side labels are
+ * selected based on queryConfig.direction: 'egress' uses aNode labels,
+ * 'ingress' uses zNode labels. Label matching is exact string comparison
+ * (case-sensitive, no normalization). Returns null when no matching series is found.
  */
-export function findTrafficTimeSeries(
-  data: PanelData,
-  queryConfig: LinkTrafficQueryConfig,
-  instance: string,
-  iface: string
-): TimeSeries<number> | null {
+export function findTrafficTimeSeries({
+  data,
+  queryConfig,
+  aNode,
+  zNode,
+}: {
+  data: PanelData;
+  queryConfig: LinkTrafficQueryConfig;
+  aNode: { name: string; iface: string };
+  zNode: { name: string; iface: string };
+}): TimeSeries<number> | null {
+  const instance = queryConfig.direction === 'egress' ? aNode.name : zNode.name;
+  const iface    = queryConfig.direction === 'egress' ? aNode.iface : zNode.iface;
+
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {
       continue;

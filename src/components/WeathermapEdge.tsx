@@ -124,9 +124,9 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
   const outNeedsFlip = Math.abs(angleDeg) > 90;
   const inNeedsFlip = !outNeedsFlip;
 
-  const label = (text: string, color: string, needsFlip: boolean) => (
+  const label = (text: string, color: string, needsFlip: boolean, testId: string) => (
     <g transform={needsFlip ? `rotate(180, ${-labelDistance}, 0)` : undefined}>
-      <text x={-labelDistance} y={0} textAnchor="middle" dy="0.5cap" fontSize={labelFontSize} fill={color} filter={`url(#${filterId})`}>
+      <text x={-labelDistance} y={0} textAnchor="middle" dy="0.5cap" fontSize={labelFontSize} fill={color} filter={`url(#${filterId})`} data-testid={testId}>
         {text}
       </text>
     </g>
@@ -148,13 +148,13 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
         {/* A half-arrow: A node → midpoint (A→Z traffic) */}
         <Arrow len={halfLen} angleDeg={angleDeg} tipX={mx} tipY={my}
           color={atozColor} borderColor={outBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
-          {atozSpeed && label(atozSpeed, atozColor, outNeedsFlip)}
+          {atozSpeed && label(atozSpeed, atozColor, outNeedsFlip, `iwm-edge-${id}-atoz-label`)}
         </Arrow>
 
         {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
         <Arrow len={halfLen} angleDeg={angleDeg + 180} tipX={mx} tipY={my}
           color={ztoaColor} borderColor={inBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
-          {ztoaSpeed && label(ztoaSpeed, ztoaColor, inNeedsFlip)}
+          {ztoaSpeed && label(ztoaSpeed, ztoaColor, inNeedsFlip, `iwm-edge-${id}-ztoa-label`)}
         </Arrow>
       </g>
     </g>

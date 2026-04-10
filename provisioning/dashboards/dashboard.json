@@ -38,9 +38,9 @@
         "nodeLabelPattern": "^(.+)\\.example\\.com$",
         "nodeLabelReplacement": "$1",
         "nodes": [
-          { "id": 1, "name": "host-0.example.com", "x": 200, "y": 200, "statusQueryId": 2 },
-          { "id": 2, "name": "host-1.example.com", "x": 500, "y": 200, "statusQueryId": 2 },
-          { "id": 3, "name": "host-2.example.com", "x": 800, "y": 200, "statusQueryId": 2 }
+          { "id": 1, "name": "host-0.example.com", "x": 200, "y": 200, "statusQueryId": 3 },
+          { "id": 2, "name": "host-1.example.com", "x": 500, "y": 200, "statusQueryId": 3 },
+          { "id": 3, "name": "host-2.example.com", "x": 800, "y": 200, "statusQueryId": 3 }
         ],
         "links": [
           {
@@ -51,9 +51,7 @@
             "zInterface": "eth0",
             "capacity": 1000000000,
             "atozQueryId": 1,
-            "atozReversed": false,
-            "ztoaQueryId": 1,
-            "ztoaReversed": false
+            "ztoaQueryId": 2
           },
           {
             "id": 2,
@@ -63,9 +61,7 @@
             "zInterface": "eth0",
             "capacity": 1000000000,
             "atozQueryId": 1,
-            "atozReversed": false,
-            "ztoaQueryId": 1,
-            "ztoaReversed": false
+            "ztoaQueryId": 2
           }
         ],
         "queries": [
@@ -74,10 +70,19 @@
             "refId": "OutBits",
             "type": "linkTraffic",
             "instanceLabelKey": "instance",
-            "interfaceLabelKey": "ifName"
+            "interfaceLabelKey": "ifName",
+            "direction": "egress"
           },
           {
             "id": 2,
+            "refId": "InBits",
+            "type": "linkTraffic",
+            "instanceLabelKey": "instance",
+            "interfaceLabelKey": "ifName",
+            "direction": "ingress"
+          },
+          {
+            "id": 3,
             "refId": "Health",
             "type": "nodeHealth",
             "instanceLabelKey": "instance"
@@ -91,6 +96,20 @@
             "uid": "trlxrdZVk"
           },
           "refId": "OutBits",
+          "scenarioId": "random_walk",
+          "seriesCount": 3,
+          "labels": "instance=host-$seriesIndex.example.com,ifName=eth0",
+          "startValue": 500000000,
+          "spread": 10000000,
+          "min": 1000000,
+          "max": 1000000000
+        },
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "trlxrdZVk"
+          },
+          "refId": "InBits",
           "scenarioId": "random_walk",
           "seriesCount": 3,
           "labels": "instance=host-$seriesIndex.example.com,ifName=eth0",

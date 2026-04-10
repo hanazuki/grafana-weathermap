@@ -52,18 +52,24 @@ function resolveLinkTraffic(
     if (link.atozQueryId != null) {
       const qc = queries.find((q) => q.id === link.atozQueryId);
       if (qc && qc.type === 'linkTraffic') {
-        const instance = link.atozReversed ? zNode.name : aNode.name;
-        const iface = link.atozReversed ? link.zInterface : link.aInterface;
-        atozTraffic = findTrafficTimeSeries(data, qc, instance, iface);
+        atozTraffic = findTrafficTimeSeries({
+          data,
+          queryConfig: qc,
+          aNode: { name: aNode.name, iface: link.aInterface },
+          zNode: { name: zNode.name, iface: link.zInterface },
+        });
       }
     }
 
     if (link.ztoaQueryId != null) {
       const qc = queries.find((q) => q.id === link.ztoaQueryId);
       if (qc && qc.type === 'linkTraffic') {
-        const instance = link.ztoaReversed ? aNode.name : zNode.name;
-        const iface = link.ztoaReversed ? link.aInterface : link.zInterface;
-        ztoaTraffic = findTrafficTimeSeries(data, qc, instance, iface);
+        ztoaTraffic = findTrafficTimeSeries({
+          data,
+          queryConfig: qc,
+          aNode: { name: aNode.name, iface: link.aInterface },
+          zNode: { name: zNode.name, iface: link.zInterface },
+        });
       }
     }
   }

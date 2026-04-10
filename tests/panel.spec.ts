@@ -217,3 +217,109 @@ test('Drag to connect creates a new link', async ({
   // A new link connecting node A to node B should now exist
   await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
 });
+
+test('direction combobox defaults to Egress and persists after switching queries', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add first query config (linkTraffic, defaults to Egress)
+  await page.getByTestId('iwm-editor-query-add').click();
+  const directionBox = page.getByTestId('iwm-editor-query-direction');
+  await expect(directionBox).toBeVisible();
+  await expect(directionBox).toHaveValue('Egress');
+
+  // Change direction to Ingress
+  await directionBox.click();
+  await page.getByRole('option', { name: 'Ingress' }).click();
+  await expect(directionBox).toHaveValue('Ingress');
+
+  // Add a second query config (should default to Egress)
+  await page.getByTestId('iwm-editor-query-add').click();
+  await expect(directionBox).toHaveValue('Egress');
+
+  // Switch back to the first query via the selector combobox
+  await page.getByPlaceholder('— select a query config —').click();
+  await page.getByRole('option', { name: /link traffic \(#1\)/ }).click();
+
+  // First query's direction should still be Ingress
+  await expect(directionBox).toHaveValue('Ingress');
+});
+
+test('traffic label appears with egress direction and disappears with ingress', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+
+  // Mock query response: one series labeled instance=router-a, ifName=eth0 with 1 Gbps
+  await panelEditPage.mockQueryDataResponse({
+    results: {
+      A: {
+        frames: [
+          {
+            schema: {
+              refId: 'A',
+              fields: [
+                { name: 'Time', type: 'time', typeInfo: { frame: 'time.Time' } },
+                {
+                  name: 'Value',
+                  type: 'number',
+                  typeInfo: { frame: 'float64' },
+                  labels: { instance: 'router-a', ifName: 'eth0' },
+                },
+              ],
+            },
+            data: {
+              values: [[Date.now() - 60_000, Date.now()], [1_000_000_000, 1_000_000_000]],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add two nodes with distinct positions
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('router-a');
+  await page.getByTestId('iwm-editor-node-x').fill('100');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('router-b');
+  await page.getByTestId('iwm-editor-node-x').fill('400');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  // Add a link; set A-iface=eth0 and Z-iface=eth1
+  await page.getByTestId('iwm-editor-link-add').click();
+  await page.getByTestId('iwm-editor-link-aiface').fill('eth0');
+  await page.getByTestId('iwm-editor-link-ziface').fill('eth1');
+
+  // Add a query config: refId A, linkTraffic, direction Egress (default)
+  await page.getByTestId('iwm-editor-query-add').click();
+  await page.getByTestId('iwm-editor-query-refid').click();
+  await page.getByRole('option', { name: 'A' }).click();
+
+  // Assign this query as the A→Z query on the link
+  await page.getByTestId('iwm-editor-link-atoz-query').click();
+  await page.getByRole('option', { name: 'A' }).click();
+
+  // With direction=egress, the A-side labels (router-a, eth0) match → label visible
+  await panelEditPage.refreshPanel();
+  await expect(page.getByTestId('iwm-edge-1-atoz-label')).toBeVisible();
+  await expect(page.getByTestId('iwm-edge-1-atoz-label')).toContainText('Gbps');
+
+  // Switch direction to Ingress: now Z-side labels (router-b, eth1) are used → no match
+  await page.getByTestId('iwm-editor-query-direction').click();
+  await page.getByRole('option', { name: 'Ingress' }).click();
+  await panelEditPage.refreshPanel();
+  await expect(page.getByTestId('iwm-edge-1-atoz-label')).not.toBeVisible();
+});
