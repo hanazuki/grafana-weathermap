@@ -44,16 +44,16 @@ function makeTimeSeries<T>(
 export function findTrafficTimeSeries({
   data,
   queryConfig,
-  aNode,
-  zNode,
+  srcNode,
+  dstNode,
 }: {
   data: PanelData;
   queryConfig: LinkTrafficQueryConfig;
-  aNode: { name: string; iface: string };
-  zNode: { name: string; iface: string };
+  srcNode: { name: string; iface: string };
+  dstNode: { name: string; iface: string };
 }): TimeSeries<number> | null {
-  const instance = queryConfig.direction === 'egress' ? aNode.name : zNode.name;
-  const iface    = queryConfig.direction === 'egress' ? aNode.iface : zNode.iface;
+  const instance = queryConfig.direction === 'egress' ? srcNode.name : dstNode.name;
+  const iface    = queryConfig.direction === 'egress' ? srcNode.iface : dstNode.iface;
 
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {

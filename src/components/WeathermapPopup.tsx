@@ -55,8 +55,8 @@ function resolveLinkTraffic(
         atozTraffic = findTrafficTimeSeries({
           data,
           queryConfig: qc,
-          aNode: { name: aNode.name, iface: link.aInterface },
-          zNode: { name: zNode.name, iface: link.zInterface },
+          srcNode: { name: aNode.name, iface: link.aInterface },
+          dstNode: { name: zNode.name, iface: link.zInterface },
         });
       }
     }
@@ -67,8 +67,8 @@ function resolveLinkTraffic(
         ztoaTraffic = findTrafficTimeSeries({
           data,
           queryConfig: qc,
-          aNode: { name: aNode.name, iface: link.aInterface },
-          zNode: { name: zNode.name, iface: link.zInterface },
+          srcNode: { name: zNode.name, iface: link.zInterface },
+          dstNode: { name: aNode.name, iface: link.aInterface },
         });
       }
     }
