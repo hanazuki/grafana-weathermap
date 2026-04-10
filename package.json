@@ -1,7 +1,7 @@
 {
   "name": "grafana-weathermap",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
