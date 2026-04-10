@@ -52,8 +52,7 @@ export function findTrafficTimeSeries({
   srcNode: { name: string; iface: string };
   dstNode: { name: string; iface: string };
 }): TimeSeries<number> | null {
-  const instance = queryConfig.direction === 'egress' ? srcNode.name : dstNode.name;
-  const iface    = queryConfig.direction === 'egress' ? srcNode.iface : dstNode.iface;
+  const { name: instance, iface } = queryConfig.direction === 'egress' ? srcNode : dstNode;
 
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {
