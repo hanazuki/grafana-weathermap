@@ -430,8 +430,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const latest = findTrafficTimeSeries({
                 data,
                 queryConfig: qc,
-                aNode: { name: aNode.name, iface: link.aInterface },
-                zNode: { name: zNode.name, iface: link.zInterface },
+                srcNode: { name: aNode.name, iface: link.aInterface },
+                dstNode: { name: zNode.name, iface: link.zInterface },
               })?.getLatestValue() ?? null;
               if (latest !== null) {
                 atozColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
@@ -447,8 +447,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               const latest = findTrafficTimeSeries({
                 data,
                 queryConfig: qc,
-                aNode: { name: aNode.name, iface: link.aInterface },
-                zNode: { name: zNode.name, iface: link.zInterface },
+                srcNode: { name: zNode.name, iface: link.zInterface },
+                dstNode: { name: aNode.name, iface: link.aInterface },
               })?.getLatestValue() ?? null;
               if (latest !== null) {
                 ztoaColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);

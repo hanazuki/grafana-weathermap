@@ -52,9 +52,9 @@ describe('findTrafficTimeSeries', () => {
   ]);
   const data = makeData([frame]);
 
-  // Helper: call with router-1 on the A-side (egress picks A-side labels)
-  const call = (qc: LinkTrafficQueryConfig, aName: string, aIface: string, zName = 'router-z', zIface = 'eth9') =>
-    findTrafficTimeSeries({ data, queryConfig: qc, aNode: { name: aName, iface: aIface }, zNode: { name: zName, iface: zIface } });
+  // Helper: call with router-1 as the source (egress picks src labels)
+  const call = (qc: LinkTrafficQueryConfig, srcName: string, srcIface: string, dstName = 'router-z', dstIface = 'eth9') =>
+    findTrafficTimeSeries({ data, queryConfig: qc, srcNode: { name: srcName, iface: srcIface }, dstNode: { name: dstName, iface: dstIface } });
 
   test('non-null keys: returns matching series (regression)', () => {
     const ts = call(trafficQuery(), 'router-1', 'eth0');
@@ -108,42 +108,46 @@ describe('findTrafficTimeSeries', () => {
     { labels: { instance: 'router-b', ifName: 'eth1' }, values: [30, 40] },
   ]);
   const directionData = makeData([directionFrame]);
+  // atoz slot: src=router-a (A side), dst=router-b (Z side)
   const directionCall = (qc: LinkTrafficQueryConfig) =>
-    findTrafficTimeSeries({ data: directionData, queryConfig: qc, aNode: { name: 'router-a', iface: 'eth0' }, zNode: { name: 'router-b', iface: 'eth1' } });
-  const directionCallSwapped = (qc: LinkTrafficQueryConfig) =>
-    findTrafficTimeSeries({ data: directionData, queryConfig: qc, aNode: { name: 'router-b', iface: 'eth1' }, zNode: { name: 'router-a', iface: 'eth0' } });
+    findTrafficTimeSeries({ data: directionData, queryConfig: qc, srcNode: { name: 'router-a', iface: 'eth0' }, dstNode: { name: 'router-b', iface: 'eth1' } });
+  // ztoa slot: src=router-b (Z side), dst=router-a (A side)
+  const directionCallZtoa = (qc: LinkTrafficQueryConfig) =>
+    findTrafficTimeSeries({ data: directionData, queryConfig: qc, srcNode: { name: 'router-b', iface: 'eth1' }, dstNode: { name: 'router-a', iface: 'eth0' } });
 
-  test('direction egress: selects A-side labels', () => {
+  test('direction egress: selects src labels', () => {
+    // atoz: src=router-a/eth0 → values [10,20]
     const ts = directionCall(trafficQuery({ direction: 'egress' }));
     expect(ts).not.toBeNull();
     expect(ts!.getLatestValue()).toEqual({ value: 20, timestamp: 2000 });
-    // swapped: A-side is now router-b/eth1, which has values [30,40]
-    const tsSwapped = directionCallSwapped(trafficQuery({ direction: 'egress' }));
-    expect(tsSwapped).not.toBeNull();
-    expect(tsSwapped!.getLatestValue()).toEqual({ value: 40, timestamp: 2000 });
+    // ztoa: src=router-b/eth1 → values [30,40]
+    const tsZtoa = directionCallZtoa(trafficQuery({ direction: 'egress' }));
+    expect(tsZtoa).not.toBeNull();
+    expect(tsZtoa!.getLatestValue()).toEqual({ value: 40, timestamp: 2000 });
   });
 
-  test('direction ingress: selects Z-side labels', () => {
+  test('direction ingress: selects dst labels', () => {
+    // atoz: dst=router-b/eth1 → values [30,40]
     const ts = directionCall(trafficQuery({ direction: 'ingress' }));
     expect(ts).not.toBeNull();
     expect(ts!.getLatestValue()).toEqual({ value: 40, timestamp: 2000 });
-    // swapped: Z-side is now router-a/eth0, which has values [10,20]
-    const tsSwapped = directionCallSwapped(trafficQuery({ direction: 'ingress' }));
-    expect(tsSwapped).not.toBeNull();
-    expect(tsSwapped!.getLatestValue()).toEqual({ value: 20, timestamp: 2000 });
+    // ztoa: dst=router-a/eth0 → values [10,20]
+    const tsZtoa = directionCallZtoa(trafficQuery({ direction: 'ingress' }));
+    expect(tsZtoa).not.toBeNull();
+    expect(tsZtoa!.getLatestValue()).toEqual({ value: 20, timestamp: 2000 });
   });
 
-  test('direction egress with null instanceLabelKey: A-side iface still matches', () => {
+  test('direction egress with null instanceLabelKey: src iface still matches', () => {
     const ts = directionCall(trafficQuery({ direction: 'egress', instanceLabelKey: null }));
     expect(ts).not.toBeNull();
-    // A-side iface is eth0; first series with ifName=eth0 is router-a [10,20]
+    // src iface is eth0; first series with ifName=eth0 is router-a [10,20]
     expect(ts!.getLatestValue()).toEqual({ value: 20, timestamp: 2000 });
   });
 
-  test('direction ingress with null interfaceLabelKey: Z-side instance still matches', () => {
+  test('direction ingress with null interfaceLabelKey: dst instance still matches', () => {
     const ts = directionCall(trafficQuery({ direction: 'ingress', interfaceLabelKey: null }));
     expect(ts).not.toBeNull();
-    // Z-side instance is router-b; first series with instance=router-b is [30,40]
+    // dst instance is router-b; first series with instance=router-b is [30,40]
     expect(ts!.getLatestValue()).toEqual({ value: 40, timestamp: 2000 });
   });
 });
