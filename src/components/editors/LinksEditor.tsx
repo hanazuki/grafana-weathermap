@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Combobox, FieldSet, InlineField, InlineFieldRow, Input, Switch, useStyles2 } from '@grafana/ui';
+import { Button, Combobox, FieldSet, InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
 import { getStyles } from './styles';
 import { LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
@@ -50,6 +50,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
             onChange={(e) => update({ aInterface: e.currentTarget.value })}
             placeholder="eth0"
             width={10}
+            data-testid="iwm-editor-link-aiface"
           />
         </InlineField>
       </InlineFieldRow>
@@ -69,6 +70,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
             onChange={(e) => update({ zInterface: e.currentTarget.value })}
             placeholder="eth0"
             width={10}
+            data-testid="iwm-editor-link-ziface"
           />
         </InlineField>
       </InlineFieldRow>
@@ -80,6 +82,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
             value={link.capacity}
             onChange={(e) => update({ capacity: Number(e.currentTarget.value) })}
             width={16}
+            data-testid="iwm-editor-link-capacity"
           />
         </InlineField>
       </InlineFieldRow>
@@ -91,12 +94,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
             value={link.atozQueryId ?? 0}
             onChange={(opt) => update({ atozQueryId: opt.value || undefined })}
             width={12}
-          />
-        </InlineField>
-        <InlineField label="Reversed" tooltip="Match Z side instead of A side">
-          <Switch
-            value={link.atozReversed ?? false}
-            onChange={(e) => update({ atozReversed: e.currentTarget.checked })}
+            data-testid="iwm-editor-link-atoz-query"
           />
         </InlineField>
       </InlineFieldRow>
@@ -108,12 +106,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
             value={link.ztoaQueryId ?? 0}
             onChange={(opt) => update({ ztoaQueryId: opt.value || undefined })}
             width={12}
-          />
-        </InlineField>
-        <InlineField label="Reversed" tooltip="Match A side instead of Z side">
-          <Switch
-            value={link.ztoaReversed ?? false}
-            onChange={(e) => update({ ztoaReversed: e.currentTarget.checked })}
+            data-testid="iwm-editor-link-ztoa-query"
           />
         </InlineField>
       </InlineFieldRow>

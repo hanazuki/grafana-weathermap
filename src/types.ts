@@ -24,6 +24,7 @@ export interface LinkTrafficQueryConfig {
   type: 'linkTraffic';
   instanceLabelKey: string | null;
   interfaceLabelKey: string | null;
+  direction: 'ingress' | 'egress';
 }
 
 export interface NodeHealthQueryConfig {
@@ -58,7 +59,5 @@ export interface LinkConfig {
   zInterface: string;
   capacity: number;       // bps, denominator for utilization coloring
   atozQueryId?: number;    // query internal ID for A-to-Z traffic
-  atozReversed?: boolean;
   ztoaQueryId?: number;     // query internal ID for Z-to-A traffic
-  ztoaReversed?: boolean;
 }

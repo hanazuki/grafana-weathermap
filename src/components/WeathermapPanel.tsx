@@ -427,9 +427,12 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           if (link.atozQueryId != null) {
             const qc = queryMap.get(link.atozQueryId);
             if (qc && qc.type === 'linkTraffic') {
-              const instance = link.atozReversed ? zNode.name : aNode.name;
-              const iface = link.atozReversed ? link.zInterface : link.aInterface;
-              const latest = findTrafficTimeSeries(data, qc, instance, iface)?.getLatestValue() ?? null;
+              const latest = findTrafficTimeSeries({
+                data,
+                queryConfig: qc,
+                aNode: { name: aNode.name, iface: link.aInterface },
+                zNode: { name: zNode.name, iface: link.zInterface },
+              })?.getLatestValue() ?? null;
               if (latest !== null) {
                 atozColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
                 atozSpeed = formatBps(latest.value);
@@ -441,9 +444,12 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           if (link.ztoaQueryId != null) {
             const qc = queryMap.get(link.ztoaQueryId);
             if (qc && qc.type === 'linkTraffic') {
-              const instance = link.ztoaReversed ? aNode.name : zNode.name;
-              const iface = link.ztoaReversed ? link.aInterface : link.zInterface;
-              const latest = findTrafficTimeSeries(data, qc, instance, iface)?.getLatestValue() ?? null;
+              const latest = findTrafficTimeSeries({
+                data,
+                queryConfig: qc,
+                aNode: { name: aNode.name, iface: link.aInterface },
+                zNode: { name: zNode.name, iface: link.zInterface },
+              })?.getLatestValue() ?? null;
               if (latest !== null) {
                 ztoaColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
                 ztoaSpeed = formatBps(latest.value);

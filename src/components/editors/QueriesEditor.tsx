@@ -13,6 +13,11 @@ const TYPE_OPTIONS = [
   { label: 'node health', value: 'nodeHealth' as const },
 ];
 
+const DIRECTION_OPTIONS = [
+  { label: 'Egress', value: 'egress' as const },
+  { label: 'Ingress', value: 'ingress' as const },
+];
+
 const TYPE_LABELS: Record<string, string> = {
   linkTraffic: 'link traffic',
   nodeHealth: 'node health',
@@ -37,6 +42,7 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
         type: 'linkTraffic',
         instanceLabelKey: query.instanceLabelKey,
         interfaceLabelKey: 'ifName',
+        direction: 'egress',
       };
       update(next);
     } else {
@@ -60,6 +66,7 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
             onChange={(opt) => update({ ...query, refId: opt.value })}
             placeholder="A"
             width={8}
+            data-testid="iwm-editor-query-refid"
           />
         </InlineField>
         <InlineField label="Type">
@@ -68,6 +75,7 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
             value={query.type}
             onChange={(opt) => changeType(opt.value)}
             width={14}
+            data-testid="iwm-editor-query-type"
           />
         </InlineField>
       </InlineFieldRow>
@@ -78,6 +86,7 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
             onChange={(e) => update({ ...query, instanceLabelKey: e.currentTarget.value || null })}
             placeholder="instance"
             width={12}
+            data-testid="iwm-editor-query-instance-label"
           />
         </InlineField>
         {query.type === 'linkTraffic' && (
@@ -87,6 +96,18 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
               onChange={(e) => update({ ...query, interfaceLabelKey: e.currentTarget.value || null })}
               placeholder="ifName"
               width={12}
+              data-testid="iwm-editor-query-interface-label"
+            />
+          </InlineField>
+        )}
+        {query.type === 'linkTraffic' && (
+          <InlineField label="Direction">
+            <Combobox<'egress' | 'ingress'>
+              options={DIRECTION_OPTIONS}
+              value={query.direction}
+              onChange={(opt) => update({ ...query, direction: opt.value })}
+              width={12}
+              data-testid="iwm-editor-query-direction"
             />
           </InlineField>
         )}
@@ -111,7 +132,7 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
   const add = () => {
     onChange([
       ...value,
-      { id: nextId(value), refId: '', type: 'linkTraffic', instanceLabelKey: 'instance', interfaceLabelKey: 'ifName' },
+      { id: nextId(value), refId: '', type: 'linkTraffic', instanceLabelKey: 'instance', interfaceLabelKey: 'ifName', direction: 'egress' as const },
     ]);
     setIndex(value.length);
   };
@@ -145,7 +166,7 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
             placeholder="— select a query config —"
           />
         </div>
-        <Button icon="plus" variant="secondary" aria-label="Add query config" onClick={add} />
+        <Button icon="plus" variant="secondary" aria-label="Add query config" onClick={add} data-testid="iwm-editor-query-add" />
         <Button variant="destructive" icon="trash-alt" aria-label="Remove query config" onClick={remove} disabled={query === null} />
       </div>
       {query !== null ? (
