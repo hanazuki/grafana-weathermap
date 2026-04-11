@@ -21,7 +21,7 @@ function readValue<T extends z.$ZodType>(key: string, schema: T): z.infer<T> {
   return result.success ? result.data : z.parse(schema, undefined);
 }
 
-export default <T extends z.$ZodType>(key: string, schema: T): [z.infer<T>, (value: z.infer<T>) => void] => {
+export const useLocalStorage = <T extends z.$ZodType>(key: string, schema: T): [z.infer<T>, (value: z.infer<T>) => void] => {
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
       getSet(key).add(onStoreChange);

@@ -17,8 +17,8 @@ import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficTimeSeries, findHealthTimeSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR, colorScales } from '../utils/color';
 import { formatBps } from '../utils/format';
-import useIsEditing from 'hooks/useIsEditing';
-import useLocalStorage from 'hooks/useLocalStorage';
+import { useIsEditing } from 'hooks/useIsEditing';
+import { useLocalStorage } from 'hooks/useLocalStorage';
 import * as z from 'zod/v4/mini';
 
 // Total width of the color legend area (measured from ColorLegend.tsx):
