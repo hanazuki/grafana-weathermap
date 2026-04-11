@@ -18,7 +18,7 @@ function nodeOptions(nodes: NodeConfig[]) {
 }
 
 function queryOptions(queries: QueryConfig[]) {
-  return queries.map((q) => ({ label: q.refId, value: q.id }));
+  return queries.filter((q) => q.type === 'linkTraffic').map((q) => ({ label: q.refId, value: q.id }));
 }
 
 export type LinkEditorProps = {

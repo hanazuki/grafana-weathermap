@@ -8,6 +8,10 @@ function nextId(items: Array<{ id: number }>): number {
   return items.length === 0 ? 1 : Math.max(...items.map((x) => x.id)) + 1;
 }
 
+function queryOptions(queries: QueryConfig[]) {
+  return queries.filter((q) => q.type === 'nodeHealth').map((q) => ({ label: q.refId, value: q.id }));
+}
+
 export type NodeEditorProps = {
   node: NodeConfig;
   queries: QueryConfig[];
@@ -15,9 +19,7 @@ export type NodeEditorProps = {
 };
 
 export const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update }) => {
-  const healthQueryOptions = queries
-    .filter((q) => q.type === 'nodeHealth')
-    .map((q) => ({ label: `${q.refId} (#${q.id})`, value: q.id }));
+  const healthQueryOptions = queryOptions(queries);
   const noQueryOption = { label: '— none —', value: 0 };
 
   return (
