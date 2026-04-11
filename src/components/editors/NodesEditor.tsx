@@ -25,7 +25,7 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update })
 
   return <>
     <InlineFieldRow>
-      <InlineField label="Name" grow>
+      <InlineField label="Name" grow shrink>
         <Input
           value={node.name}
           onChange={(e) => update({ name: e.currentTarget.value })}
@@ -35,32 +35,29 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update })
       </InlineField>
     </InlineFieldRow>
     <InlineFieldRow>
-      <InlineField label="X">
+      <InlineField label="X" grow>
         <Input
           type="number"
           value={node.x ?? 0}
           onChange={(e) => update({ x: Number(e.currentTarget.value) })}
-          width={8}
           data-testid="iwm-editor-node-x"
         />
       </InlineField>
-      <InlineField label="Y">
+      <InlineField label="Y" grow>
         <Input
           type="number"
           value={node.y ?? 0}
           onChange={(e) => update({ y: Number(e.currentTarget.value) })}
-          width={8}
           data-testid="iwm-editor-node-y"
         />
       </InlineField>
     </InlineFieldRow>
     <InlineFieldRow>
-      <InlineField label="Health query" grow>
+      <InlineField label="Health query" grow shrink>
         <Combobox
           options={[noQueryOption, ...healthQueryOptions]}
           value={node.statusQueryId ?? 0}
-          onChange={(opt) => update({ statusQueryId: opt.value !== 0 ? opt.value : undefined })}
-          width={16}
+          onChange={(opt) => update({ statusQueryId: opt.value || undefined })}
         />
       </InlineField>
     </InlineFieldRow>

@@ -59,54 +59,49 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
 
   return <>
     <InlineFieldRow>
-      <InlineField label="RefId">
+      <InlineField label="RefId" grow shrink>
         <Combobox<string>
           options={refIdOptions.filter((o) => o.value === query.refId || !usedRefIds.has(o.value))}
           value={query.refId || null}
           onChange={(opt) => update({ ...query, refId: opt.value })}
           placeholder="A"
-          width={8}
           data-testid="iwm-editor-query-refid"
         />
       </InlineField>
-      <InlineField label="Type">
+      <InlineField label="Type" grow shrink>
         <Combobox<'linkTraffic' | 'nodeHealth'>
           options={TYPE_OPTIONS}
           value={query.type}
           onChange={(opt) => changeType(opt.value)}
-          width={14}
           data-testid="iwm-editor-query-type"
         />
       </InlineField>
     </InlineFieldRow>
     <InlineFieldRow>
-      <InlineField label="Instance label">
+      <InlineField label="Instance label" grow>
         <Input
           value={query.instanceLabelKey ?? ''}
           onChange={(e) => update({ ...query, instanceLabelKey: e.currentTarget.value || null })}
           placeholder="instance"
-          width={12}
           data-testid="iwm-editor-query-instance-label"
         />
       </InlineField>
       {query.type === 'linkTraffic' && (
-        <InlineField label="Interface label">
+        <InlineField label="Interface label" grow>
           <Input
             value={query.interfaceLabelKey ?? ''}
             onChange={(e) => update({ ...query, interfaceLabelKey: e.currentTarget.value || null })}
             placeholder="ifName"
-            width={12}
             data-testid="iwm-editor-query-interface-label"
           />
         </InlineField>
       )}
       {query.type === 'linkTraffic' && (
-        <InlineField label="Direction">
+        <InlineField label="Direction" grow>
           <Combobox<'egress' | 'ingress'>
             options={DIRECTION_OPTIONS}
             value={query.direction}
             onChange={(opt) => update({ ...query, direction: opt.value })}
-            width={12}
             data-testid="iwm-editor-query-direction"
           />
         </InlineField>
