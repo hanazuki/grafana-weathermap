@@ -17,7 +17,7 @@ import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficTimeSeries, findHealthTimeSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR, colorScales } from '../utils/color';
 import { formatBps } from '../utils/format';
-import useIsEditing from 'hooks/isEditing';
+import useIsEditing from 'hooks/useIsEditing';
 import useLocalStorage from 'hooks/useLocalStorage';
 import * as z from 'zod/v4/mini';
 
