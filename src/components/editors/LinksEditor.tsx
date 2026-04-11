@@ -37,7 +37,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
   return <>
     <InlineFieldRow>
       <InlineField label="A node" grow shrink>
-        <Combobox
+        <Combobox<number>
           options={nodeOpts}
           value={link.aNodeId}
           onChange={(opt) => update({ aNodeId: opt.value })}
@@ -56,7 +56,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
 
     <InlineFieldRow>
       <InlineField label="Z node" grow shrink>
-        <Combobox
+        <Combobox<number>
           options={nodeOpts}
           value={link.zNodeId}
           onChange={(opt) => update({ zNodeId: opt.value })}
@@ -86,7 +86,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
 
     <InlineFieldRow>
       <InlineField label="A→Z query" grow shrink>
-        <Combobox
+        <Combobox<number>
           options={[noQueryOption, ...queryOpts]}
           value={link.atozQueryId ?? 0}
           onChange={(opt) => update({ atozQueryId: opt.value || undefined })}
@@ -97,7 +97,7 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
 
     <InlineFieldRow>
       <InlineField label="Z→A query" grow shrink>
-        <Combobox
+        <Combobox<number>
           options={[noQueryOption, ...queryOpts]}
           value={link.ztoaQueryId ?? 0}
           onChange={(opt) => update({ ztoaQueryId: opt.value || undefined })}

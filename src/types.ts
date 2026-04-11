@@ -17,14 +17,16 @@ export interface WeathermapOptions {
 }
 
 export type QueryConfig = LinkTrafficQueryConfig | NodeHealthQueryConfig;
+export type QueryType = QueryConfig['type'];
 
+export type TrafficDirection = 'ingress' | 'egress';
 export interface LinkTrafficQueryConfig {
   id: number;       // internal auto-incremented integer (≥1); never shown to users
   refId: string;    // Grafana query refId (e.g. "A") — must match the panel's data query
   type: 'linkTraffic';
   instanceLabelKey: string | null;
   interfaceLabelKey: string | null;
-  direction: 'ingress' | 'egress';
+  direction: TrafficDirection;
 }
 
 export interface NodeHealthQueryConfig {

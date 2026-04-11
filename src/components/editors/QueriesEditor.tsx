@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Combobox, Field, FieldSet, Input, InlineField, InlineFieldRow, useStyles2 } from '@grafana/ui';
+import { Combobox, Field, Input, InlineField, InlineFieldRow, useStyles2 } from '@grafana/ui';
 import { getStyles } from './styles';
 import { Chooser } from './Chooser';
-import { QueryConfig, LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../../types';
+import { QueryConfig, QueryType, LinkTrafficQueryConfig, NodeHealthQueryConfig, TrafficDirection } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
   return items.length === 0 ? 1 : Math.max(...items.map((x) => x.id)) + 1;
@@ -69,7 +69,7 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
         />
       </InlineField>
       <InlineField label="Type" grow shrink>
-        <Combobox<'linkTraffic' | 'nodeHealth'>
+        <Combobox<QueryType>
           options={TYPE_OPTIONS}
           value={query.type}
           onChange={(opt) => changeType(opt.value)}
@@ -98,7 +98,7 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
       )}
       {query.type === 'linkTraffic' && (
         <InlineField label="Direction" grow>
-          <Combobox<'egress' | 'ingress'>
+          <Combobox<TrafficDirection>
             options={DIRECTION_OPTIONS}
             value={query.direction}
             onChange={(opt) => update({ ...query, direction: opt.value })}

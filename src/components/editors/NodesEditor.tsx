@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Combobox, Input, InlineField, InlineFieldRow, FieldSet, useStyles2, Field } from '@grafana/ui';
+import { Combobox, Input, InlineField, InlineFieldRow, useStyles2, Field } from '@grafana/ui';
 import { getStyles } from './styles';
 import { Chooser } from './Chooser';
 import { NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
@@ -54,7 +54,7 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update })
     </InlineFieldRow>
     <InlineFieldRow>
       <InlineField label="Health query" grow shrink>
-        <Combobox
+        <Combobox<number>
           options={[noQueryOption, ...healthQueryOptions]}
           value={node.statusQueryId ?? 0}
           onChange={(opt) => update({ statusQueryId: opt.value || undefined })}
