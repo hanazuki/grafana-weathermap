@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Combobox, FieldSet, InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
+import { Button, Combobox, Field, InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
 import { getStyles } from './styles';
 import { LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
@@ -33,85 +33,78 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
   const queryOpts = queryOptions(queries);
   const noQueryOption = { label: '— none —', value: 0 };
 
-  return (
-    <FieldSet>
-      <InlineFieldRow>
-        <InlineField label="A node" grow>
-          <Combobox
-            options={nodeOpts}
-            value={link.aNodeId}
-            onChange={(opt) => update({ aNodeId: opt.value })}
-            data-testid="iwm-editor-link-anode"
-          />
-        </InlineField>
-        <InlineField label="A iface">
-          <Input
-            value={link.aInterface}
-            onChange={(e) => update({ aInterface: e.currentTarget.value })}
-            placeholder="eth0"
-            width={10}
-            data-testid="iwm-editor-link-aiface"
-          />
-        </InlineField>
-      </InlineFieldRow>
+  return <>
+    <InlineFieldRow>
+      <InlineField label="A node" grow shrink>
+        <Combobox
+          options={nodeOpts}
+          value={link.aNodeId}
+          onChange={(opt) => update({ aNodeId: opt.value })}
+          data-testid="iwm-editor-link-anode"
+        />
+      </InlineField>
+      <InlineField label="A iface" grow shrink>
+        <Input
+          value={link.aInterface}
+          onChange={(e) => update({ aInterface: e.currentTarget.value })}
+          placeholder="eth0"
+          data-testid="iwm-editor-link-aiface"
+        />
+      </InlineField>
+    </InlineFieldRow>
 
-      <InlineFieldRow>
-        <InlineField label="Z node" grow>
-          <Combobox
-            options={nodeOpts}
-            value={link.zNodeId}
-            onChange={(opt) => update({ zNodeId: opt.value })}
-            data-testid="iwm-editor-link-znode"
-          />
-        </InlineField>
-        <InlineField label="Z iface">
-          <Input
-            value={link.zInterface}
-            onChange={(e) => update({ zInterface: e.currentTarget.value })}
-            placeholder="eth0"
-            width={10}
-            data-testid="iwm-editor-link-ziface"
-          />
-        </InlineField>
-      </InlineFieldRow>
+    <InlineFieldRow>
+      <InlineField label="Z node" grow shrink>
+        <Combobox
+          options={nodeOpts}
+          value={link.zNodeId}
+          onChange={(opt) => update({ zNodeId: opt.value })}
+          data-testid="iwm-editor-link-znode"
+        />
+      </InlineField>
+      <InlineField label="Z iface" grow shrink>
+        <Input
+          value={link.zInterface}
+          onChange={(e) => update({ zInterface: e.currentTarget.value })}
+          placeholder="eth0"
+          data-testid="iwm-editor-link-ziface"
+        />
+      </InlineField>
+    </InlineFieldRow>
 
-      <InlineFieldRow>
-        <InlineField label="Capacity (bps)">
-          <Input
-            type="number"
-            value={link.capacity}
-            onChange={(e) => update({ capacity: Number(e.currentTarget.value) })}
-            width={16}
-            data-testid="iwm-editor-link-capacity"
-          />
-        </InlineField>
-      </InlineFieldRow>
+    <InlineFieldRow>
+      <InlineField label="Capacity (bps)" grow shrink>
+        <Input
+          type="number"
+          value={link.capacity}
+          onChange={(e) => update({ capacity: Number(e.currentTarget.value) })}
+          data-testid="iwm-editor-link-capacity"
+        />
+      </InlineField>
+    </InlineFieldRow>
 
-      <InlineFieldRow>
-        <InlineField label="A→Z query" tooltip="Query for A→Z traffic">
-          <Combobox
-            options={[noQueryOption, ...queryOpts]}
-            value={link.atozQueryId ?? 0}
-            onChange={(opt) => update({ atozQueryId: opt.value || undefined })}
-            width={12}
-            data-testid="iwm-editor-link-atoz-query"
-          />
-        </InlineField>
-      </InlineFieldRow>
+    <InlineFieldRow>
+      <InlineField label="A→Z query" grow shrink>
+        <Combobox
+          options={[noQueryOption, ...queryOpts]}
+          value={link.atozQueryId ?? 0}
+          onChange={(opt) => update({ atozQueryId: opt.value || undefined })}
+          data-testid="iwm-editor-link-atoz-query"
+        />
+      </InlineField>
+    </InlineFieldRow>
 
-      <InlineFieldRow>
-        <InlineField label="Z→A query" tooltip="Query for Z→A traffic">
-          <Combobox
-            options={[noQueryOption, ...queryOpts]}
-            value={link.ztoaQueryId ?? 0}
-            onChange={(opt) => update({ ztoaQueryId: opt.value || undefined })}
-            width={12}
-            data-testid="iwm-editor-link-ztoa-query"
-          />
-        </InlineField>
-      </InlineFieldRow>
-    </FieldSet>
-  );
+    <InlineFieldRow>
+      <InlineField label="Z→A query" grow shrink>
+        <Combobox
+          options={[noQueryOption, ...queryOpts]}
+          value={link.ztoaQueryId ?? 0}
+          onChange={(opt) => update({ ztoaQueryId: opt.value || undefined })}
+          data-testid="iwm-editor-link-ztoa-query"
+        />
+      </InlineField>
+    </InlineFieldRow>
+  </>;
 };
 
 export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, WeathermapOptions>> = ({
@@ -164,18 +157,20 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
 
   return (
     <>
-      <div className={styles.toolbar}>
-        <div className={styles.comboboxWrapper}>
-          <Combobox
-            options={selectOptions}
-            value={index}
-            onChange={(opt) => setIndex(opt.value)}
-            placeholder="— select a link —"
-          />
+      <Field label="Link" description="Select link to edit">
+        <div className={styles.toolbar}>
+          <div className={styles.comboboxWrapper}>
+            <Combobox
+              options={selectOptions}
+              value={index}
+              onChange={(opt) => setIndex(opt.value)}
+              placeholder="— select a link —"
+            />
+          </div>
+          <Button icon="plus" variant="secondary" aria-label="Add link" onClick={add} data-testid="iwm-editor-link-add" />
+          <Button variant="destructive" icon="trash-alt" aria-label="Remove link" onClick={remove} disabled={link === null} />
         </div>
-        <Button icon="plus" variant="secondary" aria-label="Add link" onClick={add} data-testid="iwm-editor-link-add" />
-        <Button variant="destructive" icon="trash-alt" aria-label="Remove link" onClick={remove} disabled={link === null} />
-      </div>
+      </Field>
       {link !== null ? (
         <LinkEditor link={link} nodes={nodes} queries={queries} update={update} />
       ) : (
