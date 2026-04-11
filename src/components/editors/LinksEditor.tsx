@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Combobox, Field, InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
+import { Combobox, Field, InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
 import { getStyles } from './styles';
+import { Chooser } from './Chooser';
 import { LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -155,27 +156,24 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
     })
     .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
 
-  return (
-    <>
-      <Field label="Link" description="Select link to edit">
-        <div className={styles.toolbar}>
-          <div className={styles.comboboxWrapper}>
-            <Combobox
-              options={selectOptions}
-              value={index}
-              onChange={(opt) => setIndex(opt.value)}
-              placeholder="— select a link —"
-            />
-          </div>
-          <Button icon="plus" variant="secondary" aria-label="Add link" onClick={add} data-testid="iwm-editor-link-add" />
-          <Button variant="destructive" icon="trash-alt" aria-label="Remove link" onClick={remove} disabled={link === null} />
-        </div>
-      </Field>
-      {link !== null ? (
-        <LinkEditor link={link} nodes={nodes} queries={queries} update={update} />
-      ) : (
-        <div className={styles.emptyState}>No links yet — click + to add one</div>
-      )}
-    </>
-  );
+  return <>
+    <Field label="Link" description="Select a link to edit">
+      <Chooser
+        options={selectOptions}
+        value={index}
+        onChange={setIndex}
+        placeholder="— select a link —"
+        onAdd={add}
+        addLabel="Add link"
+        onDelete={remove}
+        deleteLabel="Remove link"
+        addTestId="iwm-editor-link-add"
+      />
+    </Field>
+    {link !== null ? (
+      <LinkEditor link={link} nodes={nodes} queries={queries} update={update} />
+    ) : (
+      <div className={styles.emptyState}>No links yet — click + to add one</div>
+    )}
+  </>;
 };

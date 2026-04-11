@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Combobox, Input, InlineField, InlineFieldRow, FieldSet, useStyles2 } from '@grafana/ui';
+import { Combobox, Input, InlineField, InlineFieldRow, FieldSet, useStyles2, Field } from '@grafana/ui';
 import { getStyles } from './styles';
+import { Chooser } from './Chooser';
 import { NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -22,50 +23,48 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update })
   const healthQueryOptions = queryOptions(queries);
   const noQueryOption = { label: '— none —', value: 0 };
 
-  return (
-    <FieldSet>
-      <InlineFieldRow>
-        <InlineField label="Name" grow>
-          <Input
-            value={node.name}
-            onChange={(e) => update({ name: e.currentTarget.value })}
-            placeholder="router-1.example.com"
-            data-testid="iwm-editor-node-name"
-          />
-        </InlineField>
-      </InlineFieldRow>
-      <InlineFieldRow>
-        <InlineField label="X">
-          <Input
-            type="number"
-            value={node.x ?? 0}
-            onChange={(e) => update({ x: Number(e.currentTarget.value) })}
-            width={8}
-            data-testid="iwm-editor-node-x"
-          />
-        </InlineField>
-        <InlineField label="Y">
-          <Input
-            type="number"
-            value={node.y ?? 0}
-            onChange={(e) => update({ y: Number(e.currentTarget.value) })}
-            width={8}
-            data-testid="iwm-editor-node-y"
-          />
-        </InlineField>
-      </InlineFieldRow>
-      <InlineFieldRow>
-        <InlineField label="Health query" grow>
-          <Combobox
-            options={[noQueryOption, ...healthQueryOptions]}
-            value={node.statusQueryId ?? 0}
-            onChange={(opt) => update({ statusQueryId: opt.value !== 0 ? opt.value : undefined })}
-            width={16}
-          />
-        </InlineField>
-      </InlineFieldRow>
-    </FieldSet>
-  );
+  return <>
+    <InlineFieldRow>
+      <InlineField label="Name" grow>
+        <Input
+          value={node.name}
+          onChange={(e) => update({ name: e.currentTarget.value })}
+          placeholder="router-1.example.com"
+          data-testid="iwm-editor-node-name"
+        />
+      </InlineField>
+    </InlineFieldRow>
+    <InlineFieldRow>
+      <InlineField label="X">
+        <Input
+          type="number"
+          value={node.x ?? 0}
+          onChange={(e) => update({ x: Number(e.currentTarget.value) })}
+          width={8}
+          data-testid="iwm-editor-node-x"
+        />
+      </InlineField>
+      <InlineField label="Y">
+        <Input
+          type="number"
+          value={node.y ?? 0}
+          onChange={(e) => update({ y: Number(e.currentTarget.value) })}
+          width={8}
+          data-testid="iwm-editor-node-y"
+        />
+      </InlineField>
+    </InlineFieldRow>
+    <InlineFieldRow>
+      <InlineField label="Health query" grow>
+        <Combobox
+          options={[noQueryOption, ...healthQueryOptions]}
+          value={node.statusQueryId ?? 0}
+          onChange={(opt) => update({ statusQueryId: opt.value !== 0 ? opt.value : undefined })}
+          width={16}
+        />
+      </InlineField>
+    </InlineFieldRow>
+  </>;
 };
 
 export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, WeathermapOptions>> = ({
@@ -100,25 +99,25 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, We
     .map((n, idx) => ({ label: `${n.name} (#${n.id})`, value: idx }))
     .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
 
-  return (
-    <>
-      <div className={styles.toolbar}>
-        <div className={styles.comboboxWrapper}>
-          <Combobox
-            options={selectOptions}
-            value={index}
-            onChange={(opt) => setIndex(opt.value)}
-            placeholder="— select a node —"
-          />
-        </div>
-        <Button icon="plus" variant="secondary" aria-label="Add node" onClick={add} data-testid="iwm-editor-node-add" />
-        <Button variant="destructive" icon="trash-alt" aria-label="Remove node" onClick={remove} disabled={node === null} data-testid="iwm-editor-node-delete" />
-      </div>
-      {node !== null ? (
-        <NodeEditor node={node} queries={queries} update={update} />
-      ) : (
-        <div className={styles.emptyState}>No nodes yet — click + to add one</div>
-      )}
-    </>
-  );
+  return <>
+    <Field label="Node" description="Select a node to edit">
+      <Chooser
+        options={selectOptions}
+        value={index}
+        onChange={setIndex}
+        placeholder="— select a node —"
+        onAdd={add}
+        addLabel="Add node"
+        onDelete={remove}
+        deleteLabel="Remove node"
+        addTestId="iwm-editor-node-add"
+        deleteTestId="iwm-editor-node-delete"
+      />
+    </Field>
+    {node !== null ? (
+      <NodeEditor node={node} queries={queries} update={update} />
+    ) : (
+      <div className={styles.emptyState}>No nodes yet — click + to add one</div>
+    )}
+  </>;
 };

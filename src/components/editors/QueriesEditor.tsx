@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Button, Combobox, FieldSet, Input, InlineField, InlineFieldRow, useStyles2 } from '@grafana/ui';
+import { Combobox, Field, FieldSet, Input, InlineField, InlineFieldRow, useStyles2 } from '@grafana/ui';
 import { getStyles } from './styles';
+import { Chooser } from './Chooser';
 import { QueryConfig, LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../../types';
 
 function nextId(items: Array<{ id: number }>): number {
@@ -56,64 +57,62 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
     }
   };
 
-  return (
-    <FieldSet>
-      <InlineFieldRow>
-        <InlineField label="RefId">
-          <Combobox<string>
-            options={refIdOptions.filter((o) => o.value === query.refId || !usedRefIds.has(o.value))}
-            value={query.refId || null}
-            onChange={(opt) => update({ ...query, refId: opt.value })}
-            placeholder="A"
-            width={8}
-            data-testid="iwm-editor-query-refid"
-          />
-        </InlineField>
-        <InlineField label="Type">
-          <Combobox<'linkTraffic' | 'nodeHealth'>
-            options={TYPE_OPTIONS}
-            value={query.type}
-            onChange={(opt) => changeType(opt.value)}
-            width={14}
-            data-testid="iwm-editor-query-type"
-          />
-        </InlineField>
-      </InlineFieldRow>
-      <InlineFieldRow>
-        <InlineField label="Instance label">
+  return <>
+    <InlineFieldRow>
+      <InlineField label="RefId">
+        <Combobox<string>
+          options={refIdOptions.filter((o) => o.value === query.refId || !usedRefIds.has(o.value))}
+          value={query.refId || null}
+          onChange={(opt) => update({ ...query, refId: opt.value })}
+          placeholder="A"
+          width={8}
+          data-testid="iwm-editor-query-refid"
+        />
+      </InlineField>
+      <InlineField label="Type">
+        <Combobox<'linkTraffic' | 'nodeHealth'>
+          options={TYPE_OPTIONS}
+          value={query.type}
+          onChange={(opt) => changeType(opt.value)}
+          width={14}
+          data-testid="iwm-editor-query-type"
+        />
+      </InlineField>
+    </InlineFieldRow>
+    <InlineFieldRow>
+      <InlineField label="Instance label">
+        <Input
+          value={query.instanceLabelKey ?? ''}
+          onChange={(e) => update({ ...query, instanceLabelKey: e.currentTarget.value || null })}
+          placeholder="instance"
+          width={12}
+          data-testid="iwm-editor-query-instance-label"
+        />
+      </InlineField>
+      {query.type === 'linkTraffic' && (
+        <InlineField label="Interface label">
           <Input
-            value={query.instanceLabelKey ?? ''}
-            onChange={(e) => update({ ...query, instanceLabelKey: e.currentTarget.value || null })}
-            placeholder="instance"
+            value={query.interfaceLabelKey ?? ''}
+            onChange={(e) => update({ ...query, interfaceLabelKey: e.currentTarget.value || null })}
+            placeholder="ifName"
             width={12}
-            data-testid="iwm-editor-query-instance-label"
+            data-testid="iwm-editor-query-interface-label"
           />
         </InlineField>
-        {query.type === 'linkTraffic' && (
-          <InlineField label="Interface label">
-            <Input
-              value={query.interfaceLabelKey ?? ''}
-              onChange={(e) => update({ ...query, interfaceLabelKey: e.currentTarget.value || null })}
-              placeholder="ifName"
-              width={12}
-              data-testid="iwm-editor-query-interface-label"
-            />
-          </InlineField>
-        )}
-        {query.type === 'linkTraffic' && (
-          <InlineField label="Direction">
-            <Combobox<'egress' | 'ingress'>
-              options={DIRECTION_OPTIONS}
-              value={query.direction}
-              onChange={(opt) => update({ ...query, direction: opt.value })}
-              width={12}
-              data-testid="iwm-editor-query-direction"
-            />
-          </InlineField>
-        )}
-      </InlineFieldRow>
-    </FieldSet>
-  );
+      )}
+      {query.type === 'linkTraffic' && (
+        <InlineField label="Direction">
+          <Combobox<'egress' | 'ingress'>
+            options={DIRECTION_OPTIONS}
+            value={query.direction}
+            onChange={(opt) => update({ ...query, direction: opt.value })}
+            width={12}
+            data-testid="iwm-editor-query-direction"
+          />
+        </InlineField>
+      )}
+    </InlineFieldRow>
+  </>;
 };
 
 export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
@@ -155,25 +154,24 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({
     .map((q, idx) => ({ label: `${q.refId || '(empty)'} \u2013 ${TYPE_LABELS[q.type] ?? q.type} (#${q.id})`, value: idx }))
     .sort((a, b) => (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
 
-  return (
-    <>
-      <div className={styles.toolbar}>
-        <div className={styles.comboboxWrapper}>
-          <Combobox
-            options={selectOptions}
-            value={index}
-            onChange={(opt) => setIndex(opt.value)}
-            placeholder="— select a query config —"
-          />
-        </div>
-        <Button icon="plus" variant="secondary" aria-label="Add query config" onClick={add} data-testid="iwm-editor-query-add" />
-        <Button variant="destructive" icon="trash-alt" aria-label="Remove query config" onClick={remove} disabled={query === null} />
-      </div>
-      {query !== null ? (
-        <QueryEditor query={query} refIdOptions={refIdOptions} usedRefIds={usedRefIds} update={update} />
-      ) : (
-        <div className={styles.emptyState}>No query configs yet — click + to add one</div>
-      )}
-    </>
-  );
+  return <>
+    <Field label="Query" description="Select a query to edit">
+      <Chooser
+        options={selectOptions}
+        value={index}
+        onChange={setIndex}
+        placeholder="— select a query config —"
+        onAdd={add}
+        addLabel="Add query config"
+        onDelete={remove}
+        deleteLabel="Remove query config"
+        addTestId="iwm-editor-query-add"
+      />
+    </Field>
+    {query !== null ? (
+      <QueryEditor query={query} refIdOptions={refIdOptions} usedRefIds={usedRefIds} update={update} />
+    ) : (
+      <div className={styles.emptyState}>No query configs yet — click + to add one</div>
+    )}
+  </>;
 };
