@@ -117,12 +117,12 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
         <div className={styles.headerLine}>
           <span className={styles.endpointLabel}>A:</span>
           <span className={styles.endpointName}>{aName}</span>
-          <span className={styles.endpointValue}>[{link.aInterface}]</span>
+          {link.aInterface !== '' && <span className={styles.endpointValue}>[{link.aInterface}]</span>}
         </div>
         <div className={styles.headerLine}>
           <span className={styles.endpointLabel}>Z:</span>
           <span className={styles.endpointName}>{zName}</span>
-          <span className={styles.endpointValue}>[{link.zInterface}]</span>
+          {link.zInterface !== '' && <span className={styles.endpointValue}>[{link.zInterface}]</span>}
         </div>
       </div>
 
