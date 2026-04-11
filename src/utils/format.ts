@@ -1,30 +1,28 @@
 const SI_PREFIXES = ['', 'K', 'M', 'G', 'T', 'P'];
+const BPS = 'bps';
+const NNBSP = '\u202f';
 
 /**
- * Format a bps value with automatic SI prefix scaling.
- * E.g. 1_500_000 → "1.50 Mbps"
+ * Format a value with automatic SI prefix scaling.
  */
-export function formatBps(bps: number): string {
-  if (!isFinite(bps) || bps < 0) {
-    return '0 bps';
+export function formatSI(value: number): string {
+  if (!isFinite(value) || value < 0) {
+    return `0${NNBSP}`;
   }
 
-  let value = bps;
   let prefixIndex = 0;
-
   while (value >= 1000 && prefixIndex < SI_PREFIXES.length - 1) {
     value /= 1000;
     prefixIndex++;
   }
 
-  let formatted: string;
-  if (value >= 100) {
-    formatted = value.toFixed(0);
-  } else if (value >= 10) {
-    formatted = value.toFixed(1);
-  } else {
-    formatted = value.toFixed(2);
-  }
+  const formatted = value.toFixed(value >= 100 ? 0 : value >= 10 ? 1 : 2);
+  return `${formatted}${NNBSP}${SI_PREFIXES[prefixIndex]}`;
+}
 
-  return `${formatted}\u202f${SI_PREFIXES[prefixIndex]}bps`;
+/**
+ * Format a bps value with automatic SI prefix scaling.
+ */
+export function formatBps(bps: number): string {
+  return formatSI(bps) + BPS;
 }
