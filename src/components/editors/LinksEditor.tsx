@@ -18,6 +18,17 @@ function nodeOptions(nodes: NodeConfig[]) {
   return nodes.map((n) => ({ label: `${n.name} (#${n.id})`, value: n.id }));
 }
 
+const CAPACITY_OPTIONS = [
+  { label: '100\u202fMbps', value: '100000000' },
+  { label: '1\u202fGbps', value: '1000000000' },
+  { label: '2.5\u202fGbps', value: '2500000000' },
+  { label: '5\u202fGbps', value: '5000000000' },
+  { label: '10\u202fGbps', value: '10000000000' },
+  { label: '25\u202fGbps', value: '25000000000' },
+  { label: '40\u202fGbps', value: '40000000000' },
+  { label: '100\u202fGbps', value: '100000000000' },
+];
+
 function queryOptions(queries: QueryConfig[]) {
   return queries.filter((q) => q.type === 'linkTraffic').map((q) => ({ label: q.refId, value: q.id }));
 }
@@ -75,10 +86,16 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
 
     <InlineFieldRow>
       <InlineField label="Capacity (bps)" grow shrink>
-        <Input
-          type="number"
-          value={link.capacity}
-          onChange={(e) => update({ capacity: Number(e.currentTarget.value) })}
+        <Combobox<string>
+          options={CAPACITY_OPTIONS}
+          value={String(link.capacity)}
+          onChange={(opt) => {
+            const n = Number(opt.value);
+            if (Number.isFinite(n) && n > 0 && Number.isInteger(n)) {
+              update({ capacity: n });
+            }
+          }}
+          createCustomValue
           data-testid="iwm-editor-link-capacity"
         />
       </InlineField>
