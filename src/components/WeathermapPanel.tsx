@@ -16,7 +16,7 @@ import { InlineEditor } from './InlineEditor';
 import { PopupProvider, usePopup } from '../context/PopupContext';
 import { findTrafficTimeSeries, findHealthTimeSeries } from '../utils/matching';
 import { getUtilizationColor, GRAY_COLOR, colorScales } from '../utils/color';
-import { formatBps } from '../utils/format';
+import { formatSI } from '../utils/format';
 import { useIsEditing } from 'hooks/useIsEditing';
 import { useLocalStorage } from 'hooks/useLocalStorage';
 import * as z from 'zod/v4/mini';
@@ -435,7 +435,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               })?.getLatestValue() ?? null;
               if (latest !== null) {
                 atozColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
-                atozSpeed = formatBps(latest.value);
+                atozSpeed = formatSI(latest.value);
               }
             }
           }
@@ -452,7 +452,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
               })?.getLatestValue() ?? null;
               if (latest !== null) {
                 ztoaColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
-                ztoaSpeed = formatBps(latest.value);
+                ztoaSpeed = formatSI(latest.value);
               }
             }
           }
