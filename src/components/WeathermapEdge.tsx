@@ -116,13 +116,13 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
 
   const lshift = (color: string) =>
     `light-dark(oklch(from ${color} calc(l - 0.3) c h), oklch(from ${color} calc(l + 0.3) c h))`;
-  const outBorderColor = lshift(atozColor);
-  const inBorderColor = lshift(ztoaColor);
+  const atozBorderColor = lshift(atozColor);
+  const ztoaBorderColor = lshift(ztoaColor);
 
   // Text flip: when the arrow points leftward the rotated text is upside-down.
-  // The out-arrow points at angleDeg; the in-arrow points the opposite way.
-  const outNeedsFlip = Math.abs(angleDeg) > 90;
-  const inNeedsFlip = !outNeedsFlip;
+  // The A-to-Z-arrow points at angleDeg; the Z-to-A-arrow points the opposite way.
+  const atozNeedsFlip = Math.abs(angleDeg) > 90;
+  const ztoaNeedsFlip = !atozNeedsFlip;
 
   const label = (text: string, color: string, needsFlip: boolean, testId: string) => (
     <g transform={needsFlip ? `rotate(180, ${-labelDistance}, 0)` : undefined}>
@@ -147,14 +147,14 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
       <g transform={`translate(${ox}, ${oy})`}>
         {/* A half-arrow: A node → midpoint (A→Z traffic) */}
         <Arrow len={halfLen} angleDeg={angleDeg} tipX={mx} tipY={my}
-          color={atozColor} borderColor={outBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
-          {atozSpeed && label(atozSpeed, atozColor, outNeedsFlip, `iwm-edge-${id}-atoz-label`)}
+          color={atozColor} borderColor={atozBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
+          {atozSpeed && label(atozSpeed, atozColor, atozNeedsFlip, `iwm-edge-${id}-atoz-label`)}
         </Arrow>
 
         {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
         <Arrow len={halfLen} angleDeg={angleDeg + 180} tipX={mx} tipY={my}
-          color={ztoaColor} borderColor={inBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
-          {ztoaSpeed && label(ztoaSpeed, ztoaColor, inNeedsFlip, `iwm-edge-${id}-ztoa-label`)}
+          color={ztoaColor} borderColor={ztoaBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
+          {ztoaSpeed && label(ztoaSpeed, ztoaColor, ztoaNeedsFlip, `iwm-edge-${id}-ztoa-label`)}
         </Arrow>
       </g>
     </g>
