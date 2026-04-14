@@ -315,7 +315,7 @@ test('traffic label appears with egress direction and disappears with ingress', 
   // With direction=egress, the A-side labels (router-a, eth0) match → label visible
   await panelEditPage.refreshPanel();
   await expect(page.getByTestId('iwm-edge-1-atoz-label')).toBeVisible();
-  await expect(page.getByTestId('iwm-edge-1-atoz-label')).toContainText('Gbps');
+  await expect(page.getByTestId('iwm-edge-1-atoz-label')).toContainText(/1\.00\sG/);
 
   // Switch direction to Ingress: now Z-side labels (router-b, eth1) are used → no match
   await page.getByTestId('iwm-editor-query-direction').click();
