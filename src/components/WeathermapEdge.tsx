@@ -126,7 +126,7 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
 
   const label = (text: string, color: string, needsFlip: boolean, testId: string) => (
     <g transform={needsFlip ? `rotate(180, ${-labelDistance}, 0)` : undefined}>
-      <text x={-labelDistance} y={0} textAnchor="middle" dy="0.5cap" fontSize={labelFontSize} fill={color} filter={`url(#${filterId})`} data-testid={testId}>
+      <text x={-labelDistance} y={0} textAnchor={needsFlip ? "start" : "end"} dy="0.5cap" fontSize={labelFontSize} fill={color} filter={`url(#${filterId})`} data-testid={testId}>
         {text}
       </text>
     </g>
