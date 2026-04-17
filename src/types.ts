@@ -4,7 +4,6 @@ export interface WeathermapOptions {
   queries: QueryConfig[];
   colorScaleMode: 'linear' | 'log';
   logScaleBase?: number;        // integer in [2, 10]; only used when colorScaleMode='log' (default: 10)
-  defaultZoom?: number;
   nodeWidth?: number;
   nodeHeight?: number;
   nodeLabelPattern?: string;

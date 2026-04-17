@@ -9,12 +9,6 @@ const APPEARANCE = ['Appearance'];
 
 export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPanelOptions((builder) => {
   return builder
-    .addNumberInput({
-      path: 'defaultZoom',
-      name: 'Default zoom',
-      description: 'Initial zoom level (1.0 = 100%).',
-      defaultValue: 1.0,
-    })
     .addTextInput({
       path: 'nodeLabelPattern',
       name: 'Node label pattern',
