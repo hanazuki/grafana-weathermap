@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, PanelProps } from '@grafana/data';
 import { useTheme2, useStyles2, Icon } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type Node, type Edge, type NodeChange, type Viewport, type Connection } from '@xyflow/react';
+import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type FitViewOptions, type Node, type Edge, type NodeChange, type Viewport, type Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
 import { WeathermapOptions, NodeConfig, QueryConfig, LinkConfig, HealthStatus } from '../types';
@@ -54,6 +54,19 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   const colorSchemeName = (colorScales[colorSchemeIndex] ?? colorScales[0]).name;
   const { state, setContextMenu, setPinned, setPreview, setCursorPos, setInlineEdit } = usePopup();
   const { x: vpX, y: vpY, zoom } = useViewport();
+  // fitView is enabled only when the panel mounts with pre-existing nodes (saved dashboard).
+  // Keeping it false when the canvas starts empty prevents viewport shifts that would break
+  // raw-coordinate interactions in tests.
+  const [fitViewEnabled] = useState(() => (options.nodes?.length ?? 0) > 0);
+  const fitViewOptions = useMemo<FitViewOptions>(() => ({
+    padding: {
+      top: theme.spacing(1) as `${number}px`,
+      bottom: theme.spacing(1) as `${number}px`,
+      left: `${COLOR_LEGEND_TOTAL_WIDTH}px`,
+      right: theme.spacing(1) as `${number}px`,
+    },
+  }), [theme]);
+
   const panelRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const moveStartViewport = useRef<Viewport | null>(null);
@@ -540,13 +553,14 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         onConnect={onConnect}
         connectionLineComponent={ConnectionLine}
         connectionLineStyle={{ strokeWidth: linkStrokeWidth }}
-        defaultViewport={{ x: 0, y: 0, zoom: options.defaultZoom ?? 1.0 }}
+        fitView={fitViewEnabled}
+        fitViewOptions={fitViewOptions}
         colorMode={theme.isLight ? 'light' : theme.isDark ? 'dark' : undefined}
         className={styles.reactFlow}
         proOptions={{ hideAttribution: true }}
       >
         <Background color={theme.colors.border.weak} />
-        <Controls showInteractive={false} fitViewOptions={{ padding: { left: `${COLOR_LEGEND_TOTAL_WIDTH}px` } }}>
+        <Controls showInteractive={false} fitViewOptions={fitViewOptions}>
           <ControlButton
             title={`Color scheme: ${colorSchemeName}`}
             aria-label={`Cycle color scheme (Current: ${colorSchemeName})`}
