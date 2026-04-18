@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, PanelProps } from '@grafana/data';
 import { useTheme2, useStyles2, Icon } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type FitViewOptions, type Node, type Edge, type NodeChange, type Viewport, type Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -319,11 +319,18 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
     []
   );
 
+  const [isConnecting, setIsConnecting] = useState(false);
+
   // Dismiss context menu and pinned popup when a connection drag starts
   const onConnectStart = useCallback(() => {
+    setIsConnecting(true);
     setContextMenu(null);
     setPinned(null);
   }, [setContextMenu, setPinned]);
+
+  const onConnectEnd = useCallback(() => {
+    setIsConnecting(false);
+  }, []);
 
   // Create a new link when a connection is dropped on a target node
   const onConnect = useCallback(
@@ -550,13 +557,14 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         onMove={onMove}
         isValidConnection={isValidConnection}
         onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
         onConnect={onConnect}
         connectionLineComponent={ConnectionLine}
         connectionLineStyle={{ strokeWidth: linkStrokeWidth }}
         fitView={fitViewEnabled}
         fitViewOptions={fitViewOptions}
         colorMode={theme.isLight ? 'light' : theme.isDark ? 'dark' : undefined}
-        className={styles.reactFlow}
+        className={cx(styles.reactFlow, isConnecting && styles.reactFlowConnecting)}
         proOptions={{ hideAttribution: true }}
       >
         <Background color={theme.colors.border.weak} />
@@ -620,5 +628,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   reactFlow: css({
     background: theme.colors.background.canvas,
+  }),
+  reactFlowConnecting: css({
+    '& .react-flow__pane': { cursor: 'no-drop !important' },
   }),
 });
