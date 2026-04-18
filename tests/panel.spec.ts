@@ -338,6 +338,16 @@ test('delete button in inline editor removes a node and closes the editor', asyn
   await page.getByTestId('iwm-editor-node-name').fill('doomed-node');
   await expect(page.getByTestId('iwm-node-1')).toHaveText('doomed-node');
 
+  // The node inline editor is taller now and its delete button can overflow
+  // below the panel canvas. Drag the pane separator down to give the canvas
+  // enough room so the button is not intercepted.
+  const separator = page.getByRole('separator', { name: 'Pane resize widget' }).first();
+  const sepBox = await separator.boundingBox();
+  await page.mouse.move(sepBox!.x + sepBox!.width / 2, sepBox!.y + sepBox!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sepBox!.x + sepBox!.width / 2, sepBox!.y + sepBox!.height / 2 + 200, { steps: 10 });
+  await page.mouse.up();
+
   // Double-click the node to open the inline editor
   await page.getByTestId('iwm-node-1').dblclick();
   const inlineEditor = page.getByTestId('iwm-inline-editor');
