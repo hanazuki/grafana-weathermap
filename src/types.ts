@@ -50,6 +50,7 @@ export interface NodeConfig {
   x?: number;
   y?: number;
   statusQueryId?: number;  // query internal ID for health status; matches series where labels[instanceLabelKey] === node.name
+  description?: string;
 }
 
 export interface LinkConfig {
@@ -61,4 +62,5 @@ export interface LinkConfig {
   capacity: number;       // bps, denominator for utilization coloring
   atozQueryId?: number;    // query internal ID for A-to-Z traffic
   ztoaQueryId?: number;     // query internal ID for Z-to-A traffic
+  description?: string;
 }

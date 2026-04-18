@@ -35,6 +35,15 @@ export const NodeEditor: React.FC<NodeEditorProps> = ({ node, queries, update })
       </InlineField>
     </InlineFieldRow>
     <InlineFieldRow>
+      <InlineField label="Description" grow shrink>
+        <Input
+          value={node.description ?? ''}
+          onChange={(e) => update({ description: e.currentTarget.value })}
+          data-testid="iwm-editor-node-description"
+        />
+      </InlineField>
+    </InlineFieldRow>
+    <InlineFieldRow>
       <InlineField label="X" grow>
         <Input
           type="number"
