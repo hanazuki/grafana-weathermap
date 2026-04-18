@@ -20,7 +20,7 @@ export interface WeathermapNodeData {
   [key: string]: unknown;
 }
 
-export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
+export const WeathermapNode: React.FC<NodeProps> = ({ data, dragging }) => {
   const { id, label, nodeWidth, nodeHeight, hasConfigError, healthStatus, isEditing } = data as WeathermapNodeData;
   const styles = useStyles2(getStyles, nodeWidth, nodeHeight, hasConfigError);
   const theme = useTheme2();
@@ -37,7 +37,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data }) => {
         id="connect-target"
         className={cx(styles.connectTarget, connection.inProgress && styles.connectTargetActive)}
       />
-      <div className={cx('iwm-move-zone', styles.moveZone)}>
+      <div className={cx('iwm-move-zone', styles.moveZone, dragging && styles.moveZoneDragging)}>
         <svg width={MOVE_ZONE_WIDTH} height={nodeHeight} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
           <line
             x1={8}
@@ -157,6 +157,7 @@ const getStyles = (theme: GrafanaTheme2, nodeWidth: number, nodeHeight: number, 
     cursor: 'grab',
     zIndex: 1,
   }),
+  moveZoneDragging: css({ cursor: 'grabbing' }),
   healthIndicator: css({ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }),
   label: css({ fontWeight: 'bold' }),
 });
