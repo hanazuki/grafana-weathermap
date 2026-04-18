@@ -122,6 +122,16 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
   const deleteLink = () =>
     onOptionsChange({ ...options, links: links.filter((l) => l.id !== id) });
 
+  const reverseLink = () =>
+    update({
+      aNodeId: link.zNodeId,
+      zNodeId: link.aNodeId,
+      aInterface: link.zInterface,
+      zInterface: link.aInterface,
+      atozQueryId: link.ztoaQueryId,
+      ztoaQueryId: link.atozQueryId,
+    });
+
   return (
     <div
       ref={panelRef}
@@ -149,6 +159,17 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
             data-testid="iwm-inline-editor-delete"
           >
             Delete
+          </Button>
+          <Button
+            variant="secondary"
+            icon="exchange-alt"
+            size="sm"
+            style={{ width: '33.333%' }}
+            tooltip="Swap A and Z sides"
+            onClick={reverseLink}
+            data-testid="iwm-inline-editor-reverse"
+          >
+            Reverse
           </Button>
         </div>
       </div>
