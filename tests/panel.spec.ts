@@ -489,3 +489,64 @@ test('delete button in inline editor removes a link and closes the editor', asyn
   await expect(inlineEditor).not.toBeVisible();
   await expect(page.getByTestId('iwm-edge-1')).not.toBeVisible();
 });
+
+test('node description appears in hover popup', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add a node with a description
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('router-a');
+  await page.getByTestId('iwm-editor-node-x').fill('200');
+  await page.getByTestId('iwm-editor-node-y').fill('200');
+  await page.getByTestId('iwm-editor-node-description').fill('Core router');
+  await expect(page.getByTestId('iwm-node-1')).toHaveText('router-a');
+
+  // Hover over the node to trigger the preview popup
+  await page.getByTestId('iwm-node-1').hover();
+
+  // Assert the popup is visible and contains the description
+  const popup = page.getByTestId('iwm-node-popup');
+  await expect(popup).toBeVisible();
+  await expect(popup).toContainText('Core router');
+});
+
+test('link description appears in hover popup', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add two nodes at distinct positions
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('alpha');
+  await page.getByTestId('iwm-editor-node-x').fill('100');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('beta');
+  await page.getByTestId('iwm-editor-node-x').fill('400');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  // Add a link and set a description
+  await page.getByTestId('iwm-editor-link-add').click();
+  await page.getByTestId('iwm-editor-link-description').fill('Uplink to AS12345');
+  await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
+
+  // Hover over the center of the edge to trigger the preview popup
+  const edgeBox = await page.getByTestId('iwm-edge-1').boundingBox();
+  await page.mouse.move(edgeBox!.x + edgeBox!.width / 2, edgeBox!.y + edgeBox!.height / 2);
+
+  // Assert the popup is visible and contains the description
+  const popup = page.getByTestId('iwm-link-popup');
+  await expect(popup).toBeVisible();
+  await expect(popup).toContainText('Uplink to AS12345');
+});

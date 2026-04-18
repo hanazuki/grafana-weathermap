@@ -37,13 +37,18 @@ export const NodePopup: React.FC<NodePopupProps> = ({
     maxDataPoints != null;
 
   return (
-    <div className={styles.popup}>
+    <div className={styles.popup} data-testid="iwm-node-popup">
       {/* Header: health icon + node name */}
       <div className={styles.header}>
-        {healthStatus !== undefined ? <HealthIndicator healthStatus={healthStatus} className={styles.healthIcon} /> : null}
-        <span className={styles.name}>
-          {node.name !== '' ? node.name : `#${node.id}`}
-        </span>
+        <div className={styles.headerTitle}>
+          {healthStatus !== undefined ? <HealthIndicator healthStatus={healthStatus} className={styles.healthIcon} /> : null}
+          <span className={styles.name}>
+            {node.name !== '' ? node.name : `#${node.id}`}
+          </span>
+        </div>
+        {node.description !== undefined && (
+          <div className={styles.description}>{node.description}</div>
+        )}
       </div>
 
       {/* Uptime bar: only when statusQueryId is configured */}
@@ -73,7 +78,23 @@ const getStyles = (theme: GrafanaTheme2) => ({
     borderRadius: theme.shape.radius.default,
     overflow: 'hidden',
   }),
-  header: css({ padding: theme.spacing(1, 1.5), display: 'flex', alignItems: 'center', gap: theme.spacing(0.75) }),
-  healthIcon: css({ flexShrink: 0 }),
-  name: css({ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }),
+  header: css({
+    padding: theme.spacing(1, 1.5),
+  }),
+  headerTitle: css({
+    display: 'flex',
+    alignItems: 'center',
+  }),
+  healthIcon: css({
+    flexShrink: 0,
+  }),
+  name: css({
+    fontWeight: 'bold',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  }),
+  description: css({
+    fontStyle: 'italic',
+  }),
 });

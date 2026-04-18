@@ -176,7 +176,7 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
 
   const showChart = atozValues != null || ztoaValues != null;
 
-  return <div className={styles.popup}>
+  return <div className={styles.popup} data-testid="iwm-link-popup">
     <div className={styles.header}>
       <div className={styles.headerLine}>
         <span className={styles.endpointLabel}>A:</span>
@@ -188,6 +188,9 @@ export const LinkPopup: React.FC<LinkPopupProps> = ({
         <span className={styles.endpointName}>{zName}</span>
         {link.zInterface !== '' && <span className={styles.endpointValue}>[{link.zInterface}]</span>}
       </div>
+      {link.description !== undefined && (
+        <div className={styles.description}>{link.description}</div>
+      )}
     </div>
 
     {/* Traffic values */}
@@ -245,6 +248,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(1, 1.5),
     borderBottom: `1px solid ${theme.colors.border.weak}`,
   }),
+  description: css({ fontStyle: 'italic' }),
   headerLine: css({
     display: 'flex',
     gap: theme.spacing(0.5),

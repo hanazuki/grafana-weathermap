@@ -38,9 +38,30 @@
         "nodeLabelPattern": "^(.+)\\.example\\.com$",
         "nodeLabelReplacement": "$1",
         "nodes": [
-          { "id": 1, "name": "host-0.example.com", "x": 200, "y": 200, "statusQueryId": 3 },
-          { "id": 2, "name": "host-1.example.com", "x": 500, "y": 200, "statusQueryId": 3 },
-          { "id": 3, "name": "host-2.example.com", "x": 800, "y": 200, "statusQueryId": 3 }
+          {
+            "id": 1,
+            "name": "host-0.example.com",
+            "x": 200,
+            "y": 200,
+            "statusQueryId": 3,
+            "description": "Core aggregation router"
+          },
+          {
+            "id": 2,
+            "name": "host-1.example.com",
+            "x": 500,
+            "y": 200,
+            "statusQueryId": 3,
+            "description": "Distribution switch"
+          },
+          {
+            "id": 3,
+            "name": "host-2.example.com",
+            "x": 800,
+            "y": 200,
+            "statusQueryId": 3,
+            "description": "Edge access router"
+          }
         ],
         "links": [
           {
@@ -51,7 +72,8 @@
             "zInterface": "eth0",
             "capacity": 1000000000,
             "atozQueryId": 1,
-            "ztoaQueryId": 2
+            "ztoaQueryId": 2,
+            "description": "host-0 to host-1 uplink"
           },
           {
             "id": 2,
@@ -61,7 +83,8 @@
             "zInterface": "eth0",
             "capacity": 1000000000,
             "atozQueryId": 1,
-            "ztoaQueryId": 2
+            "ztoaQueryId": 2,
+            "description": "host-1 to host-2 uplink"
           }
         ],
         "queries": [
@@ -138,14 +161,16 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["weathermap"],
+  "tags": [
+    "weathermap"
+  ],
   "time": {
     "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Interactive Weathermap — Sample",
+  "title": "Interactive Weathermap \u2014 Sample",
   "uid": "a538aeff-5a8a-42a5-901c-938d896fdd6f",
   "version": 5
 }

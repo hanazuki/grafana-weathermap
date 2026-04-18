@@ -85,6 +85,16 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
     </InlineFieldRow>
 
     <InlineFieldRow>
+      <InlineField label="Description" grow shrink>
+        <Input
+          value={link.description ?? ''}
+          onChange={(e) => update({ description: e.currentTarget.value })}
+          data-testid="iwm-editor-link-description"
+        />
+      </InlineField>
+    </InlineFieldRow>
+
+    <InlineFieldRow>
       <InlineField label="Capacity (bps)" grow shrink>
         <Combobox<string>
           options={CAPACITY_OPTIONS}
