@@ -90,7 +90,8 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, We
   const update = (patch: Partial<NodeConfig>) =>
     onChange(value.map((n, idx) => (idx === index ? { ...n, ...patch } : n)));
 
-  const node: NodeConfig | null = index !== null ? value[index] : null;
+  const effectiveIndex = (index !== null && index < value.length) ? index : null;
+  const node: NodeConfig | null = effectiveIndex !== null ? value[effectiveIndex] : null;
 
   const selectOptions = value
     .map((n, idx) => ({ label: `${n.name} (#${n.id})`, value: idx }))
@@ -100,7 +101,7 @@ export const NodesEditor: React.FC<StandardEditorProps<NodeConfig[], unknown, We
     <Field label="Node" description="Select a node to edit">
       <Chooser
         options={selectOptions}
-        value={index}
+        value={effectiveIndex}
         onChange={setIndex}
         placeholder="— select a node —"
         onAdd={add}
