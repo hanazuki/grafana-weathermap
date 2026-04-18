@@ -351,6 +351,96 @@ test('delete button in inline editor removes a node and closes the editor', asyn
   await expect(page.getByTestId('iwm-node-1')).not.toBeVisible();
 });
 
+test('Reverse button in link inline editor swaps A and Z sides', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  // Mock a query frame so refId A is available in the query config editor
+  await panelEditPage.mockQueryDataResponse({
+    results: {
+      A: {
+        frames: [
+          {
+            schema: {
+              refId: 'A',
+              fields: [
+                { name: 'Time', type: 'time', typeInfo: { frame: 'time.Time' } },
+                { name: 'Value', type: 'number', typeInfo: { frame: 'float64' }, labels: {} },
+              ],
+            },
+            data: { values: [[Date.now()], [0]] },
+          },
+        ],
+      },
+    },
+  });
+
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add two nodes with distinct positions
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('alpha');
+  await page.getByTestId('iwm-editor-node-x').fill('100');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('beta');
+  await page.getByTestId('iwm-editor-node-x').fill('400');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  // Add a link; set distinct interfaces on A and Z sides
+  await page.getByTestId('iwm-editor-link-add').click();
+  await page.getByTestId('iwm-editor-link-aiface').fill('eth0');
+  await page.getByTestId('iwm-editor-link-ziface').fill('eth1');
+  await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
+
+  // Add a linkTraffic query config with refId A and assign it to A→Z only.
+  // Z→A is left unassigned (— none —). After Reverse the assignment flips.
+  await page.getByTestId('iwm-editor-query-add').click();
+  await page.getByTestId('iwm-editor-query-refid').click();
+  await page.getByRole('option', { name: 'A' }).click();
+  await page.getByTestId('iwm-editor-link-atoz-query').click();
+  await page.getByRole('option', { name: 'A' }).click();
+
+  // Drag the pane separator down to ensure the inline editor is fully visible
+  const separator = page.getByRole('separator', { name: 'Pane resize widget' }).first();
+  const sepBox = await separator.boundingBox();
+  await page.mouse.move(sepBox!.x + sepBox!.width / 2, sepBox!.y + sepBox!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sepBox!.x + sepBox!.width / 2, sepBox!.y + sepBox!.height / 2 + 200, { steps: 10 });
+  await page.mouse.up();
+
+  // Double-click the link to open the inline editor
+  const edgeBox = await page.getByTestId('iwm-edge-1').boundingBox();
+  await page.mouse.dblclick(edgeBox!.x + edgeBox!.width / 2, edgeBox!.y + edgeBox!.height / 2);
+  const inlineEditor = page.getByTestId('iwm-inline-editor');
+  await expect(inlineEditor).toBeVisible();
+
+  // Verify initial state: nodes, interfaces, and query assignments
+  await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('alpha → beta (#1)');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-anode')).toHaveValue('alpha (#1)');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-znode')).toHaveValue('beta (#2)');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-aiface')).toHaveValue('eth0');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-ziface')).toHaveValue('eth1');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-atoz-query')).toHaveValue('A');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-ztoa-query')).toHaveValue('— none —');
+
+  // Click Reverse
+  await inlineEditor.getByTestId('iwm-inline-editor-reverse').click();
+
+  // Verify all A and Z fields have been swapped
+  await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('beta → alpha (#1)');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-anode')).toHaveValue('beta (#2)');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-znode')).toHaveValue('alpha (#1)');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-aiface')).toHaveValue('eth1');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-ziface')).toHaveValue('eth0');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-atoz-query')).toHaveValue('— none —');
+  await expect(inlineEditor.getByTestId('iwm-editor-link-ztoa-query')).toHaveValue('A');
+});
+
 test('delete button in inline editor removes a link and closes the editor', async ({
   panelEditPage,
   readProvisionedDataSource,
