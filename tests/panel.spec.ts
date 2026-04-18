@@ -323,3 +323,79 @@ test('traffic label appears with egress direction and disappears with ingress', 
   await panelEditPage.refreshPanel();
   await expect(page.getByTestId('iwm-edge-1-atoz-label')).not.toBeVisible();
 });
+
+test('delete button in inline editor removes a node and closes the editor', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add a node
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('doomed-node');
+  await expect(page.getByTestId('iwm-node-1')).toHaveText('doomed-node');
+
+  // Double-click the node to open the inline editor
+  await page.getByTestId('iwm-node-1').dblclick();
+  const inlineEditor = page.getByTestId('iwm-inline-editor');
+  await expect(inlineEditor).toBeVisible();
+
+  // Click the delete button
+  await inlineEditor.getByTestId('iwm-inline-editor-delete').click();
+
+  // The inline editor should auto-close and the node should be gone
+  await expect(inlineEditor).not.toBeVisible();
+  await expect(page.getByTestId('iwm-node-1')).not.toBeVisible();
+});
+
+test('delete button in inline editor removes a link and closes the editor', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add two nodes with distinct positions
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('alpha');
+  await page.getByTestId('iwm-editor-node-x').fill('100');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('beta');
+  await page.getByTestId('iwm-editor-node-x').fill('400');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  // Add a link between them
+  await page.getByTestId('iwm-editor-link-add').click();
+  await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
+
+  // The link inline editor is taller than the node editor and its delete button can overflow
+  // below the panel canvas into the query-editor pane. Drag the pane separator down to give
+  // the canvas enough room so the button is not intercepted.
+  const separator = page.getByRole('separator', { name: 'Pane resize widget' }).first();
+  const sepBox = await separator.boundingBox();
+  await page.mouse.move(sepBox!.x + sepBox!.width / 2, sepBox!.y + sepBox!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sepBox!.x + sepBox!.width / 2, sepBox!.y + sepBox!.height / 2 + 200, { steps: 10 });
+  await page.mouse.up();
+
+  // Double-click the link to open the inline editor
+  const edgeBox = await page.getByTestId('iwm-edge-1').boundingBox();
+  await page.mouse.dblclick(edgeBox!.x + edgeBox!.width / 2, edgeBox!.y + edgeBox!.height / 2);
+  const inlineEditor = page.getByTestId('iwm-inline-editor');
+  await expect(inlineEditor).toBeVisible();
+  await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('alpha → beta (#1)');
+
+  // Click the delete button
+  await inlineEditor.getByTestId('iwm-inline-editor-delete').click();
+
+  // The inline editor should auto-close and the link should be gone
+  await expect(inlineEditor).not.toBeVisible();
+  await expect(page.getByTestId('iwm-edge-1')).not.toBeVisible();
+});

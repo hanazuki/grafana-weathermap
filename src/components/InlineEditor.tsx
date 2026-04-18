@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { IconButton, useStyles2 } from '@grafana/ui';
+import { Button, IconButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { WeathermapOptions } from '../types';
@@ -72,6 +72,8 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
     const title = `${node.name} (#${node.id})`;
     const update = (patch: Partial<typeof node>) =>
       onOptionsChange({ ...options, nodes: nodes.map((n) => (n.id === id ? { ...n, ...patch } : n)) });
+    const deleteNode = () =>
+      onOptionsChange({ ...options, nodes: nodes.filter((n) => n.id !== id) });
 
     return (
       <div
@@ -90,6 +92,18 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
         </div>
         <div className={styles.body}>
           <NodeEditor node={node} queries={queries} update={update} />
+          <div className={styles.footer}>
+            <Button
+              variant="destructive"
+              icon="trash-alt"
+              size="sm"
+              style={{ width: '33.333%' }}
+              onClick={deleteNode}
+              data-testid="iwm-inline-editor-delete"
+            >
+              Delete
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -105,6 +119,8 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
   const title = `${aName} → ${zName} (#${link.id})`;
   const update = (patch: Partial<typeof link>) =>
     onOptionsChange({ ...options, links: links.map((l) => (l.id === id ? { ...l, ...patch } : l)) });
+  const deleteLink = () =>
+    onOptionsChange({ ...options, links: links.filter((l) => l.id !== id) });
 
   return (
     <div
@@ -123,6 +139,18 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
       </div>
       <div className={styles.body}>
         <LinkEditor link={link} nodes={nodes} queries={queries} update={update} />
+        <div className={styles.footer}>
+          <Button
+            variant="destructive"
+            icon="trash-alt"
+            size="sm"
+            style={{ width: '33.333%' }}
+            onClick={deleteLink}
+            data-testid="iwm-inline-editor-delete"
+          >
+            Delete
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -162,5 +190,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   body: css({
     padding: theme.spacing(1),
     overflowY: 'visible',
+  }),
+  footer: css({
+    display: 'flex',
+    marginTop: theme.spacing(1),
   }),
 });
