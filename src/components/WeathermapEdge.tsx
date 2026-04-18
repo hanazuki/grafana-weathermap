@@ -148,13 +148,13 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
         {/* A half-arrow: A node → midpoint (A→Z traffic) */}
         <Arrow len={halfLen} angleDeg={angleDeg} tipX={mx} tipY={my}
           color={atozColor} borderColor={atozBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
-          {atozSpeed && label(atozSpeed, atozColor, atozNeedsFlip, `iwm-edge-${id}-atoz-label`)}
+          {atozSpeed && label(atozSpeed, atozBorderColor, atozNeedsFlip, `iwm-edge-${id}-atoz-label`)}
         </Arrow>
 
         {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
         <Arrow len={halfLen} angleDeg={angleDeg + 180} tipX={mx} tipY={my}
           color={ztoaColor} borderColor={ztoaBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
-          {ztoaSpeed && label(ztoaSpeed, ztoaColor, ztoaNeedsFlip, `iwm-edge-${id}-ztoa-label`)}
+          {ztoaSpeed && label(ztoaSpeed, ztoaBorderColor, ztoaNeedsFlip, `iwm-edge-${id}-ztoa-label`)}
         </Arrow>
       </g>
     </g>
