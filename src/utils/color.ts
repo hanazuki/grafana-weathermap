@@ -1,4 +1,4 @@
-import { interpolateCividis } from 'd3-scale-chromatic';
+import { interpolateCividis } from 'd3';
 
 export type ColorScale = (t: number) => string;
 
