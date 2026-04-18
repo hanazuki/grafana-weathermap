@@ -163,7 +163,8 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
   const update = (patch: Partial<LinkConfig>) =>
     onChange(value.map((l, idx) => (idx === index ? { ...l, ...patch } : l)));
 
-  const link: LinkConfig | null = index !== null ? value[index] : null;
+  const effectiveIndex = (index !== null && index < value.length) ? index : null;
+  const link: LinkConfig | null = effectiveIndex !== null ? value[effectiveIndex] : null;
 
   const selectOptions = value
     .map((l, idx) => {
@@ -177,7 +178,7 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
     <Field label="Link" description="Select a link to edit">
       <Chooser
         options={selectOptions}
-        value={index}
+        value={effectiveIndex}
         onChange={setIndex}
         placeholder="— select a link —"
         onAdd={add}
