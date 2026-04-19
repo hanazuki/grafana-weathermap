@@ -1,9 +1,9 @@
-import React, { useId } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import type { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { useId } from 'react';
 
-import { ColorScale } from '../utils/color';
+import type { ColorScale } from '../utils/color';
 
 interface ColorLegendProps {
   colorScale: ColorScale;
@@ -19,7 +19,7 @@ function stepStartPct(i: number, mode: 'linear' | 'log', logScaleBase: number): 
   // Inverse of: t = log_b(util × (b−1) + 1) at t = i/10
   // util = (b^(i/10) − 1) / (b−1), expressed as a percentage
   const b = logScaleBase;
-  return (Math.pow(b, i / 10) - 1) * 100 / (b - 1);
+  return ((b ** (i / 10) - 1) * 100) / (b - 1);
 }
 
 const BAR_HEIGHT = 160;
@@ -38,42 +38,25 @@ export function ColorLegend({ colorScale, colorScaleMode, logScaleBase }: ColorL
   const titleId = useId();
 
   return (
-    <div
-      className={styles.container}
-      role="figure"
-      aria-label="Legend"
-    >
-      <div
-        className={styles.axisLabel}
-        id={titleId}
-      >
-        <span className={styles.axisLabelText}>
-          Utilization (%)
-        </span>
+    <figure className={styles.container} aria-label="Legend">
+      <div className={styles.axisLabel} id={titleId}>
+        <span className={styles.axisLabelText}>Utilization (%)</span>
       </div>
-      <div
-        className={styles.colorBar}
-        style={{ backgroundImage: gradient }}
-        role="img"
-        aria-labelledby={titleId}
-      />
-      <div className={styles.tickList} role="list">
+      <div className={styles.colorBar} style={{ backgroundImage: gradient }} role="img" aria-labelledby={titleId} />
+      <ul className={styles.tickList}>
         {stops.map(({ pct }, i) => {
           const label = String(Math.round(pct));
           const pad = '\u2007'.repeat(Math.max(0, 3 - label.length));
           return (
-            <span
-              key={i}
-              className={styles.tick}
-              style={{ top: `${(pct / 100) * BAR_HEIGHT}px` }}
-              role="listitem"
-            >
-              <span aria-hidden>{pad}</span>{label}
-            </span>
+            // biome-ignore lint/suspicious/noArrayIndexKey: stops is a fixed-length deterministic sequence
+            <li key={i} className={styles.tick} style={{ top: `${(pct / 100) * BAR_HEIGHT}px` }}>
+              <span aria-hidden>{pad}</span>
+              {label}
+            </li>
           );
         })}
-      </div>
-    </div>
+      </ul>
+    </figure>
   );
 }
 
@@ -87,6 +70,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'flex-start',
     pointerEvents: 'none',
     gap: theme.spacing(0.5),
+    margin: 0,
   }),
   axisLabel: css({
     position: 'relative',
@@ -114,6 +98,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   tickList: css({
     height: BAR_HEIGHT,
     position: 'relative',
+    margin: 0,
+    padding: 0,
+    listStyle: 'none',
   }),
   tick: css({
     position: 'absolute',

@@ -6,7 +6,7 @@ const NNBSP = '\u202f';
  * Format a value with automatic SI prefix scaling.
  */
 export function formatSI(value: number): string {
-  if (!isFinite(value) || value < 0) {
+  if (!Number.isFinite(value) || value < 0) {
     return `0${NNBSP}`;
   }
 

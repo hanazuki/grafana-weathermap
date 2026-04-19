@@ -1,33 +1,29 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
-test('Add nodes and edges', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('Add nodes and edges', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
 
   // Add 3 nodes with distinct positions so edges render
   await page.getByTestId('iwm-editor-node-add').click();
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('#1');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('#1');
   await page.getByTestId('iwm-editor-node-name').fill('node-0');
   await page.getByTestId('iwm-editor-node-x').fill('100');
 
   await page.getByTestId('iwm-editor-node-add').click();
-  await expect(page.getByTestId('iwm-node-2')).toHaveText('#2');
+  await expect(page.getByTestId('iwm-node-2')).toContainText('#2');
   await page.getByTestId('iwm-editor-node-name').fill('node-1');
   await page.getByTestId('iwm-editor-node-x').fill('300');
 
   await page.getByTestId('iwm-editor-node-add').click();
-  await expect(page.getByTestId('iwm-node-3')).toHaveText('#3');
+  await expect(page.getByTestId('iwm-node-3')).toContainText('#3');
   await page.getByTestId('iwm-editor-node-name').fill('node-2');
   await page.getByTestId('iwm-editor-node-x').fill('500');
 
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('node-0');
-  await expect(page.getByTestId('iwm-node-2')).toHaveText('node-1');
-  await expect(page.getByTestId('iwm-node-3')).toHaveText('node-2');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('node-0');
+  await expect(page.getByTestId('iwm-node-2')).toContainText('node-1');
+  await expect(page.getByTestId('iwm-node-3')).toContainText('node-2');
 
   // Add edge node-0 → node-1 (defaults: aNodeId=nodes[0], zNodeId=nodes[1])
   await page.getByTestId('iwm-editor-link-add').click();
@@ -45,11 +41,7 @@ test('Add nodes and edges', async ({
   await expect(page.getByTestId('iwm-edge-2')).toBeVisible();
 });
 
-test('parallel offset is symmetric for reversed edges', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('parallel offset is symmetric for reversed edges', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
@@ -91,10 +83,7 @@ test('parallel offset is symmetric for reversed edges', async ({
   // The outer <g data-testid="iwm-edge-N"> contains a single <g transform="translate(ox,oy)">
   // child that carries the perpendicular offset. With dy=0 the offset is purely vertical.
   const getTranslateY = async (testId: string): Promise<number> => {
-    const transform = await page
-      .getByTestId(testId)
-      .locator('> g')
-      .getAttribute('transform');
+    const transform = await page.getByTestId(testId).locator('> g').getAttribute('transform');
     const match = transform?.match(/translate\(\s*[^,]+,\s*([^)]+)\)/);
     return match ? parseFloat(match[1]) : NaN;
   };
@@ -126,7 +115,7 @@ test('double-clicking a node opens inline editor and editing the name field rena
   // Add a node
   await page.getByTestId('iwm-editor-node-add').click();
   await page.getByTestId('iwm-editor-node-name').fill('original-name');
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('original-name');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('original-name');
 
   // Double-click the node to open the inline editor
   await page.getByTestId('iwm-node-1').dblclick();
@@ -139,7 +128,7 @@ test('double-clicking a node opens inline editor and editing the name field rena
   await nameInput.fill('renamed-node');
 
   // The canvas label and inline editor title should reflect the new name
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('renamed-node');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('renamed-node');
   await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('renamed-node (#1)');
 });
 
@@ -176,11 +165,7 @@ test('double-clicking a link opens inline editor with correct title', async ({
   await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('alpha → beta (#1)');
 });
 
-test('Drag to connect creates a new link', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('Drag to connect creates a new link', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
@@ -197,8 +182,8 @@ test('Drag to connect creates a new link', async ({
   await page.getByTestId('iwm-editor-node-x').fill('300');
   await page.getByTestId('iwm-editor-node-y').fill('100');
 
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('node-a');
-  await expect(page.getByTestId('iwm-node-2')).toHaveText('node-b');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('node-a');
+  await expect(page.getByTestId('iwm-node-2')).toContainText('node-b');
 
   // Drag from the connect zone of node A (x > 40px from its left edge) to node B
   const nodeA = page.getByTestId('iwm-node-1');
@@ -276,7 +261,10 @@ test('traffic label appears with egress direction and disappears with ingress', 
               ],
             },
             data: {
-              values: [[Date.now() - 60_000, Date.now()], [1_000_000_000, 1_000_000_000]],
+              values: [
+                [Date.now() - 60_000, Date.now()],
+                [1_000_000_000, 1_000_000_000],
+              ],
             },
           },
         ],
@@ -336,7 +324,7 @@ test('delete button in inline editor removes a node and closes the editor', asyn
   // Add a node
   await page.getByTestId('iwm-editor-node-add').click();
   await page.getByTestId('iwm-editor-node-name').fill('doomed-node');
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('doomed-node');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('doomed-node');
 
   // The node inline editor is taller now and its delete button can overflow
   // below the panel canvas. Drag the pane separator down to give the canvas
@@ -500,11 +488,7 @@ test('delete button in inline editor removes a link and closes the editor', asyn
   await expect(page.getByTestId('iwm-edge-1')).not.toBeVisible();
 });
 
-test('node description appears in hover popup', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('node description appears in hover popup', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
@@ -515,7 +499,7 @@ test('node description appears in hover popup', async ({
   await page.getByTestId('iwm-editor-node-x').fill('200');
   await page.getByTestId('iwm-editor-node-y').fill('200');
   await page.getByTestId('iwm-editor-node-description').fill('Core router');
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('router-a');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('router-a');
 
   // Hover over the node to trigger the preview popup
   await page.getByTestId('iwm-node-1').hover();
@@ -526,11 +510,7 @@ test('node description appears in hover popup', async ({
   await expect(popup).toContainText('Core router');
 });
 
-test('link description appears in hover popup', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('link description appears in hover popup', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');

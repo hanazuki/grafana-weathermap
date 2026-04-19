@@ -1,5 +1,6 @@
-import React, { useId } from 'react';
-import { EdgeProps } from '@xyflow/react';
+import type { EdgeProps } from '@xyflow/react';
+import type React from 'react';
+import { useId } from 'react';
 
 const BORDER_WIDTH = 0.5;
 
@@ -53,35 +54,55 @@ interface ArrowProps {
 // Drawn in canonical coords (tip at origin, pointing +x), placed via group transform.
 // Children are rendered in the same canonical coordinate space.
 const Arrow: React.FC<ArrowProps> = ({
-  len, angleDeg, tipX, tipY,
-  color, borderColor, strokeWidth, tipLength, children,
+  len,
+  angleDeg,
+  tipX,
+  tipY,
+  color,
+  borderColor,
+  strokeWidth,
+  tipLength,
+  children,
 }) => {
   const filterId = useId();
   const hw = strokeWidth / 2;
 
-  return <>
-    <defs>
-      {/* Dilate alpha outward, flood borderColor, composite to get border ring, merge behind source. */}
-      <filter id={filterId} filterUnits="userSpaceOnUse"
-        x={-(len + BORDER_WIDTH)} y={-(hw + BORDER_WIDTH)}
-        width={len + 2 * BORDER_WIDTH} height={2 * (hw + BORDER_WIDTH)}>
-        <feMorphology in="SourceAlpha" operator="dilate" radius={BORDER_WIDTH} result="dilated" />
-        <feFlood floodColor={borderColor} result="flood" />
-        <feComposite in="flood" in2="dilated" operator="in" result="border" />
-        <feMerge>
-          <feMergeNode in="border" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
-    </defs>
-    <g transform={`translate(${tipX}, ${tipY}) rotate(${angleDeg})`}>
-      <g filter={`url(#${filterId})`}>
-        <path d={`M ${-len},0 L ${-tipLength},0`} stroke={color} strokeWidth={strokeWidth - BORDER_WIDTH * 2} fill="none" strokeLinecap="butt" />
-        <PencilTip color={color} strokeWidth={strokeWidth} tipLength={tipLength} />
+  return (
+    <>
+      <defs>
+        {/* Dilate alpha outward, flood borderColor, composite to get border ring, merge behind source. */}
+        <filter
+          id={filterId}
+          filterUnits="userSpaceOnUse"
+          x={-(len + BORDER_WIDTH)}
+          y={-(hw + BORDER_WIDTH)}
+          width={len + 2 * BORDER_WIDTH}
+          height={2 * (hw + BORDER_WIDTH)}
+        >
+          <feMorphology in="SourceAlpha" operator="dilate" radius={BORDER_WIDTH} result="dilated" />
+          <feFlood floodColor={borderColor} result="flood" />
+          <feComposite in="flood" in2="dilated" operator="in" result="border" />
+          <feMerge>
+            <feMergeNode in="border" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <g transform={`translate(${tipX}, ${tipY}) rotate(${angleDeg})`}>
+        <g filter={`url(#${filterId})`}>
+          <path
+            d={`M ${-len},0 L ${-tipLength},0`}
+            stroke={color}
+            strokeWidth={strokeWidth - BORDER_WIDTH * 2}
+            fill="none"
+            strokeLinecap="butt"
+          />
+          <PencilTip color={color} strokeWidth={strokeWidth} tipLength={tipLength} />
+        </g>
+        {children}
       </g>
-      {children}
-    </g>
-  </>;
+    </>
+  );
 };
 
 export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targetX, targetY, data }) => {
@@ -130,7 +151,16 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
 
   const label = (text: string, color: string, needsFlip: boolean, testId: string) => (
     <g transform={needsFlip ? `rotate(180, ${-labelDistance}, 0)` : undefined}>
-      <text x={-labelDistance} y={0} textAnchor={needsFlip ? "start" : "end"} dy="0.5cap" fontSize={labelFontSize} fill={color} filter={`url(#${filterId})`} data-testid={testId}>
+      <text
+        x={-labelDistance}
+        y={0}
+        textAnchor={needsFlip ? 'start' : 'end'}
+        dy="0.5cap"
+        fontSize={labelFontSize}
+        fill={color}
+        filter={`url(#${filterId})`}
+        data-testid={testId}
+      >
         {text}
       </text>
     </g>
@@ -150,14 +180,30 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
 
       <g transform={`translate(${ox}, ${oy})`}>
         {/* A half-arrow: A node → midpoint (A→Z traffic) */}
-        <Arrow len={halfLen} angleDeg={angleDeg} tipX={mx} tipY={my}
-          color={atozColor} borderColor={atozBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
+        <Arrow
+          len={halfLen}
+          angleDeg={angleDeg}
+          tipX={mx}
+          tipY={my}
+          color={atozColor}
+          borderColor={atozBorderColor}
+          strokeWidth={strokeWidth}
+          tipLength={tipLength}
+        >
           {atozSpeed && label(atozSpeed, atozBorderColor, atozNeedsFlip, `iwm-edge-${id}-atoz-label`)}
         </Arrow>
 
         {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
-        <Arrow len={halfLen} angleDeg={angleDeg + 180} tipX={mx} tipY={my}
-          color={ztoaColor} borderColor={ztoaBorderColor} strokeWidth={strokeWidth} tipLength={tipLength}>
+        <Arrow
+          len={halfLen}
+          angleDeg={angleDeg + 180}
+          tipX={mx}
+          tipY={my}
+          color={ztoaColor}
+          borderColor={ztoaBorderColor}
+          strokeWidth={strokeWidth}
+          tipLength={tipLength}
+        >
           {ztoaSpeed && label(ztoaSpeed, ztoaBorderColor, ztoaNeedsFlip, `iwm-edge-${id}-ztoa-label`)}
         </Arrow>
       </g>

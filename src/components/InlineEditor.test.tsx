@@ -1,5 +1,5 @@
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
 
 // @grafana/ui's Combobox calls canvas.measureText; stub it for jsdom.
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
@@ -9,18 +9,17 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
 // jsdom doesn't implement pointer capture APIs.
 Element.prototype.setPointerCapture = jest.fn();
 Element.prototype.releasePointerCapture = jest.fn();
+
+import { PopupProvider, type PopupTarget, usePopup } from '../context/PopupContext';
+import type { WeathermapOptions } from '../types';
 import { InlineEditor } from './InlineEditor';
-import { PopupProvider, PopupTarget, usePopup } from '../context/PopupContext';
-import { WeathermapOptions } from '../types';
 
 const baseOptions: WeathermapOptions = {
   nodes: [
     { id: 1, name: 'router-1', x: 0, y: 0 },
     { id: 2, name: 'switch-2', x: 100, y: 0 },
   ],
-  links: [
-    { id: 3, aNodeId: 1, zNodeId: 2, aInterface: 'eth0', zInterface: 'eth0', capacity: 1_000_000_000 },
-  ],
+  links: [{ id: 3, aNodeId: 1, zNodeId: 2, aInterface: 'eth0', zInterface: 'eth0', capacity: 1_000_000_000 }],
   queries: [],
   colorScaleMode: 'linear',
 };
@@ -28,7 +27,9 @@ const baseOptions: WeathermapOptions = {
 // Helper: renders InlineEditor inside a PopupProvider and sets inlineEdit via a child component
 function SetInlineEdit({ target }: { target: PopupTarget }) {
   const { setInlineEdit } = usePopup();
-  React.useEffect(() => { setInlineEdit(target); }, [target, setInlineEdit]);
+  React.useEffect(() => {
+    setInlineEdit(target);
+  }, [target, setInlineEdit]);
   return null;
 }
 
@@ -38,7 +39,7 @@ function renderWithTarget(target: PopupTarget, options = baseOptions) {
     <PopupProvider>
       <SetInlineEdit target={target} />
       <InlineEditor options={options} onOptionsChange={onOptionsChange} />
-    </PopupProvider>
+    </PopupProvider>,
   );
   return { onOptionsChange };
 }
@@ -48,7 +49,7 @@ describe('InlineEditor', () => {
     const { container } = render(
       <PopupProvider>
         <InlineEditor options={baseOptions} onOptionsChange={jest.fn()} />
-      </PopupProvider>
+      </PopupProvider>,
     );
     expect(container.firstChild).toBeNull();
   });

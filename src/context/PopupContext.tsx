@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useState } from 'react';
 
 export type PopupTargetType = 'node' | 'link';
 
@@ -9,7 +10,7 @@ export interface PopupTarget {
 
 export interface PopupState {
   pinned: PopupTarget | null;
-  pinnedFlowPos: { x: number; y: number } | null;  // flow (canvas) coordinates captured at pin time
+  pinnedFlowPos: { x: number; y: number } | null; // flow (canvas) coordinates captured at pin time
   preview: PopupTarget | null;
   contextMenu: { clientX: number; clientY: number } | null;
   cursorPos: { x: number; y: number };
@@ -73,7 +74,9 @@ export const PopupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   return (
-    <PopupContext.Provider value={{ state, setContextMenu, setPinned, setPreview, setCursorPos, setInlineEdit, closeAll }}>
+    <PopupContext.Provider
+      value={{ state, setContextMenu, setPinned, setPreview, setCursorPos, setInlineEdit, closeAll }}
+    >
       {children}
     </PopupContext.Provider>
   );

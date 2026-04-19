@@ -1,5 +1,5 @@
-import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
+import type { GrafanaTheme2 } from '@grafana/data';
 
 export const getStyles = (theme: GrafanaTheme2) => ({
   chooser: css({ display: 'flex', gap: theme.spacing(0.5) }),

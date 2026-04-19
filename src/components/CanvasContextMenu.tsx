@@ -1,9 +1,9 @@
-import React, { useCallback } from 'react';
 import { ContextMenu, MenuItem } from '@grafana/ui';
 import { useReactFlow } from '@xyflow/react';
-
-import { WeathermapOptions, NodeConfig } from '../types';
+import type React from 'react';
+import { useCallback } from 'react';
 import { usePopup } from '../context/PopupContext';
+import type { NodeConfig, WeathermapOptions } from '../types';
 
 interface CanvasContextMenuProps {
   options: WeathermapOptions;
@@ -35,8 +35,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({ options, o
     const y = Math.round((flowPos.y - nodeHeight / 2) / 10) * 10;
 
     const existingNodes = options.nodes ?? [];
-    const nextId =
-      existingNodes.length > 0 ? Math.max(...existingNodes.map((n: NodeConfig) => n.id)) + 1 : 1;
+    const nextId = existingNodes.length > 0 ? Math.max(...existingNodes.map((n: NodeConfig) => n.id)) + 1 : 1;
 
     const newNode: NodeConfig = { id: nextId, name: '', x, y };
 
