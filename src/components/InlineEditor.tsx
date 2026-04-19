@@ -1,12 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Button, IconButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-
-import { WeathermapOptions } from '../types';
+import type { GrafanaTheme2 } from '@grafana/data';
+import { Button, IconButton, useStyles2 } from '@grafana/ui';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePopup } from '../context/PopupContext';
-import { NodeEditor } from './editors/NodesEditor';
+import type { WeathermapOptions } from '../types';
 import { LinkEditor } from './editors/LinksEditor';
+import { NodeEditor } from './editors/NodesEditor';
 
 interface Props {
   options: WeathermapOptions;
@@ -15,7 +15,10 @@ interface Props {
 
 export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
   const styles = useStyles2(getStyles);
-  const { state: { inlineEdit }, setInlineEdit } = usePopup();
+  const {
+    state: { inlineEdit },
+    setInlineEdit,
+  } = usePopup();
 
   const nodes = useMemo(() => options.nodes ?? [], [options.nodes]);
   const links = useMemo(() => options.links ?? [], [options.links]);
@@ -72,8 +75,7 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
     const title = `${node.name} (#${node.id})`;
     const update = (patch: Partial<typeof node>) =>
       onOptionsChange({ ...options, nodes: nodes.map((n) => (n.id === id ? { ...n, ...patch } : n)) });
-    const deleteNode = () =>
-      onOptionsChange({ ...options, nodes: nodes.filter((n) => n.id !== id) });
+    const deleteNode = () => onOptionsChange({ ...options, nodes: nodes.filter((n) => n.id !== id) });
 
     return (
       <div
@@ -85,7 +87,9 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
         data-testid="iwm-inline-editor"
       >
         <div className={styles.header} onPointerDown={onHeaderPointerDown} data-testid="iwm-inline-editor-header">
-          <span className={styles.title} title={title}>{title}</span>
+          <span className={styles.title} title={title}>
+            {title}
+          </span>
           <span className={styles.closeButtonWrapper} onPointerDown={(e) => e.stopPropagation()}>
             <IconButton name="times" tooltip="Close editor" onClick={() => setInlineEdit(null)} />
           </span>
@@ -119,8 +123,7 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
   const title = `${aName} → ${zName} (#${link.id})`;
   const update = (patch: Partial<typeof link>) =>
     onOptionsChange({ ...options, links: links.map((l) => (l.id === id ? { ...l, ...patch } : l)) });
-  const deleteLink = () =>
-    onOptionsChange({ ...options, links: links.filter((l) => l.id !== id) });
+  const deleteLink = () => onOptionsChange({ ...options, links: links.filter((l) => l.id !== id) });
 
   const reverseLink = () =>
     update({
@@ -142,7 +145,9 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
       data-testid="iwm-inline-editor"
     >
       <div className={styles.header} onPointerDown={onHeaderPointerDown} data-testid="iwm-inline-editor-header">
-        <span className={styles.title} title={title}>{title}</span>
+        <span className={styles.title} title={title}>
+          {title}
+        </span>
         <span className={styles.closeButtonWrapper} onPointerDown={(e) => e.stopPropagation()}>
           <IconButton name="times" tooltip="Close editor" onClick={() => setInlineEdit(null)} />
         </span>

@@ -1,10 +1,6 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
-test('Add nodes and edges', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('Add nodes and edges', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
@@ -45,11 +41,7 @@ test('Add nodes and edges', async ({
   await expect(page.getByTestId('iwm-edge-2')).toBeVisible();
 });
 
-test('parallel offset is symmetric for reversed edges', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('parallel offset is symmetric for reversed edges', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
@@ -91,10 +83,7 @@ test('parallel offset is symmetric for reversed edges', async ({
   // The outer <g data-testid="iwm-edge-N"> contains a single <g transform="translate(ox,oy)">
   // child that carries the perpendicular offset. With dy=0 the offset is purely vertical.
   const getTranslateY = async (testId: string): Promise<number> => {
-    const transform = await page
-      .getByTestId(testId)
-      .locator('> g')
-      .getAttribute('transform');
+    const transform = await page.getByTestId(testId).locator('> g').getAttribute('transform');
     const match = transform?.match(/translate\(\s*[^,]+,\s*([^)]+)\)/);
     return match ? parseFloat(match[1]) : NaN;
   };
@@ -176,11 +165,7 @@ test('double-clicking a link opens inline editor with correct title', async ({
   await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('alpha → beta (#1)');
 });
 
-test('Drag to connect creates a new link', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('Drag to connect creates a new link', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
@@ -276,7 +261,10 @@ test('traffic label appears with egress direction and disappears with ingress', 
               ],
             },
             data: {
-              values: [[Date.now() - 60_000, Date.now()], [1_000_000_000, 1_000_000_000]],
+              values: [
+                [Date.now() - 60_000, Date.now()],
+                [1_000_000_000, 1_000_000_000],
+              ],
             },
           },
         ],
@@ -500,11 +488,7 @@ test('delete button in inline editor removes a link and closes the editor', asyn
   await expect(page.getByTestId('iwm-edge-1')).not.toBeVisible();
 });
 
-test('node description appears in hover popup', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('node description appears in hover popup', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
@@ -526,11 +510,7 @@ test('node description appears in hover popup', async ({
   await expect(popup).toContainText('Core router');
 });
 
-test('link description appears in hover popup', async ({
-  panelEditPage,
-  readProvisionedDataSource,
-  page,
-}) => {
+test('link description appears in hover popup', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');

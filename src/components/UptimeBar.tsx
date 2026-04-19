@@ -1,17 +1,20 @@
-import React, { useId } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useTheme2, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { HealthStatus } from '../types';
+import type { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2, useTheme2 } from '@grafana/ui';
+import type React from 'react';
+import { useId } from 'react';
+import type { HealthStatus } from '../types';
 
 const BAR_HEIGHT = 12;
-const PIXEL_UNKNOWN = 0, PIXEL_UP = 1, PIXEL_DOWN = 2;
+const PIXEL_UNKNOWN = 0,
+  PIXEL_UP = 1,
+  PIXEL_DOWN = 2;
 
 interface UptimeBarProps {
   statuses: HealthStatus[];
   timestamps: number[]; // ms epoch, same length as statuses; assumed sorted ascending
-  panelFrom: number;    // data.timeRange.from.valueOf() — ms epoch
-  panelTo: number;      // data.timeRange.to.valueOf() — ms epoch
+  panelFrom: number; // data.timeRange.from.valueOf() — ms epoch
+  panelTo: number; // data.timeRange.to.valueOf() — ms epoch
   maxDataPoints: number; // data.request?.maxDataPoints ?? 1080
 }
 
@@ -52,7 +55,16 @@ export const UptimeBar: React.FC<UptimeBarProps> = ({ statuses, timestamps, pane
     let segStart = 0;
     for (let i = 1; i <= N; i++) {
       if (i === N || pixelValues[i] !== pixelValues[segStart]) {
-        rects.push(<rect key={segStart} x={segStart} y={0} width={i - segStart} height={BAR_HEIGHT} fill={colorFor(pixelValues[segStart])} />);
+        rects.push(
+          <rect
+            key={segStart}
+            x={segStart}
+            y={0}
+            width={i - segStart}
+            height={BAR_HEIGHT}
+            fill={colorFor(pixelValues[segStart])}
+          />,
+        );
         segStart = i;
       }
     }
@@ -61,19 +73,20 @@ export const UptimeBar: React.FC<UptimeBarProps> = ({ statuses, timestamps, pane
   };
 
   const titleId = useId();
-  return <svg
-    viewBox={`0 0 ${N} ${BAR_HEIGHT}`}
-    preserveAspectRatio="none"
-    width="100%"
-    height={BAR_HEIGHT}
-    className={styles.svg}
-    role="img"
-    aria-labelledby={titleId}
-  >
-    <title id={titleId}>Uptime history</title>
-    {generateSegments()}
-  </svg>
-
+  return (
+    <svg
+      viewBox={`0 0 ${N} ${BAR_HEIGHT}`}
+      preserveAspectRatio="none"
+      width="100%"
+      height={BAR_HEIGHT}
+      className={styles.svg}
+      role="img"
+      aria-labelledby={titleId}
+    >
+      <title id={titleId}>Uptime history</title>
+      {generateSegments()}
+    </svg>
+  );
 };
 
 // The theme parameter is required by the useStyles2 signature but unused here.

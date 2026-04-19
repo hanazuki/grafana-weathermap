@@ -1,10 +1,10 @@
-import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { NodeConfig, HealthStatus, TimeSeries } from '../types';
-import { UptimeBar } from './UptimeBar';
+import type { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import type React from 'react';
+import type { HealthStatus, NodeConfig, TimeSeries } from '../types';
 import { HealthIndicator } from './HealthIndicator';
+import { UptimeBar } from './UptimeBar';
 
 const POPUP_WIDTH = 220;
 
@@ -41,29 +41,28 @@ export const NodePopup: React.FC<NodePopupProps> = ({
       {/* Header: health icon + node name */}
       <div className={styles.header}>
         <div className={styles.headerTitle}>
-          {healthStatus !== undefined ? <HealthIndicator healthStatus={healthStatus} className={styles.healthIcon} /> : null}
-          <span className={styles.name}>
-            {node.name !== '' ? node.name : `#${node.id}`}
-          </span>
+          {healthStatus !== undefined ? (
+            <HealthIndicator healthStatus={healthStatus} className={styles.healthIcon} />
+          ) : null}
+          <span className={styles.name}>{node.name !== '' ? node.name : `#${node.id}`}</span>
         </div>
-        {node.description !== undefined && (
-          <div className={styles.description}>{node.description}</div>
-        )}
+        {node.description !== undefined && <div className={styles.description}>{node.description}</div>}
       </div>
 
       {/* Uptime bar: only when statusQueryId is configured */}
-      {showUptimeBar && (() => {
-        const { values, timestamps } = healthTimeSeries!.getValues();
-        return (
-          <UptimeBar
-            statuses={values}
-            timestamps={timestamps}
-            panelFrom={panelFrom!}
-            panelTo={panelTo!}
-            maxDataPoints={maxDataPoints!}
-          />
-        );
-      })()}
+      {showUptimeBar &&
+        (() => {
+          const { values, timestamps } = healthTimeSeries!.getValues();
+          return (
+            <UptimeBar
+              statuses={values}
+              timestamps={timestamps}
+              panelFrom={panelFrom!}
+              panelTo={panelTo!}
+              maxDataPoints={maxDataPoints!}
+            />
+          );
+        })()}
     </div>
   );
 };

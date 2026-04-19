@@ -1,14 +1,13 @@
-import React from 'react';
-import { GrafanaTheme2, PanelData } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import type { GrafanaTheme2, PanelData } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
 import { useViewport } from '@xyflow/react';
-
-import { WeathermapOptions, NodeConfig, LinkConfig, HealthStatus, TimeSeries } from '../types';
+import type React from 'react';
 import { usePopup } from '../context/PopupContext';
-import { NodePopup } from './NodePopup';
-import { LinkPopup } from './LinkPopup';
+import type { HealthStatus, LinkConfig, NodeConfig, TimeSeries, WeathermapOptions } from '../types';
 import { findHealthTimeSeries, findTrafficTimeSeries } from '../utils/matching';
+import { LinkPopup } from './LinkPopup';
+import { NodePopup } from './NodePopup';
 
 interface WeathermapPopupProps {
   options: WeathermapOptions;
@@ -18,7 +17,7 @@ interface WeathermapPopupProps {
 function resolveNodeHealth(
   node: NodeConfig,
   options: WeathermapOptions,
-  data: PanelData
+  data: PanelData,
 ): { status: HealthStatus | null | undefined; timeSeries: TimeSeries<HealthStatus> | null } {
   if (node.statusQueryId == null) {
     return { status: undefined, timeSeries: null };
@@ -39,7 +38,7 @@ function resolveLinkTraffic(
   link: LinkConfig,
   options: WeathermapOptions,
   data: PanelData,
-  nodeMap: Map<number, NodeConfig>
+  nodeMap: Map<number, NodeConfig>,
 ): { atozTraffic: TimeSeries<number> | null; ztoaTraffic: TimeSeries<number> | null } {
   const queries = options.queries ?? [];
   const aNode = nodeMap.get(link.aNodeId);
@@ -88,21 +87,15 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
   const nodeMap = new Map<number, NodeConfig>(nodes.map((n) => [n.id, n]));
 
   // Resolve node or link data based on active target type
-  const node = activeTarget?.type === 'node'
-    ? nodes.find((n) => String(n.id) === activeTarget.id) ?? null
-    : null;
+  const node = activeTarget?.type === 'node' ? (nodes.find((n) => String(n.id) === activeTarget.id) ?? null) : null;
 
-  const link = activeTarget?.type === 'link'
-    ? links.find((l) => String(l.id) === activeTarget.id) ?? null
-    : null;
+  const link = activeTarget?.type === 'link' ? (links.find((l) => String(l.id) === activeTarget.id) ?? null) : null;
 
   const { status: healthStatus, timeSeries: healthTimeSeries } =
     node != null ? resolveNodeHealth(node, options, data) : { status: undefined, timeSeries: null };
 
   const { atozTraffic, ztoaTraffic } =
-    link != null
-      ? resolveLinkTraffic(link, options, data, nodeMap)
-      : { atozTraffic: null, ztoaTraffic: null };
+    link != null ? resolveLinkTraffic(link, options, data, nodeMap) : { atozTraffic: null, ztoaTraffic: null };
 
   const panelFrom = data.timeRange.from.valueOf();
   const panelTo = data.timeRange.to.valueOf();
@@ -148,13 +141,7 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
         />
       )}
       {link != null && aNode != null && zNode != null && (
-        <LinkPopup
-          link={link}
-          aNode={aNode}
-          zNode={zNode}
-          atozTraffic={atozTraffic}
-          ztoaTraffic={ztoaTraffic}
-        />
+        <LinkPopup link={link} aNode={aNode} zNode={zNode} atozTraffic={atozTraffic} ztoaTraffic={ztoaTraffic} />
       )}
     </div>
   );

@@ -1,11 +1,7 @@
-import { PanelData, FieldType, getTimeField, type Field } from '@grafana/data';
-import { LinkTrafficQueryConfig, NodeHealthQueryConfig, HealthStatus, TimeSeries } from '../types';
+import { type Field, FieldType, getTimeField, type PanelData } from '@grafana/data';
+import type { HealthStatus, LinkTrafficQueryConfig, NodeHealthQueryConfig, TimeSeries } from '../types';
 
-function makeTimeSeries<T>(
-  field: Field,
-  timeField: Field,
-  decode: (v: unknown) => T | null
-): TimeSeries<T> {
+function makeTimeSeries<T>(field: Field, timeField: Field, decode: (v: unknown) => T | null): TimeSeries<T> {
   return {
     getLatestValue() {
       const len = field.values.length;
@@ -60,7 +56,9 @@ export function findTrafficTimeSeries({
     }
 
     const { timeField } = getTimeField(frame);
-    if (!timeField) { return null; }
+    if (!timeField) {
+      return null;
+    }
 
     for (const field of frame.fields) {
       if (field.type !== FieldType.number) {
@@ -74,7 +72,7 @@ export function findTrafficTimeSeries({
       if (queryConfig.interfaceLabelKey !== null && labels[queryConfig.interfaceLabelKey] !== iface) {
         continue;
       }
-      return makeTimeSeries(field, timeField, v => Number.isFinite(v) ? v as number : null);
+      return makeTimeSeries(field, timeField, (v) => (Number.isFinite(v) ? (v as number) : null));
     }
   }
 
@@ -84,7 +82,6 @@ export function findTrafficTimeSeries({
 function decodeHealthValue(v: unknown): HealthStatus | null {
   return typeof v === 'number' && isFinite(v) ? (v > 0 ? 'up' : 'down') : null;
 }
-
 
 /**
  * Find the health time series for a node instance.
@@ -97,7 +94,7 @@ function decodeHealthValue(v: unknown): HealthStatus | null {
 export function findHealthTimeSeries(
   data: PanelData,
   queryConfig: NodeHealthQueryConfig,
-  nodeName: string
+  nodeName: string,
 ): TimeSeries<HealthStatus> | null {
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {
@@ -105,7 +102,9 @@ export function findHealthTimeSeries(
     }
 
     const { timeField } = getTimeField(frame);
-    if (!timeField) { return null; }
+    if (!timeField) {
+      return null;
+    }
 
     for (const field of frame.fields) {
       if (field.type !== FieldType.number) {

@@ -1,11 +1,10 @@
-import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { Handle, NodeProps, Position, useConnection } from '@xyflow/react';
-import { HealthStatus } from '../types';
+import type { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2, useTheme2 } from '@grafana/ui';
+import { Handle, type NodeProps, Position, useConnection } from '@xyflow/react';
+import type React from 'react';
+import type { HealthStatus } from '../types';
 import { HealthIndicator } from './HealthIndicator';
-
 
 const MOVE_ZONE_WIDTH = 32;
 
@@ -38,31 +37,16 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data, dragging }) => {
         className={cx(styles.connectTarget, connection.inProgress && styles.connectTargetActive)}
       />
       <div className={cx('iwm-move-zone', styles.moveZone, dragging && styles.moveZoneDragging)}>
-        <svg width={MOVE_ZONE_WIDTH} height={nodeHeight} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
-          <line
-            x1={8}
-            y1={18}
-            x2={8}
-            y2={nodeHeight - 8}
-            stroke={gripColor}
-            strokeWidth={2}
-          />
-          <line
-            x1={12}
-            y1={18}
-            x2={12}
-            y2={nodeHeight - 8}
-            stroke={gripColor}
-            strokeWidth={2}
-          />
+        <svg
+          width={MOVE_ZONE_WIDTH}
+          height={nodeHeight}
+          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+        >
+          <line x1={8} y1={18} x2={8} y2={nodeHeight - 8} stroke={gripColor} strokeWidth={2} />
+          <line x1={12} y1={18} x2={12} y2={nodeHeight - 8} stroke={gripColor} strokeWidth={2} />
         </svg>
       </div>
-      <Handle
-        type="source"
-        id="connect-source"
-        position={Position.Right}
-        className={styles.connectSource}
-      />
+      <Handle type="source" id="connect-source" position={Position.Right} className={styles.connectSource} />
     </>
   );
 
@@ -70,9 +54,15 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data, dragging }) => {
     <>
       <Handle type="source" position={Position.Top} className={styles.handle} />
       <Handle type="target" position={Position.Top} className={styles.handle} />
-      <div className={cx(styles.node, isDropTarget && styles.dropTarget)} title={String(label)} data-testid={`iwm-node-${id}`}>
+      <div
+        className={cx(styles.node, isDropTarget && styles.dropTarget)}
+        title={String(label)}
+        data-testid={`iwm-node-${id}`}
+      >
         {editOverlay}
-        {healthStatus !== undefined ? <HealthIndicator healthStatus={healthStatus} className={styles.healthIndicator} /> : null}
+        {healthStatus !== undefined ? (
+          <HealthIndicator healthStatus={healthStatus} className={styles.healthIndicator} />
+        ) : null}
         <span className={styles.label}>{label}</span>
       </div>
     </>

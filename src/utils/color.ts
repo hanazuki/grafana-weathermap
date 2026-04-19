@@ -9,7 +9,7 @@ export const rainbow = (t: number) => {
   const l_dark = 0.55 + 0.25 * t;
   const c_light = 0.3;
   const c_dark = 0.2;
-  const h = 570 - 240 * Math.pow(t, 1.2); // cyan to magenta
+  const h = 570 - 240 * t ** 1.2; // cyan to magenta
 
   return `light-dark(oklch(${l_light.toFixed(3)} ${c_light.toFixed(3)} ${h.toFixed(1)}deg), oklch(${l_dark.toFixed(3)} ${c_dark.toFixed(3)} ${h.toFixed(1)}deg))`;
 };
@@ -17,7 +17,7 @@ export const rainbow = (t: number) => {
 export const colorScales = [
   { name: 'Rainbow', getColor: rainbow },
   { name: 'Cividis', getColor: interpolateCividis },
-  { name: 'Mono', getColor: () => `light-dark(rgb(36, 41, 46), rgb(204, 204, 220))`, }
+  { name: 'Mono', getColor: () => `light-dark(rgb(36, 41, 46), rgb(204, 204, 220))` },
 ];
 
 /** Color for links with no data or no query configured. */
@@ -51,7 +51,7 @@ export function getUtilizationColor(
   capacity: number,
   mode: 'linear' | 'log',
   logScaleBase = 10,
-  colorScale: ColorScale = rainbow
+  colorScale: ColorScale = rainbow,
 ): string {
   if (!isFinite(current) || capacity <= 0) {
     return GRAY_COLOR;

@@ -1,9 +1,9 @@
 import { PanelPlugin } from '@grafana/data';
-import { WeathermapOptions } from './types';
-import { WeathermapPanel } from './components/WeathermapPanel';
-import { NodesEditor } from './components/editors/NodesEditor';
 import { LinksEditor } from './components/editors/LinksEditor';
+import { NodesEditor } from './components/editors/NodesEditor';
 import { QueriesEditor } from './components/editors/QueriesEditor';
+import { WeathermapPanel } from './components/WeathermapPanel';
+import type { WeathermapOptions } from './types';
 
 const APPEARANCE = ['Appearance'];
 
@@ -37,7 +37,8 @@ export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPan
     .addSliderInput({
       path: 'logScaleBase',
       name: 'Log scale base',
-      description: 'Base of the logarithm used for log scale mode. Higher = stronger compression of low-utilization range.',
+      description:
+        'Base of the logarithm used for log scale mode. Higher = stronger compression of low-utilization range.',
       defaultValue: 10,
       category: APPEARANCE,
       showIf: (config) => config.colorScaleMode === 'log',

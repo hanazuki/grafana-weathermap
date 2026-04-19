@@ -1,8 +1,12 @@
-import { FieldType, PanelData } from '@grafana/data';
-import { findTrafficTimeSeries, findHealthTimeSeries } from './matching';
-import { LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../types';
+import { FieldType, type PanelData } from '@grafana/data';
+import type { LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../types';
+import { findHealthTimeSeries, findTrafficTimeSeries } from './matching';
 
-function makeFrame(refId: string, timeValues: number[], numericFields: Array<{ labels?: Record<string, string>; values: number[] }>) {
+function makeFrame(
+  refId: string,
+  timeValues: number[],
+  numericFields: Array<{ labels?: Record<string, string>; values: number[] }>,
+) {
   return {
     refId,
     length: timeValues.length,
@@ -46,15 +50,30 @@ const healthQuery = (overrides: Partial<NodeHealthQueryConfig> = {}): NodeHealth
 // ---------------------------------------------------------------------------
 
 describe('findTrafficTimeSeries', () => {
-  const frame = makeFrame('A', [1000, 2000], [
-    { labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20] },
-    { labels: { instance: 'router-1', ifName: 'eth1' }, values: [30, 40] },
-  ]);
+  const frame = makeFrame(
+    'A',
+    [1000, 2000],
+    [
+      { labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20] },
+      { labels: { instance: 'router-1', ifName: 'eth1' }, values: [30, 40] },
+    ],
+  );
   const data = makeData([frame]);
 
   // Helper: call with router-1 as the source (egress picks src labels)
-  const call = (qc: LinkTrafficQueryConfig, srcName: string, srcIface: string, dstName = 'router-z', dstIface = 'eth9') =>
-    findTrafficTimeSeries({ data, queryConfig: qc, srcNode: { name: srcName, iface: srcIface }, dstNode: { name: dstName, iface: dstIface } });
+  const call = (
+    qc: LinkTrafficQueryConfig,
+    srcName: string,
+    srcIface: string,
+    dstName = 'router-z',
+    dstIface = 'eth9',
+  ) =>
+    findTrafficTimeSeries({
+      data,
+      queryConfig: qc,
+      srcNode: { name: srcName, iface: srcIface },
+      dstNode: { name: dstName, iface: dstIface },
+    });
 
   test('non-null keys: returns matching series (regression)', () => {
     const ts = call(trafficQuery(), 'router-1', 'eth0');
@@ -103,17 +122,31 @@ describe('findTrafficTimeSeries', () => {
   });
 
   // direction tests use a frame with both A-side and Z-side series
-  const directionFrame = makeFrame('A', [1000, 2000], [
-    { labels: { instance: 'router-a', ifName: 'eth0' }, values: [10, 20] },
-    { labels: { instance: 'router-b', ifName: 'eth1' }, values: [30, 40] },
-  ]);
+  const directionFrame = makeFrame(
+    'A',
+    [1000, 2000],
+    [
+      { labels: { instance: 'router-a', ifName: 'eth0' }, values: [10, 20] },
+      { labels: { instance: 'router-b', ifName: 'eth1' }, values: [30, 40] },
+    ],
+  );
   const directionData = makeData([directionFrame]);
   // atoz slot: src=router-a (A side), dst=router-b (Z side)
   const directionCall = (qc: LinkTrafficQueryConfig) =>
-    findTrafficTimeSeries({ data: directionData, queryConfig: qc, srcNode: { name: 'router-a', iface: 'eth0' }, dstNode: { name: 'router-b', iface: 'eth1' } });
+    findTrafficTimeSeries({
+      data: directionData,
+      queryConfig: qc,
+      srcNode: { name: 'router-a', iface: 'eth0' },
+      dstNode: { name: 'router-b', iface: 'eth1' },
+    });
   // ztoa slot: src=router-b (Z side), dst=router-a (A side)
   const directionCallZtoa = (qc: LinkTrafficQueryConfig) =>
-    findTrafficTimeSeries({ data: directionData, queryConfig: qc, srcNode: { name: 'router-b', iface: 'eth1' }, dstNode: { name: 'router-a', iface: 'eth0' } });
+    findTrafficTimeSeries({
+      data: directionData,
+      queryConfig: qc,
+      srcNode: { name: 'router-b', iface: 'eth1' },
+      dstNode: { name: 'router-a', iface: 'eth0' },
+    });
 
   test('direction egress: selects src labels', () => {
     // atoz: src=router-a/eth0 → values [10,20]
@@ -157,10 +190,14 @@ describe('findTrafficTimeSeries', () => {
 // ---------------------------------------------------------------------------
 
 describe('findHealthTimeSeries', () => {
-  const frame = makeFrame('B', [1000, 2000, 3000], [
-    { labels: { instance: 'host-1' }, values: [1, 0, 1] },
-    { labels: { instance: 'host-2' }, values: [0, 0, 0] },
-  ]);
+  const frame = makeFrame(
+    'B',
+    [1000, 2000, 3000],
+    [
+      { labels: { instance: 'host-1' }, values: [1, 0, 1] },
+      { labels: { instance: 'host-2' }, values: [0, 0, 0] },
+    ],
+  );
   const data = makeData([frame]);
 
   test('non-null instanceLabelKey: returns matching series (regression)', () => {

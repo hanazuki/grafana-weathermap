@@ -1,25 +1,39 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { GrafanaTheme2, PanelProps } from '@grafana/data';
-import { useTheme2, useStyles2, Icon } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { ReactFlow, ReactFlowProvider, Background, Controls, ControlButton, useViewport, type FitViewOptions, type Node, type Edge, type NodeChange, type Viewport, type Connection } from '@xyflow/react';
+import type { GrafanaTheme2, PanelProps } from '@grafana/data';
+import { Icon, useStyles2, useTheme2 } from '@grafana/ui';
+import {
+  Background,
+  type Connection,
+  ControlButton,
+  Controls,
+  type Edge,
+  type FitViewOptions,
+  type Node,
+  type NodeChange,
+  ReactFlow,
+  ReactFlowProvider,
+  useViewport,
+  type Viewport,
+} from '@xyflow/react';
+import type React from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import '@xyflow/react/dist/style.css';
 
-import { WeathermapOptions, NodeConfig, QueryConfig, LinkConfig, HealthStatus } from '../types';
-import { WeathermapNode, type WeathermapNodeData } from './WeathermapNode';
-import { ConnectionLine } from './ConnectionLine';
-import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
-import { ColorLegend } from './ColorLegend';
-import { CanvasContextMenu } from './CanvasContextMenu';
-import { WeathermapPopup } from './WeathermapPopup';
-import { InlineEditor } from './InlineEditor';
-import { PopupProvider, usePopup } from '../context/PopupContext';
-import { findTrafficTimeSeries, findHealthTimeSeries } from '../utils/matching';
-import { getUtilizationColor, GRAY_COLOR, colorScales } from '../utils/color';
-import { formatSI } from '../utils/format';
 import { useIsEditing } from 'hooks/useIsEditing';
 import { useLocalStorage } from 'hooks/useLocalStorage';
 import * as z from 'zod/v4/mini';
+import { PopupProvider, usePopup } from '../context/PopupContext';
+import type { HealthStatus, LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../types';
+import { colorScales, GRAY_COLOR, getUtilizationColor } from '../utils/color';
+import { formatSI } from '../utils/format';
+import { findHealthTimeSeries, findTrafficTimeSeries } from '../utils/matching';
+import { CanvasContextMenu } from './CanvasContextMenu';
+import { ColorLegend } from './ColorLegend';
+import { ConnectionLine } from './ConnectionLine';
+import { InlineEditor } from './InlineEditor';
+import { WeathermapEdge, type WeathermapEdgeData } from './WeathermapEdge';
+import { WeathermapNode, type WeathermapNodeData } from './WeathermapNode';
+import { WeathermapPopup } from './WeathermapPopup';
 
 // Total width of the color legend area (measured from ColorLegend.tsx):
 // 8 px left offset + 12 px axis-label div + 4 px gap + 16 px bar + 4 px gap + ~28 px tick-label text
@@ -45,11 +59,20 @@ export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) 
 
 const PreferredColorSchemeIndex = z._default(z.number(), 0);
 
-const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ options, data, width, height, onOptionsChange }) => {
+const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
+  options,
+  data,
+  width,
+  height,
+  onOptionsChange,
+}) => {
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
   const isEditing = useIsEditing();
-  const [colorSchemeIndex, setColorSchemeIndex] = useLocalStorage('iwm-preferences-color-scheme', PreferredColorSchemeIndex);
+  const [colorSchemeIndex, setColorSchemeIndex] = useLocalStorage(
+    'iwm-preferences-color-scheme',
+    PreferredColorSchemeIndex,
+  );
   const colorScale = (colorScales[colorSchemeIndex] ?? colorScales[0]).getColor;
   const colorSchemeName = (colorScales[colorSchemeIndex] ?? colorScales[0]).name;
   const { state, setContextMenu, setPinned, setPreview, setCursorPos, setInlineEdit } = usePopup();
@@ -58,14 +81,17 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   // Keeping it false when the canvas starts empty prevents viewport shifts that would break
   // raw-coordinate interactions in tests.
   const [fitViewEnabled] = useState(() => (options.nodes?.length ?? 0) > 0);
-  const fitViewOptions = useMemo<FitViewOptions>(() => ({
-    padding: {
-      top: theme.spacing(1) as `${number}px`,
-      bottom: theme.spacing(1) as `${number}px`,
-      left: `${COLOR_LEGEND_TOTAL_WIDTH}px`,
-      right: theme.spacing(1) as `${number}px`,
-    },
-  }), [theme]);
+  const fitViewOptions = useMemo<FitViewOptions>(
+    () => ({
+      padding: {
+        top: theme.spacing(1) as `${number}px`,
+        bottom: theme.spacing(1) as `${number}px`,
+        left: `${COLOR_LEGEND_TOTAL_WIDTH}px`,
+        right: theme.spacing(1) as `${number}px`,
+      },
+    }),
+    [theme],
+  );
 
   const panelRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -85,10 +111,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
 
   // Fast lookup maps
   const nodeMap = useMemo(() => new Map<number, NodeConfig>(nodes.map((n) => [n.id, n])), [nodes]);
-  const queryMap = useMemo(
-    () => new Map<number, QueryConfig>(queries.map((q) => [q.id, q])),
-    [queries]
-  );
+  const queryMap = useMemo(() => new Map<number, QueryConfig>(queries.map((q) => [q.id, q])), [queries]);
 
   // Validate nodeLabelPattern / nodeLabelReplacement
   const labelTransformError = useMemo<string | null>(() => {
@@ -113,20 +136,25 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
   // Build label transform function (applied to node.name for canvas display only)
   const nodeLabelPattern = options.nodeLabelPattern;
   const nodeLabelReplacement = options.nodeLabelReplacement;
-  const transformLabel = useCallback((name: string): string => {
-    if (!nodeLabelPattern || !nodeLabelReplacement) {
-      return name;
-    }
-    const regex = new RegExp(nodeLabelPattern);
-    return name.replace(regex, nodeLabelReplacement);
-  }, [nodeLabelPattern, nodeLabelReplacement]);
+  const transformLabel = useCallback(
+    (name: string): string => {
+      if (!nodeLabelPattern || !nodeLabelReplacement) {
+        return name;
+      }
+      const regex = new RegExp(nodeLabelPattern);
+      return name.replace(regex, nodeLabelReplacement);
+    },
+    [nodeLabelPattern, nodeLabelReplacement],
+  );
 
   // Determine which links have invalid query references
   const linksWithInvalidQuery = useMemo(() => {
     const bad = new Set<number>();
     for (const link of links) {
-      if ((link.ztoaQueryId != null && !queryMap.has(link.ztoaQueryId)) ||
-        (link.atozQueryId != null && !queryMap.has(link.atozQueryId))) {
+      if (
+        (link.ztoaQueryId != null && !queryMap.has(link.ztoaQueryId)) ||
+        (link.atozQueryId != null && !queryMap.has(link.atozQueryId))
+      ) {
         bad.add(link.id);
       }
     }
@@ -149,7 +177,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       const rect = panelRef.current.getBoundingClientRect();
       setCursorPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
     },
-    [setCursorPos]
+    [setCursorPos],
   );
 
   // Drag lifecycle: clear preview, context menu and pinned popup on drag start; block preview during drag
@@ -175,7 +203,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       }
       setPreview({ type: 'node', id: rfNode.id });
     },
-    [state.pinned, setPreview]
+    [state.pinned, setPreview],
   );
 
   // Node leave: clear preview
@@ -205,7 +233,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         setPinned({ type: 'node', id: rfNode.id }, flowPos);
       }
     },
-    [state.pinned, setPinned, setPreview, vpX, vpY, zoom, nodeWidth, nodeHeight]
+    [state.pinned, setPinned, setPreview, vpX, vpY, zoom, nodeWidth, nodeHeight],
   );
 
   // Edge hover: set preview (mouse only, not when pinned)
@@ -219,7 +247,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       }
       setPreview({ type: 'link', id: rfEdge.id });
     },
-    [state.pinned, setPreview]
+    [state.pinned, setPreview],
   );
 
   // Edge leave: clear preview
@@ -246,7 +274,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         setPinned({ type: 'link', id: rfEdge.id }, flowPos);
       }
     },
-    [state.pinned, setPinned, setPreview, vpX, vpY, zoom]
+    [state.pinned, setPinned, setPreview, vpX, vpY, zoom],
   );
 
   // Node double-click: toggle inline editor (edit mode only)
@@ -256,12 +284,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         return;
       }
       setInlineEdit(
-        state.inlineEdit?.type === 'node' && state.inlineEdit.id === rfNode.id
-          ? null
-          : { type: 'node', id: rfNode.id }
+        state.inlineEdit?.type === 'node' && state.inlineEdit.id === rfNode.id ? null : { type: 'node', id: rfNode.id },
       );
     },
-    [isEditing, state.inlineEdit, setInlineEdit]
+    [isEditing, state.inlineEdit, setInlineEdit],
   );
 
   // Edge double-click: toggle inline editor (edit mode only)
@@ -271,12 +297,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         return;
       }
       setInlineEdit(
-        state.inlineEdit?.type === 'link' && state.inlineEdit.id === rfEdge.id
-          ? null
-          : { type: 'link', id: rfEdge.id }
+        state.inlineEdit?.type === 'link' && state.inlineEdit.id === rfEdge.id ? null : { type: 'link', id: rfEdge.id },
       );
     },
-    [isEditing, state.inlineEdit, setInlineEdit]
+    [isEditing, state.inlineEdit, setInlineEdit],
   );
 
   // Viewport move: capture start viewport; dismiss context menu; dismiss preview on scroll (not zoom)
@@ -285,7 +309,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       setContextMenu(null);
       moveStartViewport.current = viewport;
     },
-    [setContextMenu]
+    [setContextMenu],
   );
 
   const onMove = useCallback(
@@ -295,7 +319,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         setPreview(null);
       }
     },
-    [setPreview]
+    [setPreview],
   );
 
   // Open context menu on blank-canvas click in edit mode; close pinned popup first
@@ -310,14 +334,11 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       }
       setContextMenu({ clientX: event.clientX, clientY: event.clientY });
     },
-    [isEditing, state.pinned, setPinned, setContextMenu]
+    [isEditing, state.pinned, setPinned, setContextMenu],
   );
 
   // Prevent self-loop connections
-  const isValidConnection = useCallback(
-    (connection: Connection | Edge) => connection.source !== connection.target,
-    []
-  );
+  const isValidConnection = useCallback((connection: Connection | Edge) => connection.source !== connection.target, []);
 
   const [isConnecting, setIsConnecting] = useState(false);
 
@@ -347,7 +368,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       };
       onOptionsChange({ ...options, links: [...existingLinks, newLink] });
     },
-    [options, onOptionsChange]
+    [options, onOptionsChange],
   );
 
   // Commit node positions to panel options on every drag position change (edit mode only)
@@ -371,7 +392,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
       });
       onOptionsChange({ ...options, nodes: updatedNodes });
     },
-    [isEditing, nodes, options, onOptionsChange]
+    [isEditing, nodes, options, onOptionsChange],
   );
 
   // Compute parallel link offsets (keyed by link id)
@@ -398,9 +419,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         let healthStatus: HealthStatus | null | undefined;
         if (node.statusQueryId != null) {
           const qc = queryMap.get(node.statusQueryId);
-          healthStatus = qc && qc.type === 'nodeHealth'
-            ? findHealthTimeSeries(data, qc, node.name)?.getLatestValue()?.value ?? null
-            : null;
+          healthStatus =
+            qc && qc.type === 'nodeHealth'
+              ? (findHealthTimeSeries(data, qc, node.name)?.getLatestValue()?.value ?? null)
+              : null;
         }
 
         return {
@@ -423,7 +445,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           dragHandle: '.iwm-move-zone',
         };
       }),
-    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing]
+    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing],
   );
 
   // Build React Flow edges
@@ -447,14 +469,21 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           if (link.atozQueryId != null) {
             const qc = queryMap.get(link.atozQueryId);
             if (qc && qc.type === 'linkTraffic') {
-              const latest = findTrafficTimeSeries({
-                data,
-                queryConfig: qc,
-                srcNode: { name: aNode.name, iface: link.aInterface },
-                dstNode: { name: zNode.name, iface: link.zInterface },
-              })?.getLatestValue() ?? null;
+              const latest =
+                findTrafficTimeSeries({
+                  data,
+                  queryConfig: qc,
+                  srcNode: { name: aNode.name, iface: link.aInterface },
+                  dstNode: { name: zNode.name, iface: link.zInterface },
+                })?.getLatestValue() ?? null;
               if (latest !== null) {
-                atozColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
+                atozColor = getUtilizationColor(
+                  latest.value,
+                  link.capacity,
+                  options.colorScaleMode ?? 'linear',
+                  logScaleBase,
+                  colorScale,
+                );
                 atozSpeed = formatSI(latest.value);
               }
             }
@@ -464,14 +493,21 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           if (link.ztoaQueryId != null) {
             const qc = queryMap.get(link.ztoaQueryId);
             if (qc && qc.type === 'linkTraffic') {
-              const latest = findTrafficTimeSeries({
-                data,
-                queryConfig: qc,
-                srcNode: { name: zNode.name, iface: link.zInterface },
-                dstNode: { name: aNode.name, iface: link.aInterface },
-              })?.getLatestValue() ?? null;
+              const latest =
+                findTrafficTimeSeries({
+                  data,
+                  queryConfig: qc,
+                  srcNode: { name: zNode.name, iface: link.zInterface },
+                  dstNode: { name: aNode.name, iface: link.aInterface },
+                })?.getLatestValue() ?? null;
               if (latest !== null) {
-                ztoaColor = getUtilizationColor(latest.value, link.capacity, options.colorScaleMode ?? 'linear', logScaleBase, colorScale);
+                ztoaColor = getUtilizationColor(
+                  latest.value,
+                  link.capacity,
+                  options.colorScaleMode ?? 'linear',
+                  logScaleBase,
+                  colorScale,
+                );
                 ztoaSpeed = formatSI(latest.value);
               }
             }
@@ -498,15 +534,28 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
           } satisfies WeathermapEdgeData,
         };
       });
-  }, [links, data, nodeMap, queryMap, linksWithInvalidQuery, linkOffsets, linkParallelOffset, options.colorScaleMode, logScaleBase, colorScale, theme, linkStrokeWidth, linkTipLength, linkLabelDistance, linkLabelFontSize]);
+  }, [
+    links,
+    data,
+    nodeMap,
+    queryMap,
+    linksWithInvalidQuery,
+    linkOffsets,
+    linkParallelOffset,
+    options.colorScaleMode,
+    logScaleBase,
+    colorScale,
+    theme,
+    linkStrokeWidth,
+    linkTipLength,
+    linkLabelDistance,
+    linkLabelFontSize,
+  ]);
 
   // Full-panel error state for invalid label transform config
   if (labelTransformError) {
     return (
-      <div
-        className={styles.errorState}
-        style={{ width, height }}
-      >
+      <div className={styles.errorState} style={{ width, height }}>
         <div>
           <strong>Configuration error:</strong>
           <br />
@@ -529,7 +578,11 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
         </div>
       )}
 
-      <ColorLegend colorScale={colorScale} colorScaleMode={options.colorScaleMode ?? 'linear'} logScaleBase={logScaleBase} />
+      <ColorLegend
+        colorScale={colorScale}
+        colorScaleMode={options.colorScaleMode ?? 'linear'}
+        logScaleBase={logScaleBase}
+      />
 
       <ReactFlow
         nodes={rfNodes}
@@ -577,13 +630,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({ optio
             <Icon name="palette" aria-hidden />
           </ControlButton>
         </Controls>
-        {
-          nodes.length === 0 && (
-            <div className={styles.emptyState}>
-              Click/tap the canvas to add a node.
-            </div>
-          )
-        }
+        {nodes.length === 0 && <div className={styles.emptyState}>Click/tap the canvas to add a node.</div>}
       </ReactFlow>
       <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
       <WeathermapPopup options={options} data={data} />
