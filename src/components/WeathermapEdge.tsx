@@ -1,6 +1,5 @@
-import type { EdgeProps } from '@xyflow/react';
-import type React from 'react';
-import { useId } from 'react';
+import type { Edge, EdgeProps } from '@xyflow/react';
+import React, { useId } from 'react';
 
 const BORDER_WIDTH = 0.5;
 
@@ -105,7 +104,9 @@ const Arrow: React.FC<ArrowProps> = ({
   );
 };
 
-export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targetX, targetY, data }) => {
+type WeathermapEdgeProps = EdgeProps<Edge<WeathermapEdgeData>>;
+
+export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, sourceY, targetX, targetY, data }) => {
   const {
     atozColor,
     ztoaColor,
@@ -117,7 +118,7 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
     tipLength = 8,
     labelDistance = 40,
     labelFontSize = 10,
-  } = (data as WeathermapEdgeData) ?? {};
+  } = /* biome-ignore lint/style/noNonNullAssertion: data is always provided when creating edges*/ data!;
 
   const filterId = useId();
 
@@ -209,4 +210,4 @@ export const WeathermapEdge: React.FC<EdgeProps> = ({ id, sourceX, sourceY, targ
       </g>
     </g>
   );
-};
+});

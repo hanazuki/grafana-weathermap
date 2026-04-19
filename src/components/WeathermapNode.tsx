@@ -1,8 +1,8 @@
 import { css, cx } from '@emotion/css';
 import type { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2, useTheme2 } from '@grafana/ui';
-import { Handle, type NodeProps, Position, useConnection } from '@xyflow/react';
-import type React from 'react';
+import { Handle, type Node, type NodeProps, Position, useConnection } from '@xyflow/react';
+import React from 'react';
 import type { HealthStatus } from '../types';
 import { HealthIndicator } from './HealthIndicator';
 
@@ -19,8 +19,10 @@ export interface WeathermapNodeData {
   [key: string]: unknown;
 }
 
-export const WeathermapNode: React.FC<NodeProps> = ({ data, dragging }) => {
-  const { id, label, nodeWidth, nodeHeight, hasConfigError, healthStatus, isEditing } = data as WeathermapNodeData;
+type WeathermapNodeProps = NodeProps<Node<WeathermapNodeData>>;
+
+export const WeathermapNode = React.memo<WeathermapNodeProps>(({ data, dragging }) => {
+  const { id, label, nodeWidth, nodeHeight, hasConfigError, healthStatus, isEditing } = data;
   const styles = useStyles2(getStyles, nodeWidth, nodeHeight, hasConfigError);
   const theme = useTheme2();
   const connection = useConnection();
@@ -68,7 +70,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data, dragging }) => {
       </div>
     </>
   );
-};
+});
 
 const getStyles = (theme: GrafanaTheme2, nodeWidth: number, nodeHeight: number, hasConfigError: boolean) => ({
   handle: css({
