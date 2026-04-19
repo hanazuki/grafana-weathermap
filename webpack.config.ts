@@ -18,7 +18,10 @@ const config = async (env: Env): Promise<Configuration> => {
           jsc: {
             ...jsc,
             transform: {
-              react: { runtime: 'automatic' },
+              // development: false forces use of react/jsx-runtime in all builds.
+              // react/jsx-dev-runtime (used by default in dev mode) may not be
+              // registered in older Grafana AMD loaders, causing jsxDEV to be undefined.
+              react: { runtime: 'automatic', development: false },
             },
           },
         };
