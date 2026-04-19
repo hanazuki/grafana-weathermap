@@ -129,6 +129,7 @@ const LinkChart: React.FC<LinkChartProps> = ({ atozValues, ztoaValues, yMax }) =
         </div>
         {/* Axis lines */}
         <svg width={CHART_WIDTH} height={CHART_HEIGHT} className={styles.svgOverlay}>
+          <title>Chart axes</title>
           {/* Y-axis */}
           <line x1={0.5} y1={0.5} x2={5.5} y2={0.5} stroke={theme.colors.text.primary} strokeWidth={1} />
           <line x1={0.5} y1={0.5} x2={0.5} y2={CHART_HEIGHT - 0.5} stroke={theme.colors.text.primary} strokeWidth={1} />

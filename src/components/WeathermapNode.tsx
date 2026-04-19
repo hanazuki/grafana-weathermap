@@ -42,6 +42,7 @@ export const WeathermapNode: React.FC<NodeProps> = ({ data, dragging }) => {
           height={nodeHeight}
           style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
         >
+          <title>Drag handle</title>
           <line x1={8} y1={18} x2={8} y2={nodeHeight - 8} stroke={gripColor} strokeWidth={2} />
           <line x1={12} y1={18} x2={12} y2={nodeHeight - 8} stroke={gripColor} strokeWidth={2} />
         </svg>
