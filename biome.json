@@ -19,7 +19,19 @@
       "recommended": true
     }
   },
+  "overrides": [
+    {
+      "includes": ["tests/**", "src/**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    }
+  ],
   "files": {
-    "includes": ["**", "!node_modules", "!dist", "!coverage", "!.config"]
+    "includes": ["**", "!node_modules", "!dist", "!coverage", "!.config", "!playwright-report"]
   }
 }
