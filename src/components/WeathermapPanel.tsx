@@ -429,6 +429,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
         return {
           id: String(node.id),
           type: 'weathermapNode',
+          ariaLabel: node.name || `Node #${node.id}`,
           position: { x: node.x ?? 0, y: node.y ?? 0 },
           data: {
             id: node.id,
@@ -517,11 +518,15 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           }
         }
 
+        const aName = aNode.name || `Node #${link.aNodeId}`;
+        const zName = zNode.name || `Node #${link.zNodeId}`;
+
         return {
           id: String(link.id),
           source: String(link.aNodeId),
           target: String(link.zNodeId),
           type: 'weathermapEdge',
+          ariaLabel: `Link from ${aName} to ${zName}`,
           data: {
             atozColor,
             ztoaColor,
