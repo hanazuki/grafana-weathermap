@@ -1,25 +1,27 @@
 import { BusEventWithPayload } from '@grafana/data';
 import { usePanelContext } from '@grafana/ui';
 import { useCallback, useSyncExternalStore } from 'react';
-import * as z from 'zod/v4/core';
+import * as z from 'zod/v4/mini';
+import { json } from '../utils/codec';
 
 class LocalStorageChangeEvent extends BusEventWithPayload<{ key: string }> {
   static type = 'iwm-local-storage-change';
 }
 
-function readValue<T extends z.$ZodType>(key: string, schema: T): z.infer<T> {
+function readValue<T>(key: string, schema: z.core.$ZodType<T>): T {
   const raw = localStorage.getItem(key);
   if (raw === null) {
     return z.parse(schema, undefined);
   }
-  const result = z.safeParse(schema, JSON.parse(raw));
+  const result = z.safeDecode(json(schema), raw);
   return result.success ? result.data : z.parse(schema, undefined);
 }
 
-export const useLocalStorage = <T extends z.$ZodType>(
-  key: string,
-  schema: T,
-): [z.infer<T>, (value: z.infer<T>) => void] => {
+function writeValue<T>(key: string, schema: z.core.$ZodType<T>, value: T) {
+  localStorage.setItem(key, z.encode(json(schema), value));
+}
+
+export const useLocalStorage = <T>(key: string, schema: z.core.$ZodType<T>): [T, (value: T) => void] => {
   const { eventBus } = usePanelContext();
 
   const subscribe = useCallback(
@@ -50,11 +52,11 @@ export const useLocalStorage = <T extends z.$ZodType>(
   const value = useSyncExternalStore(subscribe, getSnapshot);
 
   const setValue = useCallback(
-    (newValue: z.infer<T>) => {
-      localStorage.setItem(key, JSON.stringify(newValue));
+    (newValue: T) => {
+      writeValue(key, schema, newValue);
       eventBus.publish(new LocalStorageChangeEvent({ key }));
     },
-    [key, eventBus],
+    [key, schema, eventBus],
   );
 
   return [value, setValue];
