@@ -48,6 +48,7 @@ export function ColorLegend({ colorScale, colorScaleMode, logScaleBase }: ColorL
           const label = String(Math.round(pct));
           const pad = '\u2007'.repeat(Math.max(0, 3 - label.length));
           return (
+            // biome-ignore lint/suspicious/noArrayIndexKey: stops is a fixed-length deterministic sequence
             <li key={i} className={styles.tick} style={{ top: `${(pct / 100) * BAR_HEIGHT}px` }}>
               <span aria-hidden>{pad}</span>
               {label}
