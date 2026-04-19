@@ -569,6 +569,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   }
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: TODO: add role="application" + aria markup on Popup/InlineEditor children for full a11y
     <div ref={panelRef} className={styles.panelRoot} style={{ width, height }} onMouseMove={onPanelMouseMove}>
       {/* Warning banner for invalid query references */}
       {linksWithInvalidQuery.size > 0 && (
