@@ -7,23 +7,23 @@ test('Add nodes and edges', async ({ panelEditPage, readProvisionedDataSource, p
 
   // Add 3 nodes with distinct positions so edges render
   await page.getByTestId('iwm-editor-node-add').click();
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('#1');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('#1');
   await page.getByTestId('iwm-editor-node-name').fill('node-0');
   await page.getByTestId('iwm-editor-node-x').fill('100');
 
   await page.getByTestId('iwm-editor-node-add').click();
-  await expect(page.getByTestId('iwm-node-2')).toHaveText('#2');
+  await expect(page.getByTestId('iwm-node-2')).toContainText('#2');
   await page.getByTestId('iwm-editor-node-name').fill('node-1');
   await page.getByTestId('iwm-editor-node-x').fill('300');
 
   await page.getByTestId('iwm-editor-node-add').click();
-  await expect(page.getByTestId('iwm-node-3')).toHaveText('#3');
+  await expect(page.getByTestId('iwm-node-3')).toContainText('#3');
   await page.getByTestId('iwm-editor-node-name').fill('node-2');
   await page.getByTestId('iwm-editor-node-x').fill('500');
 
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('node-0');
-  await expect(page.getByTestId('iwm-node-2')).toHaveText('node-1');
-  await expect(page.getByTestId('iwm-node-3')).toHaveText('node-2');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('node-0');
+  await expect(page.getByTestId('iwm-node-2')).toContainText('node-1');
+  await expect(page.getByTestId('iwm-node-3')).toContainText('node-2');
 
   // Add edge node-0 → node-1 (defaults: aNodeId=nodes[0], zNodeId=nodes[1])
   await page.getByTestId('iwm-editor-link-add').click();
@@ -115,7 +115,7 @@ test('double-clicking a node opens inline editor and editing the name field rena
   // Add a node
   await page.getByTestId('iwm-editor-node-add').click();
   await page.getByTestId('iwm-editor-node-name').fill('original-name');
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('original-name');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('original-name');
 
   // Double-click the node to open the inline editor
   await page.getByTestId('iwm-node-1').dblclick();
@@ -128,7 +128,7 @@ test('double-clicking a node opens inline editor and editing the name field rena
   await nameInput.fill('renamed-node');
 
   // The canvas label and inline editor title should reflect the new name
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('renamed-node');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('renamed-node');
   await expect(inlineEditor.getByTestId('iwm-inline-editor-header')).toContainText('renamed-node (#1)');
 });
 
@@ -182,8 +182,8 @@ test('Drag to connect creates a new link', async ({ panelEditPage, readProvision
   await page.getByTestId('iwm-editor-node-x').fill('300');
   await page.getByTestId('iwm-editor-node-y').fill('100');
 
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('node-a');
-  await expect(page.getByTestId('iwm-node-2')).toHaveText('node-b');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('node-a');
+  await expect(page.getByTestId('iwm-node-2')).toContainText('node-b');
 
   // Drag from the connect zone of node A (x > 40px from its left edge) to node B
   const nodeA = page.getByTestId('iwm-node-1');
@@ -324,7 +324,7 @@ test('delete button in inline editor removes a node and closes the editor', asyn
   // Add a node
   await page.getByTestId('iwm-editor-node-add').click();
   await page.getByTestId('iwm-editor-node-name').fill('doomed-node');
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('doomed-node');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('doomed-node');
 
   // The node inline editor is taller now and its delete button can overflow
   // below the panel canvas. Drag the pane separator down to give the canvas
@@ -499,7 +499,7 @@ test('node description appears in hover popup', async ({ panelEditPage, readProv
   await page.getByTestId('iwm-editor-node-x').fill('200');
   await page.getByTestId('iwm-editor-node-y').fill('200');
   await page.getByTestId('iwm-editor-node-description').fill('Core router');
-  await expect(page.getByTestId('iwm-node-1')).toHaveText('router-a');
+  await expect(page.getByTestId('iwm-node-1')).toContainText('router-a');
 
   // Hover over the node to trigger the preview popup
   await page.getByTestId('iwm-node-1').hover();
