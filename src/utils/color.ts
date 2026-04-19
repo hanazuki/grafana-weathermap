@@ -53,7 +53,7 @@ export function getUtilizationColor(
   logScaleBase = 10,
   colorScale: ColorScale = rainbow,
 ): string {
-  if (!isFinite(current) || capacity <= 0) {
+  if (!Number.isFinite(current) || capacity <= 0) {
     return GRAY_COLOR;
   }
   return colorScale(getColorT(current / capacity, mode, logScaleBase));

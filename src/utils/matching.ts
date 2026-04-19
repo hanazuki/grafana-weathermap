@@ -80,7 +80,7 @@ export function findTrafficTimeSeries({
 }
 
 function decodeHealthValue(v: unknown): HealthStatus | null {
-  return typeof v === 'number' && isFinite(v) ? (v > 0 ? 'up' : 'down') : null;
+  return typeof v === 'number' && Number.isFinite(v) ? (v > 0 ? 'up' : 'down') : null;
 }
 
 /**
