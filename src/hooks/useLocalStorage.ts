@@ -51,7 +51,9 @@ export const useLocalStorage = <T extends z.$ZodType>(
   const setValue = useCallback(
     (newValue: z.infer<T>) => {
       localStorage.setItem(key, JSON.stringify(newValue));
-      getSet(key).forEach((fn) => fn());
+      for (const fn of getSet(key)) {
+        fn();
+      }
     },
     [key],
   );
