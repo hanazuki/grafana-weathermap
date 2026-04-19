@@ -29,13 +29,6 @@ export const NodePopup: React.FC<NodePopupProps> = ({
 }) => {
   const styles = useStyles2(getStyles);
 
-  const showUptimeBar =
-    node.statusQueryId != null &&
-    healthTimeSeries != null &&
-    panelFrom != null &&
-    panelTo != null &&
-    maxDataPoints != null;
-
   return (
     <div className={styles.popup} data-testid="iwm-node-popup">
       {/* Header: health icon + node name */}
@@ -50,16 +43,20 @@ export const NodePopup: React.FC<NodePopupProps> = ({
       </div>
 
       {/* Uptime bar: only when statusQueryId is configured */}
-      {showUptimeBar &&
+      {node.statusQueryId != null &&
+        healthTimeSeries != null &&
+        panelFrom != null &&
+        panelTo != null &&
+        maxDataPoints != null &&
         (() => {
-          const { values, timestamps } = healthTimeSeries!.getValues();
+          const { values, timestamps } = healthTimeSeries.getValues();
           return (
             <UptimeBar
               statuses={values}
               timestamps={timestamps}
-              panelFrom={panelFrom!}
-              panelTo={panelTo!}
-              maxDataPoints={maxDataPoints!}
+              panelFrom={panelFrom}
+              panelTo={panelTo}
+              maxDataPoints={maxDataPoints}
             />
           );
         })()}

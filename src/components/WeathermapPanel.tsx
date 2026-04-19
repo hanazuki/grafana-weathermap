@@ -125,6 +125,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
     }
     if (hasPattern) {
       try {
+        // biome-ignore lint/style/noNonNullAssertion: guarded by hasPattern = !!options.nodeLabelPattern
         new RegExp(options.nodeLabelPattern!);
       } catch (e) {
         return `Invalid nodeLabelPattern: ${(e as Error).message}`;
@@ -453,7 +454,9 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
     return links
       .filter((link) => nodeMap.has(link.aNodeId) && nodeMap.has(link.zNodeId)) // skip orphaned links
       .map((link) => {
+        // biome-ignore lint/style/noNonNullAssertion: presence guaranteed by .filter(.has()) above
         const aNode = nodeMap.get(link.aNodeId)!;
+        // biome-ignore lint/style/noNonNullAssertion: presence guaranteed by .filter(.has()) above
         const zNode = nodeMap.get(link.zNodeId)!;
 
         const hasInvalidQuery = linksWithInvalidQuery.has(link.id);
