@@ -1,15 +1,10 @@
+import { BusEventWithPayload } from '@grafana/data';
+import { usePanelContext } from '@grafana/ui';
 import { useCallback, useSyncExternalStore } from 'react';
 import * as z from 'zod/v4/core';
 
-const bus = new Map<string, Set<() => void>>();
-
-function getSet(key: string): Set<() => void> {
-  let set = bus.get(key);
-  if (!set) {
-    set = new Set();
-    bus.set(key, set);
-  }
-  return set;
+class LocalStorageChangeEvent extends BusEventWithPayload<{ key: string }> {
+  static type = 'iwm-local-storage-change';
 }
 
 function readValue<T extends z.$ZodType>(key: string, schema: T): z.infer<T> {
@@ -25,9 +20,15 @@ export const useLocalStorage = <T extends z.$ZodType>(
   key: string,
   schema: T,
 ): [z.infer<T>, (value: z.infer<T>) => void] => {
+  const { eventBus } = usePanelContext();
+
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
-      getSet(key).add(onStoreChange);
+      const sub = eventBus.subscribe(LocalStorageChangeEvent, (e) => {
+        if (e.payload.key === key) {
+          onStoreChange();
+        }
+      });
 
       const onStorage = (e: StorageEvent) => {
         if (e.key === key) {
@@ -38,10 +39,10 @@ export const useLocalStorage = <T extends z.$ZodType>(
 
       return () => {
         window.removeEventListener('storage', onStorage);
-        getSet(key).delete(onStoreChange);
+        sub.unsubscribe();
       };
     },
-    [key],
+    [key, eventBus],
   );
 
   const getSnapshot = useCallback(() => readValue(key, schema), [key, schema]);
@@ -51,11 +52,9 @@ export const useLocalStorage = <T extends z.$ZodType>(
   const setValue = useCallback(
     (newValue: z.infer<T>) => {
       localStorage.setItem(key, JSON.stringify(newValue));
-      for (const fn of getSet(key)) {
-        fn();
-      }
+      eventBus.publish(new LocalStorageChangeEvent({ key }));
     },
-    [key],
+    [key, eventBus],
   );
 
   return [value, setValue];
