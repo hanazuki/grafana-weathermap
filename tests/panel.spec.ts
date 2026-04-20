@@ -288,10 +288,10 @@ test('traffic label appears with egress direction and disappears with ingress', 
 
   // Add a link; set A-iface=eth0 and Z-iface=eth1
   await page.getByTestId('iwm-editor-link-add').click();
-  await page.getByTestId('iwm-editor-link-aiface').fill('eth0');
-  await page.keyboard.press('Enter');
-  await page.getByTestId('iwm-editor-link-ziface').fill('eth1');
-  await page.keyboard.press('Enter');
+  await page.getByTestId('iwm-editor-link-aiface').pressSequentially('eth0');
+  await page.getByRole('option', { name: 'eth0' }).click();
+  await page.getByTestId('iwm-editor-link-ziface').pressSequentially('eth1');
+  await page.getByRole('option', { name: 'eth1' }).click();
 
   // Add a query config: refId A, linkTraffic, direction Egress (default)
   await page.getByTestId('iwm-editor-query-add').click();
@@ -393,10 +393,10 @@ test('Reverse button in link inline editor swaps A and Z sides', async ({
 
   // Add a link; set distinct interfaces on A and Z sides
   await page.getByTestId('iwm-editor-link-add').click();
-  await page.getByTestId('iwm-editor-link-aiface').fill('eth0');
-  await page.keyboard.press('Enter');
-  await page.getByTestId('iwm-editor-link-ziface').fill('eth1');
-  await page.keyboard.press('Enter');
+  await page.getByTestId('iwm-editor-link-aiface').pressSequentially('eth0');
+  await page.getByRole('option', { name: 'eth0' }).click();
+  await page.getByTestId('iwm-editor-link-ziface').pressSequentially('eth1');
+  await page.getByRole('option', { name: 'eth1' }).click();
   await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
 
   // Add a linkTraffic query config with refId A and assign it to A→Z only.
@@ -654,9 +654,9 @@ test('interface combobox accepts custom value not in suggestions', async ({
 
   await page.getByTestId('iwm-editor-link-add').click();
 
-  // Type a custom interface name not present in any suggestions and confirm with Enter
-  await page.getByTestId('iwm-editor-link-aiface').fill('lo0');
-  await page.keyboard.press('Enter');
+  // Type a custom interface name not present in any suggestions and select the create option
+  await page.getByTestId('iwm-editor-link-aiface').pressSequentially('lo0');
+  await page.getByRole('option', { name: 'lo0' }).click();
 
   // The field should retain the typed value
   await expect(page.getByTestId('iwm-editor-link-aiface')).toHaveValue('lo0');
