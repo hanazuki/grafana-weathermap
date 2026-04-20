@@ -79,6 +79,24 @@ export function findTrafficTimeSeries({
   return null;
 }
 
+export function collectLabels(data: DataFrame[], refId: string): string[] {
+  const keys = new Set<string>();
+  for (const frame of data) {
+    if (frame.refId !== refId) {
+      continue;
+    }
+    for (const field of frame.fields) {
+      if (field.type !== FieldType.number) {
+        continue;
+      }
+      for (const key of Object.keys(field.labels ?? {})) {
+        keys.add(key);
+      }
+    }
+  }
+  return Array.from(keys).sort();
+}
+
 export function collectInterfaces(
   frames: DataFrame[],
   queries: LinkTrafficQueryConfig[],

@@ -583,12 +583,7 @@ test('interface combobox shows suggestions from query data (sidebar editor path)
               ],
             },
             data: {
-              values: [
-                [Date.now()],
-                [1_000_000_000],
-                [2_000_000_000],
-                [3_000_000_000],
-              ],
+              values: [[Date.now()], [1_000_000_000], [2_000_000_000], [3_000_000_000]],
             },
           },
         ],
@@ -742,5 +737,134 @@ test('interface suggestions appear via the inline editor path', async ({
   // Open the A-iface combobox in the inline editor — eth0 should appear as a suggestion
   await inlineEditor.getByTestId('iwm-editor-link-aiface').click();
   await expect(page.getByRole('option', { name: 'eth0' })).toBeVisible();
+  await page.keyboard.press('Escape');
+});
+
+test('linkTraffic label comboboxes show suggestions from query data', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+
+  // Mock a query response with known label keys: instance and ifName
+  await panelEditPage.mockQueryDataResponse({
+    results: {
+      A: {
+        frames: [
+          {
+            schema: {
+              refId: 'A',
+              fields: [
+                { name: 'Time', type: 'time', typeInfo: { frame: 'time.Time' } },
+                {
+                  name: 'Value',
+                  type: 'number',
+                  typeInfo: { frame: 'float64' },
+                  labels: { instance: 'router-a', ifName: 'eth0' },
+                },
+              ],
+            },
+            data: { values: [[Date.now()], [1_000_000_000]] },
+          },
+        ],
+      },
+    },
+  });
+
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add a linkTraffic query config with refId A
+  await page.getByTestId('iwm-editor-query-add').click();
+  await page.getByTestId('iwm-editor-query-refid').click();
+  await page.getByRole('option', { name: 'A' }).click();
+
+  // Refresh so context.data is populated with the mocked frames
+  await panelEditPage.refreshPanel();
+
+  // Open the instance label combobox — should show 'ifName' and 'instance' as options
+  await page.getByTestId('iwm-editor-query-instance-label').click();
+  await expect(page.getByRole('option', { name: 'ifName' })).toBeVisible();
+  await expect(page.getByRole('option', { name: 'instance' })).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // Open the interface label combobox — should show the same keys
+  await page.getByTestId('iwm-editor-query-interface-label').click();
+  await expect(page.getByRole('option', { name: 'ifName' })).toBeVisible();
+  await expect(page.getByRole('option', { name: 'instance' })).toBeVisible();
+  await page.keyboard.press('Escape');
+});
+
+test('instance label combobox accepts custom value not in suggestions', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add a linkTraffic query config (no mock data — no suggestions available)
+  await page.getByTestId('iwm-editor-query-add').click();
+
+  // Type a custom label key not present in any suggestions and select the create option
+  await page.getByTestId('iwm-editor-query-instance-label').fill('custom_label');
+  await page.getByRole('option', { name: 'custom_label' }).click();
+
+  // The field should retain the typed value
+  await expect(page.getByTestId('iwm-editor-query-instance-label')).toHaveValue('custom_label');
+});
+
+test('nodeHealth instance label combobox shows suggestions from query data', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+
+  // Mock a query response with known label key: instance
+  await panelEditPage.mockQueryDataResponse({
+    results: {
+      A: {
+        frames: [
+          {
+            schema: {
+              refId: 'A',
+              fields: [
+                { name: 'Time', type: 'time', typeInfo: { frame: 'time.Time' } },
+                {
+                  name: 'Value',
+                  type: 'number',
+                  typeInfo: { frame: 'float64' },
+                  labels: { instance: 'host-1' },
+                },
+              ],
+            },
+            data: { values: [[Date.now()], [1]] },
+          },
+        ],
+      },
+    },
+  });
+
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add a nodeHealth query config with refId A
+  await page.getByTestId('iwm-editor-query-add').click();
+  await page.getByTestId('iwm-editor-query-refid').click();
+  await page.getByRole('option', { name: 'A' }).click();
+  await page.getByTestId('iwm-editor-query-type').click();
+  await page.getByRole('option', { name: 'node health' }).click();
+
+  // Refresh so context.data is populated with the mocked frames
+  await panelEditPage.refreshPanel();
+
+  // Open the instance label combobox — should show 'instance' as an option
+  await page.getByTestId('iwm-editor-query-instance-label').click();
+  await expect(page.getByRole('option', { name: 'instance' })).toBeVisible();
+  // Interface label field should not be present for nodeHealth
+  await expect(page.getByTestId('iwm-editor-query-interface-label')).not.toBeVisible();
   await page.keyboard.press('Escape');
 });

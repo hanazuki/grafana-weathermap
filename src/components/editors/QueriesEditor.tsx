@@ -1,7 +1,7 @@
-import type { StandardEditorProps } from '@grafana/data';
-import { Combobox, Field, InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
+import type { DataFrame, StandardEditorProps } from '@grafana/data';
+import { Combobox, Field, InlineField, InlineFieldRow, useStyles2 } from '@grafana/ui';
 import type React from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type {
   LinkTrafficQueryConfig,
   NodeHealthQueryConfig,
@@ -9,6 +9,7 @@ import type {
   QueryType,
   TrafficDirection,
 } from '../../types';
+import { collectLabels } from '../../utils/matching';
 import { Chooser } from './Chooser';
 import { getStyles } from './styles';
 
@@ -35,10 +36,15 @@ type QueryEditorProps = {
   query: QueryConfig;
   refIdOptions: Array<{ label: string; value: string }>;
   usedRefIds: Set<string>;
+  data: DataFrame[];
   update: (next: QueryConfig) => void;
 };
 
-const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefIds, update }) => {
+const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefIds, data, update }) => {
+  const labelOptions = useMemo(
+    () => collectLabels(data, query.refId).map((k) => ({ label: k, value: k })),
+    [data, query.refId],
+  );
   const changeType = (newType: 'linkTraffic' | 'nodeHealth') => {
     if (newType === query.type) {
       return;
@@ -87,18 +93,22 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
       </InlineFieldRow>
       <InlineFieldRow>
         <InlineField label="Instance label" grow>
-          <Input
-            value={query.instanceLabelKey ?? ''}
-            onChange={(e) => update({ ...query, instanceLabelKey: e.currentTarget.value || null })}
+          <Combobox<string>
+            createCustomValue
+            options={labelOptions}
+            value={query.instanceLabelKey}
+            onChange={(opt) => update({ ...query, instanceLabelKey: opt.value || null })}
             placeholder="instance"
             data-testid="iwm-editor-query-instance-label"
           />
         </InlineField>
         {query.type === 'linkTraffic' && (
           <InlineField label="Interface label" grow>
-            <Input
-              value={query.interfaceLabelKey ?? ''}
-              onChange={(e) => update({ ...query, interfaceLabelKey: e.currentTarget.value || null })}
+            <Combobox<string>
+              createCustomValue
+              options={labelOptions}
+              value={query.interfaceLabelKey}
+              onChange={(opt) => update({ ...query, interfaceLabelKey: opt.value || null })}
               placeholder="ifName"
               data-testid="iwm-editor-query-interface-label"
             />
@@ -179,7 +189,13 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({ va
         />
       </Field>
       {query !== null ? (
-        <QueryEditor query={query} refIdOptions={refIdOptions} usedRefIds={usedRefIds} update={update} />
+        <QueryEditor
+          query={query}
+          refIdOptions={refIdOptions}
+          usedRefIds={usedRefIds}
+          data={context.data ?? []}
+          update={update}
+        />
       ) : (
         <div className={styles.emptyState}>No query configs yet — click + to add one</div>
       )}

@@ -1,6 +1,6 @@
 import { FieldType, type PanelData } from '@grafana/data';
 import type { LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../types';
-import { collectInterfaces, findHealthTimeSeries, findTrafficTimeSeries } from './matching';
+import { collectInterfaces, collectLabels, findHealthTimeSeries, findTrafficTimeSeries } from './matching';
 
 function makeFrame(
   refId: string,
@@ -45,9 +45,49 @@ const healthQuery = (overrides: Partial<NodeHealthQueryConfig> = {}): NodeHealth
   ...overrides,
 });
 
-// ---------------------------------------------------------------------------
-// collectInterfaces
-// ---------------------------------------------------------------------------
+describe('collectLabels', () => {
+  const frame = makeFrame(
+    'A',
+    [1000, 2000],
+    [
+      { labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20] },
+      { labels: { instance: 'router-1', region: 'us-east' }, values: [30, 40] },
+    ],
+  );
+
+  test('basic match: returns all label keys from numeric fields, sorted ascending', () => {
+    const result = collectLabels([frame], 'A');
+    expect(result).toEqual(['ifName', 'instance', 'region']);
+  });
+
+  test('wrong refId filtered: frames for a different refId are excluded', () => {
+    const result = collectLabels([frame], 'Z');
+    expect(result).toEqual([]);
+  });
+
+  test('deduplication: the same label key from multiple fields appears exactly once', () => {
+    const result = collectLabels([frame], 'A');
+    const instanceCount = result.filter((k) => k === 'instance').length;
+    expect(instanceCount).toBe(1);
+  });
+
+  test('sorting: returned keys are in ascending alphabetical order', () => {
+    const result = collectLabels([frame], 'A');
+    const sorted = [...result].sort();
+    expect(result).toEqual(sorted);
+  });
+
+  test('empty frames: no frames returns []', () => {
+    const result = collectLabels([], 'A');
+    expect(result).toEqual([]);
+  });
+
+  test('no frames matching refId returns []', () => {
+    const frameB = makeFrame('B', [1000], [{ labels: { foo: 'bar' }, values: [1] }]);
+    const result = collectLabels([frameB], 'A');
+    expect(result).toEqual([]);
+  });
+});
 
 describe('collectInterfaces', () => {
   const frame = makeFrame(
@@ -106,21 +146,13 @@ describe('collectInterfaces', () => {
   });
 
   test('multiple queries / frames: results merged, deduplicated, sorted', () => {
-    const frameB = makeFrame(
-      'B',
-      [1000],
-      [{ labels: { instance: 'router-1', ifName: 'eth2' }, values: [10] }],
-    );
+    const frameB = makeFrame('B', [1000], [{ labels: { instance: 'router-1', ifName: 'eth2' }, values: [10] }]);
     const queryA = trafficQuery({ refId: 'A' });
     const queryB = trafficQuery({ refId: 'B', id: 2 });
     const result = collectInterfaces([frame, frameB], [queryA, queryB], 'router-1');
     expect(result).toEqual([{ name: 'eth0' }, { name: 'eth1' }, { name: 'eth2' }]);
   });
 });
-
-// ---------------------------------------------------------------------------
-// findTrafficTimeSeries
-// ---------------------------------------------------------------------------
 
 describe('findTrafficTimeSeries', () => {
   const frame = makeFrame(
@@ -257,10 +289,6 @@ describe('findTrafficTimeSeries', () => {
     expect(ts!.getLatestValue()).toEqual({ value: 40, timestamp: 2000 });
   });
 });
-
-// ---------------------------------------------------------------------------
-// findHealthTimeSeries
-// ---------------------------------------------------------------------------
 
 describe('findHealthTimeSeries', () => {
   const frame = makeFrame(
