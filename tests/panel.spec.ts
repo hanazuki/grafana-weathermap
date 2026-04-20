@@ -288,9 +288,9 @@ test('traffic label appears with egress direction and disappears with ingress', 
 
   // Add a link; set A-iface=eth0 and Z-iface=eth1
   await page.getByTestId('iwm-editor-link-add').click();
-  await page.getByTestId('iwm-editor-link-aiface').pressSequentially('eth0');
+  await page.getByTestId('iwm-editor-link-aiface').fill('eth0');
   await page.getByRole('option', { name: 'eth0' }).click();
-  await page.getByTestId('iwm-editor-link-ziface').pressSequentially('eth1');
+  await page.getByTestId('iwm-editor-link-ziface').fill('eth1');
   await page.getByRole('option', { name: 'eth1' }).click();
 
   // Add a query config: refId A, linkTraffic, direction Egress (default)
@@ -393,9 +393,9 @@ test('Reverse button in link inline editor swaps A and Z sides', async ({
 
   // Add a link; set distinct interfaces on A and Z sides
   await page.getByTestId('iwm-editor-link-add').click();
-  await page.getByTestId('iwm-editor-link-aiface').pressSequentially('eth0');
+  await page.getByTestId('iwm-editor-link-aiface').fill('eth0');
   await page.getByRole('option', { name: 'eth0' }).click();
-  await page.getByTestId('iwm-editor-link-ziface').pressSequentially('eth1');
+  await page.getByTestId('iwm-editor-link-ziface').fill('eth1');
   await page.getByRole('option', { name: 'eth1' }).click();
   await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
 
@@ -620,6 +620,9 @@ test('interface combobox shows suggestions from query data (sidebar editor path)
   await page.getByTestId('iwm-editor-link-atoz-query').click();
   await page.getByRole('option', { name: 'A' }).click();
 
+  // Refresh so context.data is populated with the mocked frames before checking suggestions
+  await panelEditPage.refreshPanel();
+
   // Open the A-iface combobox — should show eth0 and eth1 (router-a's interfaces)
   await page.getByTestId('iwm-editor-link-aiface').click();
   await expect(page.getByRole('option', { name: 'eth0' })).toBeVisible();
@@ -655,7 +658,7 @@ test('interface combobox accepts custom value not in suggestions', async ({
   await page.getByTestId('iwm-editor-link-add').click();
 
   // Type a custom interface name not present in any suggestions and select the create option
-  await page.getByTestId('iwm-editor-link-aiface').pressSequentially('lo0');
+  await page.getByTestId('iwm-editor-link-aiface').fill('lo0');
   await page.getByRole('option', { name: 'lo0' }).click();
 
   // The field should retain the typed value
@@ -718,6 +721,9 @@ test('interface suggestions appear via the inline editor path', async ({
   await page.getByTestId('iwm-editor-link-atoz-query').click();
   await page.getByRole('option', { name: 'A' }).click();
   await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
+
+  // Refresh so context.data is populated with the mocked frames before checking suggestions
+  await panelEditPage.refreshPanel();
 
   // Drag the pane separator down to give the canvas enough room
   const separator = page.getByRole('separator', { name: 'Pane resize widget' }).first();
