@@ -1,6 +1,6 @@
 import { FieldType, type PanelData } from '@grafana/data';
 import type { LinkTrafficQueryConfig, NodeHealthQueryConfig } from '../types';
-import { findHealthTimeSeries, findTrafficTimeSeries } from './matching';
+import { collectInterfaces, findHealthTimeSeries, findTrafficTimeSeries } from './matching';
 
 function makeFrame(
   refId: string,
@@ -43,6 +43,79 @@ const healthQuery = (overrides: Partial<NodeHealthQueryConfig> = {}): NodeHealth
   type: 'nodeHealth',
   instanceLabelKey: 'instance',
   ...overrides,
+});
+
+// ---------------------------------------------------------------------------
+// collectInterfaces
+// ---------------------------------------------------------------------------
+
+describe('collectInterfaces', () => {
+  const frame = makeFrame(
+    'A',
+    [1000, 2000],
+    [
+      { labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20] },
+      { labels: { instance: 'router-1', ifName: 'eth1' }, values: [30, 40] },
+      { labels: { instance: 'router-2', ifName: 'eth0' }, values: [50, 60] },
+    ],
+  );
+
+  test('basic match: returns interface name for matching instance and interface label', () => {
+    const result = collectInterfaces([frame], [trafficQuery()], 'router-1');
+    expect(result).toEqual([{ name: 'eth0' }, { name: 'eth1' }]);
+  });
+
+  test('interfaceLabelKey null: query is skipped, returns []', () => {
+    const result = collectInterfaces([frame], [trafficQuery({ interfaceLabelKey: null })], 'router-1');
+    expect(result).toEqual([]);
+  });
+
+  test('instanceLabelKey null: all fields included regardless of instance', () => {
+    const result = collectInterfaces([frame], [trafficQuery({ instanceLabelKey: null })], 'ignored');
+    expect(result).toEqual([{ name: 'eth0' }, { name: 'eth1' }]);
+  });
+
+  test('no instance match: field instance does not match nodeName, returns []', () => {
+    const result = collectInterfaces([frame], [trafficQuery()], 'router-99');
+    expect(result).toEqual([]);
+  });
+
+  test('deduplication: same interface name from multiple fields appears once', () => {
+    const result = collectInterfaces([frame], [trafficQuery({ instanceLabelKey: null })], 'ignored');
+    const eth0Count = result.filter((r) => r.name === 'eth0').length;
+    expect(eth0Count).toBe(1);
+  });
+
+  test('sorting: returned names are in ascending alphabetical order', () => {
+    const frameUnsorted = makeFrame(
+      'A',
+      [1000],
+      [
+        { labels: { instance: 'r1', ifName: 'eth2' }, values: [1] },
+        { labels: { instance: 'r1', ifName: 'eth0' }, values: [2] },
+        { labels: { instance: 'r1', ifName: 'eth1' }, values: [3] },
+      ],
+    );
+    const result = collectInterfaces([frameUnsorted], [trafficQuery()], 'r1');
+    expect(result.map((r) => r.name)).toEqual(['eth0', 'eth1', 'eth2']);
+  });
+
+  test('empty queries array: returns []', () => {
+    const result = collectInterfaces([frame], [], 'router-1');
+    expect(result).toEqual([]);
+  });
+
+  test('multiple queries / frames: results merged, deduplicated, sorted', () => {
+    const frameB = makeFrame(
+      'B',
+      [1000],
+      [{ labels: { instance: 'router-1', ifName: 'eth2' }, values: [10] }],
+    );
+    const queryA = trafficQuery({ refId: 'A' });
+    const queryB = trafficQuery({ refId: 'B', id: 2 });
+    const result = collectInterfaces([frame, frameB], [queryA, queryB], 'router-1');
+    expect(result).toEqual([{ name: 'eth0' }, { name: 'eth1' }, { name: 'eth2' }]);
+  });
 });
 
 // ---------------------------------------------------------------------------

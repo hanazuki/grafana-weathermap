@@ -38,7 +38,7 @@ function renderWithTarget(target: PopupTarget, options = baseOptions) {
   render(
     <PopupProvider>
       <SetInlineEdit target={target} />
-      <InlineEditor options={options} onOptionsChange={onOptionsChange} />
+      <InlineEditor options={options} onOptionsChange={onOptionsChange} data={[]} />
     </PopupProvider>,
   );
   return { onOptionsChange };
@@ -48,7 +48,7 @@ describe('InlineEditor', () => {
   it('renders nothing when no target is set', () => {
     const { container } = render(
       <PopupProvider>
-        <InlineEditor options={baseOptions} onOptionsChange={jest.fn()} />
+        <InlineEditor options={baseOptions} onOptionsChange={jest.fn()} data={[]} />
       </PopupProvider>,
     );
     expect(container.firstChild).toBeNull();

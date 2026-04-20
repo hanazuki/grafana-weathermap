@@ -643,7 +643,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
       </ReactFlow>
       <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
       <WeathermapPopup options={options} data={data} />
-      <InlineEditor options={options} onOptionsChange={onOptionsChange} />
+      <InlineEditor options={options} onOptionsChange={onOptionsChange} data={data.series} />
     </div>
   );
 };

@@ -1,8 +1,9 @@
-import type { StandardEditorProps } from '@grafana/data';
+import type { DataFrame, StandardEditorProps } from '@grafana/data';
 import { Combobox, Field, InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
 import type React from 'react';
-import { useState } from 'react';
-import type { LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
+import { useMemo, useState } from 'react';
+import type { LinkConfig, LinkTrafficQueryConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../../types';
+import { collectInterfaces } from '../../utils/matching';
 import { Chooser } from './Chooser';
 import { getStyles } from './styles';
 
@@ -38,13 +39,56 @@ export type LinkEditorProps = {
   link: LinkConfig;
   nodes: NodeConfig[];
   queries: QueryConfig[];
+  data: DataFrame[];
   update: (patch: Partial<LinkConfig>) => void;
 };
 
-export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, update }) => {
+function findLinkTrafficQuery(queries: QueryConfig[], id: number | undefined): LinkTrafficQueryConfig | undefined {
+  if (id === undefined) {
+    return undefined;
+  }
+  const q = queries.find((q) => q.id === id);
+  return q?.type === 'linkTraffic' ? q : undefined;
+}
+
+export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, data, update }) => {
   const nodeOpts = nodeOptions(nodes);
   const queryOpts = queryOptions(queries);
   const noQueryOption = { label: '— none —', value: 0 };
+
+  const aNode = nodes.find((n) => n.id === link.aNodeId);
+  const zNode = nodes.find((n) => n.id === link.zNodeId);
+
+  const atozQuery = findLinkTrafficQuery(queries, link.atozQueryId);
+  const ztoaQuery = findLinkTrafficQuery(queries, link.ztoaQueryId);
+
+  const aIfaceOptions = useMemo(() => {
+    if (!aNode) {
+      return [];
+    }
+    const relevant: LinkTrafficQueryConfig[] = [];
+    if (atozQuery?.direction === 'egress') {
+      relevant.push(atozQuery);
+    }
+    if (ztoaQuery?.direction === 'ingress') {
+      relevant.push(ztoaQuery);
+    }
+    return collectInterfaces(data, relevant, aNode.name).map((n) => ({ label: n.name, value: n.name }));
+  }, [data, aNode, atozQuery, ztoaQuery]);
+
+  const zIfaceOptions = useMemo(() => {
+    if (!zNode) {
+      return [];
+    }
+    const relevant: LinkTrafficQueryConfig[] = [];
+    if (atozQuery?.direction === 'ingress') {
+      relevant.push(atozQuery);
+    }
+    if (ztoaQuery?.direction === 'egress') {
+      relevant.push(ztoaQuery);
+    }
+    return collectInterfaces(data, relevant, zNode.name).map((n) => ({ label: n.name, value: n.name }));
+  }, [data, zNode, atozQuery, ztoaQuery]);
 
   return (
     <>
@@ -58,10 +102,12 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
           />
         </InlineField>
         <InlineField label="A iface" grow shrink>
-          <Input
+          <Combobox<string>
+            options={aIfaceOptions}
             value={link.aInterface}
-            onChange={(e) => update({ aInterface: e.currentTarget.value })}
+            onChange={(opt) => update({ aInterface: opt.value ?? '' })}
             placeholder="eth0"
+            createCustomValue
             data-testid="iwm-editor-link-aiface"
           />
         </InlineField>
@@ -77,10 +123,12 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, up
           />
         </InlineField>
         <InlineField label="Z iface" grow shrink>
-          <Input
+          <Combobox<string>
+            options={zIfaceOptions}
             value={link.zInterface}
-            onChange={(e) => update({ zInterface: e.currentTarget.value })}
+            onChange={(opt) => update({ zInterface: opt.value ?? '' })}
             placeholder="eth0"
+            createCustomValue
             data-testid="iwm-editor-link-ziface"
           />
         </InlineField>
@@ -203,7 +251,7 @@ export const LinksEditor: React.FC<StandardEditorProps<LinkConfig[], unknown, We
         />
       </Field>
       {link !== null ? (
-        <LinkEditor link={link} nodes={nodes} queries={queries} update={update} />
+        <LinkEditor link={link} nodes={nodes} queries={queries} data={context.data ?? []} update={update} />
       ) : (
         <div className={styles.emptyState}>No links yet — click + to add one</div>
       )}

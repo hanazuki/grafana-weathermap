@@ -1,5 +1,5 @@
 import { css } from '@emotion/css';
-import type { GrafanaTheme2 } from '@grafana/data';
+import type { DataFrame, GrafanaTheme2 } from '@grafana/data';
 import { Button, IconButton, useStyles2 } from '@grafana/ui';
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -11,9 +11,10 @@ import { NodeEditor } from './editors/NodesEditor';
 interface Props {
   options: WeathermapOptions;
   onOptionsChange: (options: WeathermapOptions) => void;
+  data: DataFrame[];
 }
 
-export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
+export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange, data }) => {
   const styles = useStyles2(getStyles);
   const {
     state: { inlineEdit },
@@ -153,7 +154,7 @@ export const InlineEditor: React.FC<Props> = ({ options, onOptionsChange }) => {
         </span>
       </div>
       <div className={styles.body}>
-        <LinkEditor link={link} nodes={nodes} queries={queries} update={update} />
+        <LinkEditor link={link} nodes={nodes} queries={queries} data={data} update={update} />
         <div className={styles.footer}>
           <Button
             variant="destructive"
