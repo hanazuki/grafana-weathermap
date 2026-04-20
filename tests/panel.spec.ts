@@ -492,21 +492,21 @@ test('delete button in inline editor removes a link and closes the editor', asyn
   await expect(page.getByTestId('iwm-edge-1')).not.toBeVisible();
 });
 
-test('node description appears in hover popup', async ({ panelEditPage, readProvisionedDataSource, page }) => {
+test('node description appears in node popup', async ({ panelEditPage, readProvisionedDataSource, page }) => {
   const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
 
   // Add a node with a description
   await page.getByTestId('iwm-editor-node-add').click();
-  await page.getByTestId('iwm-editor-node-name').fill('router-a');
   await page.getByTestId('iwm-editor-node-x').fill('200');
   await page.getByTestId('iwm-editor-node-y').fill('200');
   await page.getByTestId('iwm-editor-node-description').fill('Core router');
+  await page.getByTestId('iwm-editor-node-name').fill('router-a');
   await expect(page.getByTestId('iwm-node-1')).toContainText('router-a');
 
-  // Hover over the node to trigger the preview popup
-  await page.getByTestId('iwm-node-1').hover();
+  // Click the node to open the pinned popup
+  await page.getByTestId('iwm-node-1').click();
 
   // Assert the popup is visible and contains the description
   const popup = page.getByTestId('iwm-node-popup');

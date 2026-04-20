@@ -3,6 +3,7 @@
     "allow": [
       "Bash(pnpm build:*)",
       "Bash(pnpm lint:*)",
+      "Bash(pnpm e2e:*)",
       "Bash(pnpm test:*)",
       "Bash(pnpm test:ci:*)",
       "Bash(pnpm typecheck:*)",
