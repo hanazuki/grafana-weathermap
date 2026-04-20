@@ -1,4 +1,4 @@
-import { type Field, FieldType, getTimeField, type PanelData } from '@grafana/data';
+import { type DataFrame, type Field, FieldType, getTimeField, type PanelData } from '@grafana/data';
 import type { HealthStatus, LinkTrafficQueryConfig, NodeHealthQueryConfig, TimeSeries } from '../types';
 
 function makeTimeSeries<T>(field: Field, timeField: Field, decode: (v: unknown) => T | null): TimeSeries<T> {
@@ -77,6 +77,47 @@ export function findTrafficTimeSeries({
   }
 
   return null;
+}
+
+export function collectInterfaces(
+  frames: DataFrame[],
+  queries: LinkTrafficQueryConfig[],
+  nodeName: string,
+): Array<{ name: string }> {
+  const names = new Set<string>();
+
+  for (const query of queries) {
+    if (query.interfaceLabelKey === null) {
+      continue;
+    }
+    const { interfaceLabelKey, instanceLabelKey, refId } = query;
+
+    for (const frame of frames) {
+      if (frame.refId !== refId) {
+        continue;
+      }
+
+      for (const field of frame.fields) {
+        if (field.type !== FieldType.number) {
+          continue;
+        }
+
+        const labels = field.labels ?? {};
+        if (instanceLabelKey !== null && labels[instanceLabelKey] !== nodeName) {
+          continue;
+        }
+
+        const ifaceName = labels[interfaceLabelKey];
+        if (ifaceName !== undefined) {
+          names.add(ifaceName);
+        }
+      }
+    }
+  }
+
+  return Array.from(names)
+    .sort()
+    .map((name) => ({ name }));
 }
 
 function decodeHealthValue(v: unknown): HealthStatus | null {
