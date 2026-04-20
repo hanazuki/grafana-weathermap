@@ -497,16 +497,19 @@ test('node description appears in hover popup', async ({ panelEditPage, readProv
   await panelEditPage.datasource.set(ds.name);
   await panelEditPage.setVisualization('Interactive Network Weathermap');
 
-  // Add a node with a description
+  // Add a node with a description; fill name last so the toContainText assertion
+  // is a genuine stability gate that waits for all preceding option updates to propagate.
   await page.getByTestId('iwm-editor-node-add').click();
-  await page.getByTestId('iwm-editor-node-name').fill('router-a');
   await page.getByTestId('iwm-editor-node-x').fill('200');
   await page.getByTestId('iwm-editor-node-y').fill('200');
   await page.getByTestId('iwm-editor-node-description').fill('Core router');
+  await page.getByTestId('iwm-editor-node-name').fill('router-a');
   await expect(page.getByTestId('iwm-node-1')).toContainText('router-a');
 
-  // Hover over the node to trigger the preview popup
-  await page.getByTestId('iwm-node-1').hover();
+  // Hover over the node to trigger the preview popup; use page.mouse.move() for
+  // consistent event firing (same pattern as the link hover test).
+  const nodeBox = await page.getByTestId('iwm-node-1').boundingBox();
+  await page.mouse.move(nodeBox!.x + nodeBox!.width / 2, nodeBox!.y + nodeBox!.height / 2);
 
   // Assert the popup is visible and contains the description
   const popup = page.getByTestId('iwm-node-popup');
