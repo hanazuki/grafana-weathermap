@@ -102,7 +102,10 @@ describe('collectInterfaces', () => {
 
   test('basic match: returns interface name for matching instance and interface label', () => {
     const result = collectInterfaces([frame], [trafficQuery()], 'router-1');
-    expect(result).toEqual([{ name: 'eth0' }, { name: 'eth1' }]);
+    expect(result).toEqual([
+      { name: 'eth0', description: null },
+      { name: 'eth1', description: null },
+    ]);
   });
 
   test('interfaceLabelKey null: query is skipped, returns []', () => {
@@ -112,7 +115,10 @@ describe('collectInterfaces', () => {
 
   test('instanceLabelKey null: all fields included regardless of instance', () => {
     const result = collectInterfaces([frame], [trafficQuery({ instanceLabelKey: null })], 'ignored');
-    expect(result).toEqual([{ name: 'eth0' }, { name: 'eth1' }]);
+    expect(result).toEqual([
+      { name: 'eth0', description: null },
+      { name: 'eth1', description: null },
+    ]);
   });
 
   test('no instance match: field instance does not match nodeName, returns []', () => {
@@ -150,7 +156,99 @@ describe('collectInterfaces', () => {
     const queryA = trafficQuery({ refId: 'A' });
     const queryB = trafficQuery({ refId: 'B', id: 2 });
     const result = collectInterfaces([frame, frameB], [queryA, queryB], 'router-1');
-    expect(result).toEqual([{ name: 'eth0' }, { name: 'eth1' }, { name: 'eth2' }]);
+    expect(result).toEqual([
+      { name: 'eth0', description: null },
+      { name: 'eth1', description: null },
+      { name: 'eth2', description: null },
+    ]);
+  });
+
+  test('descriptionLabel set: returns description from matching field', () => {
+    const frameWithAlias = makeFrame(
+      'A',
+      [1000],
+      [{ labels: { instance: 'router-1', ifName: 'eth0', ifAlias: 'Uplink' }, values: [10] }],
+    );
+    const result = collectInterfaces([frameWithAlias], [trafficQuery({ descriptionLabel: 'ifAlias' })], 'router-1');
+    expect(result).toEqual([{ name: 'eth0', description: 'Uplink' }]);
+  });
+
+  test('descriptionLabel null: description is always null', () => {
+    const frameWithAlias = makeFrame(
+      'A',
+      [1000],
+      [{ labels: { instance: 'router-1', ifName: 'eth0', ifAlias: 'Uplink' }, values: [10] }],
+    );
+    const result = collectInterfaces([frameWithAlias], [trafficQuery({ descriptionLabel: null })], 'router-1');
+    expect(result).toEqual([{ name: 'eth0', description: null }]);
+  });
+
+  test('descriptionLabel set but key absent from field: description is null', () => {
+    const frameNoAlias = makeFrame('A', [1000], [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [10] }]);
+    const result = collectInterfaces([frameNoAlias], [trafficQuery({ descriptionLabel: 'ifAlias' })], 'router-1');
+    expect(result).toEqual([{ name: 'eth0', description: null }]);
+  });
+
+  test('newer non-null wins over older non-null', () => {
+    const olderFrame = makeFrame(
+      'A',
+      [1000],
+      [{ labels: { instance: 'router-1', ifName: 'eth0', ifAlias: 'Old' }, values: [10] }],
+    );
+    const newerFrame = makeFrame(
+      'A',
+      [2000],
+      [{ labels: { instance: 'router-1', ifName: 'eth0', ifAlias: 'New' }, values: [20] }],
+    );
+    const result = collectInterfaces(
+      [olderFrame, newerFrame],
+      [trafficQuery({ descriptionLabel: 'ifAlias' })],
+      'router-1',
+    );
+    expect(result).toEqual([{ name: 'eth0', description: 'New' }]);
+  });
+
+  test('newer null does not overwrite older non-null', () => {
+    const olderFrame = makeFrame(
+      'A',
+      [1000],
+      [{ labels: { instance: 'router-1', ifName: 'eth0', ifAlias: 'Old' }, values: [10] }],
+    );
+    const newerFrame = makeFrame('A', [2000], [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [20] }]);
+    const result = collectInterfaces(
+      [olderFrame, newerFrame],
+      [trafficQuery({ descriptionLabel: 'ifAlias' })],
+      'router-1',
+    );
+    expect(result).toEqual([{ name: 'eth0', description: 'Old' }]);
+  });
+
+  test('frame with no time field is skipped', () => {
+    const frameNoTime = {
+      refId: 'A',
+      length: 1,
+      fields: [
+        {
+          name: 'Value',
+          type: FieldType.number,
+          labels: { instance: 'router-1', ifName: 'eth0' },
+          values: [10],
+          config: {},
+        },
+      ],
+    };
+    const result = collectInterfaces(
+      [frameNoTime as unknown as Parameters<typeof collectInterfaces>[0][0]],
+      [trafficQuery()],
+      'router-1',
+    );
+    expect(result).toEqual([]);
+  });
+
+  test('interface collected with null description when all frames have null desc', () => {
+    const frameNullDesc = makeFrame('A', [1000], [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [10] }]);
+    const result = collectInterfaces([frameNullDesc], [trafficQuery({ descriptionLabel: 'ifAlias' })], 'router-1');
+    expect(result).toEqual([{ name: 'eth0', description: null }]);
   });
 });
 

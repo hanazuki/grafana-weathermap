@@ -101,19 +101,27 @@ export function collectInterfaces(
   frames: DataFrame[],
   queries: LinkTrafficQueryConfig[],
   nodeName: string,
-): Array<{ name: string }> {
+): Array<{ name: string; description: string | null }> {
   const names = new Set<string>();
+  const descMap = new Map<string, { description: string; timestamp: number }>();
 
   for (const query of queries) {
     if (query.interfaceLabelKey === null) {
       continue;
     }
-    const { interfaceLabelKey, instanceLabelKey, refId } = query;
+    const { interfaceLabelKey, instanceLabelKey, descriptionLabel, refId } = query;
 
     for (const frame of frames) {
       if (frame.refId !== refId) {
         continue;
       }
+
+      const { timeField } = getTimeField(frame);
+      if (!timeField) {
+        continue;
+      }
+
+      const lastTimestamp = timeField.values[timeField.values.length - 1] as number;
 
       for (const field of frame.fields) {
         if (field.type !== FieldType.number) {
@@ -126,8 +134,18 @@ export function collectInterfaces(
         }
 
         const ifaceName = labels[interfaceLabelKey];
-        if (ifaceName !== undefined) {
-          names.add(ifaceName);
+        if (ifaceName === undefined) {
+          continue;
+        }
+
+        const desc = descriptionLabel != null ? (labels[descriptionLabel] ?? null) : null;
+        names.add(ifaceName);
+
+        if (desc !== null) {
+          const existing = descMap.get(ifaceName);
+          if (!existing || lastTimestamp > existing.timestamp) {
+            descMap.set(ifaceName, { description: desc, timestamp: lastTimestamp });
+          }
         }
       }
     }
@@ -135,7 +153,10 @@ export function collectInterfaces(
 
   return Array.from(names)
     .sort()
-    .map((name) => ({ name }));
+    .map((name) => ({
+      name,
+      description: descMap.get(name)?.description ?? null,
+    }));
 }
 
 function decodeHealthValue(v: unknown): HealthStatus | null {

@@ -25,6 +25,7 @@ export interface LinkTrafficQueryConfig {
   type: 'linkTraffic';
   instanceLabelKey: string | null;
   interfaceLabelKey: string | null;
+  descriptionLabel?: string | null;
   direction: TrafficDirection;
 }
 

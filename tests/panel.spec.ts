@@ -816,6 +816,86 @@ test('instance label combobox accepts custom value not in suggestions', async ({
   await expect(page.getByTestId('iwm-editor-query-instance-label')).toHaveValue('custom_label');
 });
 
+test('interface description appears in A iface combobox via inline editor', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+
+  // Mock query response: router-a/eth0 with ifAlias label
+  await panelEditPage.mockQueryDataResponse({
+    results: {
+      A: {
+        frames: [
+          {
+            schema: {
+              refId: 'A',
+              fields: [
+                { name: 'Time', type: 'time', typeInfo: { frame: 'time.Time' } },
+                {
+                  name: 'Value',
+                  type: 'number',
+                  typeInfo: { frame: 'float64' },
+                  labels: { instance: 'router-a', ifName: 'eth0', ifAlias: 'Uplink to core' },
+                },
+              ],
+            },
+            data: { values: [[Date.now()], [1_000_000_000]] },
+          },
+        ],
+      },
+    },
+  });
+
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add two nodes with distinct positions
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('router-a');
+  await page.getByTestId('iwm-editor-node-x').fill('100');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('router-b');
+  await page.getByTestId('iwm-editor-node-x').fill('400');
+  await page.getByTestId('iwm-editor-node-y').fill('100');
+
+  // Add a linkTraffic query config with refId A, direction Egress (descriptionLabel defaults to 'ifAlias')
+  await page.getByTestId('iwm-editor-query-add').click();
+  await page.getByTestId('iwm-editor-query-refid').click();
+  await page.getByRole('option', { name: 'A' }).click();
+
+  // Add a link and assign the A→Z query
+  await page.getByTestId('iwm-editor-link-add').click();
+  await page.getByTestId('iwm-editor-link-atoz-query').click();
+  await page.getByRole('option', { name: 'A' }).click();
+  await expect(page.getByTestId('iwm-edge-1')).toBeVisible();
+
+  await panelEditPage.refreshPanel();
+
+  // Drag the pane separator down to give the canvas enough room
+  const separator = page.getByRole('separator', { name: 'Pane resize widget' }).first();
+  const sepBox = await separator.boundingBox();
+  await page.mouse.move(sepBox!.x + sepBox!.width / 2, sepBox!.y + sepBox!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sepBox!.x + sepBox!.width / 2, sepBox!.y + sepBox!.height / 2 + 200, { steps: 10 });
+  await page.mouse.up();
+
+  // Double-click the link to open the inline editor
+  const edgeBox = await page.getByTestId('iwm-edge-1').boundingBox();
+  await page.mouse.dblclick(edgeBox!.x + edgeBox!.width / 2, edgeBox!.y + edgeBox!.height / 2);
+  const inlineEditor = page.getByTestId('iwm-inline-editor');
+  await expect(inlineEditor).toBeVisible();
+
+  // Open the A iface combobox and assert eth0 option with description text is visible
+  await inlineEditor.getByTestId('iwm-editor-link-aiface').click();
+  await expect(page.getByRole('option', { name: 'eth0' })).toBeVisible();
+  await expect(page.getByText('Uplink to core')).toBeVisible();
+  await page.keyboard.press('Escape');
+});
+
 test('nodeHealth instance label combobox shows suggestions from query data', async ({
   panelEditPage,
   readProvisionedDataSource,
