@@ -56,6 +56,7 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
         type: 'linkTraffic',
         instanceLabelKey: query.instanceLabelKey,
         interfaceLabelKey: 'ifName',
+        descriptionLabel: 'ifAlias',
         direction: 'egress',
       };
       update(next);
@@ -115,6 +116,18 @@ const QueryEditor: React.FC<QueryEditorProps> = ({ query, refIdOptions, usedRefI
           </InlineField>
         )}
         {query.type === 'linkTraffic' && (
+          <InlineField label="Description label" grow>
+            <Combobox<string>
+              createCustomValue
+              options={labelOptions}
+              value={query.descriptionLabel ?? null}
+              onChange={(opt) => update({ ...query, descriptionLabel: opt.value || null })}
+              placeholder="ifAlias"
+              data-testid="iwm-editor-query-description-label"
+            />
+          </InlineField>
+        )}
+        {query.type === 'linkTraffic' && (
           <InlineField label="Direction" grow>
             <Combobox<TrafficDirection>
               options={DIRECTION_OPTIONS}
@@ -147,6 +160,7 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({ va
         type: 'linkTraffic',
         instanceLabelKey: 'instance',
         interfaceLabelKey: 'ifName',
+        descriptionLabel: 'ifAlias',
         direction: 'egress' as const,
       },
     ]);

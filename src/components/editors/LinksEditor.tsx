@@ -73,7 +73,11 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, da
     if (ztoaQuery?.direction === 'ingress') {
       relevant.push(ztoaQuery);
     }
-    return collectInterfaces(data, relevant, aNode.name).map((n) => ({ label: n.name, value: n.name }));
+    return collectInterfaces(data, relevant, aNode.name).map((n) => ({
+      label: n.name,
+      value: n.name,
+      description: n.description ?? undefined,
+    }));
   }, [data, aNode, atozQuery, ztoaQuery]);
 
   const zIfaceOptions = useMemo(() => {
@@ -87,7 +91,11 @@ export const LinkEditor: React.FC<LinkEditorProps> = ({ link, nodes, queries, da
     if (ztoaQuery?.direction === 'egress') {
       relevant.push(ztoaQuery);
     }
-    return collectInterfaces(data, relevant, zNode.name).map((n) => ({ label: n.name, value: n.name }));
+    return collectInterfaces(data, relevant, zNode.name).map((n) => ({
+      label: n.name,
+      value: n.name,
+      description: n.description ?? undefined,
+    }));
   }, [data, zNode, atozQuery, ztoaQuery]);
 
   return (

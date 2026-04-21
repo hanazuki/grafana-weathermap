@@ -94,6 +94,7 @@
             "type": "linkTraffic",
             "instanceLabelKey": "instance",
             "interfaceLabelKey": "ifName",
+            "descriptionLabel": "ifAlias",
             "direction": "egress"
           },
           {
@@ -102,6 +103,7 @@
             "type": "linkTraffic",
             "instanceLabelKey": "instance",
             "interfaceLabelKey": "ifName",
+            "descriptionLabel": "ifAlias",
             "direction": "ingress"
           },
           {
@@ -121,7 +123,7 @@
           "refId": "OutBits",
           "scenarioId": "random_walk",
           "seriesCount": 3,
-          "labels": "instance=host-$seriesIndex.example.com,ifName=eth0",
+          "labels": "instance=host-$seriesIndex.example.com,ifName=eth0,ifAlias=Link-$seriesIndex",
           "startValue": 500000000,
           "spread": 10000000,
           "min": 1000000,
@@ -135,7 +137,7 @@
           "refId": "InBits",
           "scenarioId": "random_walk",
           "seriesCount": 3,
-          "labels": "instance=host-$seriesIndex.example.com,ifName=eth0",
+          "labels": "instance=host-$seriesIndex.example.com,ifName=eth0,ifAlias=Link-$seriesIndex",
           "startValue": 500000000,
           "spread": 10000000,
           "min": 1000000,
