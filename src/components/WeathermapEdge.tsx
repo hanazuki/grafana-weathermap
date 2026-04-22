@@ -151,6 +151,7 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
   const labelStyle = (offset: number, xAlign: string, borderColor: string): React.CSSProperties => ({
     position: 'absolute',
     transform: `translate(${tipX}px, ${tipY}px) rotate(${displayAngle}deg) translateX(${offset}px) translate(${xAlign}, -50%)`,
+    transformOrigin: '0 0',
     background: labelBgColor,
     borderRadius: '2px',
     color: borderColor,
