@@ -135,20 +135,22 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
   // Tip position in panel space (midpoint + perpendicular offset)
   const tipX = mx + ox;
   const tipY = my + oy;
-  const ux = dx / len;
-  const uy = dy / len;
-
-  const atozLabelX = tipX - labelDistance * ux;
-  const atozLabelY = tipY - labelDistance * uy;
-  const ztoaLabelX = tipX + labelDistance * ux;
-  const ztoaLabelY = tipY + labelDistance * uy;
 
   // When A→Z points leftward, flip 180° so both labels remain readable
   const displayAngle = atozNeedsFlip ? angleDeg + 180 : angleDeg;
 
-  const labelStyle = (labelX: number, labelY: number, borderColor: string): React.CSSProperties => ({
+  // In the rotated frame, A→Z is on the -x side (source) without flip, +x side with flip.
+  // We position the near edge of each label at labelDistance from the midpoint:
+  //   translateX moves along the rotated edge axis by ±labelDistance,
+  //   then translate(-100%, -50%) or translate(0%, -50%) flushes the near edge to that point.
+  const atozLabelOffset = atozNeedsFlip ? labelDistance : -labelDistance;
+  const atozLabelXAlign = atozNeedsFlip ? '0%' : '-100%';
+  const ztoaLabelOffset = atozNeedsFlip ? -labelDistance : labelDistance;
+  const ztoaLabelXAlign = atozNeedsFlip ? '-100%' : '0%';
+
+  const labelStyle = (offset: number, xAlign: string, borderColor: string): React.CSSProperties => ({
     position: 'absolute',
-    transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px) rotate(${displayAngle}deg)`,
+    transform: `translate(${tipX}px, ${tipY}px) rotate(${displayAngle}deg) translateX(${offset}px) translate(${xAlign}, -50%)`,
     background: labelBgColor,
     borderRadius: '2px',
     color: borderColor,
@@ -189,12 +191,12 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
       </g>
       <EdgeLabelRenderer>
         {atozSpeed && (
-          <div style={labelStyle(atozLabelX, atozLabelY, atozBorderColor)} data-testid={`iwm-edge-${id}-atoz-label`}>
+          <div style={labelStyle(atozLabelOffset, atozLabelXAlign, atozBorderColor)} data-testid={`iwm-edge-${id}-atoz-label`}>
             {atozSpeed}
           </div>
         )}
         {ztoaSpeed && (
-          <div style={labelStyle(ztoaLabelX, ztoaLabelY, ztoaBorderColor)} data-testid={`iwm-edge-${id}-ztoa-label`}>
+          <div style={labelStyle(ztoaLabelOffset, ztoaLabelXAlign, ztoaBorderColor)} data-testid={`iwm-edge-${id}-ztoa-label`}>
             {ztoaSpeed}
           </div>
         )}
