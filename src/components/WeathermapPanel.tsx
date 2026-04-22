@@ -108,6 +108,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   const linkParallelOffset = options.linkParallelOffset ?? 6;
   const linkLabelFontSize = options.linkLabelFontSize ?? 10;
   const logScaleBase = options.logScaleBase ?? 10;
+  const dataMaxAgeMs = options.dataMaxAge != null ? options.dataMaxAge * 1000 : undefined;
 
   // Fast lookup maps
   const nodeMap = useMemo(() => new Map<number, NodeConfig>(nodes.map((n) => [n.id, n])), [nodes]);
@@ -422,7 +423,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           const qc = queryMap.get(node.statusQueryId);
           healthStatus =
             qc && qc.type === 'nodeHealth'
-              ? (findHealthTimeSeries(data, qc, node.name)?.getLatestValue()?.value ?? null)
+              ? (findHealthTimeSeries(data, qc, node.name, dataMaxAgeMs)?.getLatestValue()?.value ?? null)
               : null;
         }
 
@@ -447,7 +448,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           dragHandle: '.iwm-move-zone',
         };
       }),
-    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing],
+    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing, dataMaxAgeMs],
   );
 
   // Build React Flow edges
@@ -479,6 +480,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
                   queryConfig: qc,
                   srcNode: { name: aNode.name, iface: link.aInterface },
                   dstNode: { name: zNode.name, iface: link.zInterface },
+                  maxAgeMs: dataMaxAgeMs,
                 })?.getLatestValue() ?? null;
               if (latest !== null) {
                 atozColor = getUtilizationColor(
@@ -503,6 +505,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
                   queryConfig: qc,
                   srcNode: { name: zNode.name, iface: link.zInterface },
                   dstNode: { name: aNode.name, iface: link.aInterface },
+                  maxAgeMs: dataMaxAgeMs,
                 })?.getLatestValue() ?? null;
               if (latest !== null) {
                 ztoaColor = getUtilizationColor(
@@ -558,6 +561,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
     linkTipLength,
     linkLabelDistance,
     linkLabelFontSize,
+    dataMaxAgeMs,
   ]);
 
   // Full-panel error state for invalid label transform config

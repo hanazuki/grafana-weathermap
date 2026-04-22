@@ -1,7 +1,13 @@
 import { type DataFrame, type Field, FieldType, getTimeField, type PanelData } from '@grafana/data';
 import type { HealthStatus, LinkTrafficQueryConfig, NodeHealthQueryConfig, TimeSeries } from '../types';
 
-function makeTimeSeries<T>(field: Field, timeField: Field, decode: (v: unknown) => T | null): TimeSeries<T> {
+function makeTimeSeries<T>(
+  field: Field,
+  timeField: Field,
+  decode: (v: unknown) => T | null,
+  maxAgeMs?: number,
+  referenceMs?: number,
+): TimeSeries<T> {
   return {
     getLatestValue() {
       const len = field.values.length;
@@ -12,7 +18,11 @@ function makeTimeSeries<T>(field: Field, timeField: Field, decode: (v: unknown) 
       if (value === null) {
         return null;
       }
-      return { value, timestamp: timeField.values[len - 1] as number };
+      const timestamp = timeField.values[len - 1] as number;
+      if (maxAgeMs !== undefined && referenceMs !== undefined && referenceMs - timestamp > maxAgeMs) {
+        return null;
+      }
+      return { value, timestamp };
     },
     getValues() {
       const values: T[] = [];
@@ -42,13 +52,16 @@ export function findTrafficTimeSeries({
   queryConfig,
   srcNode,
   dstNode,
+  maxAgeMs,
 }: {
   data: PanelData;
   queryConfig: LinkTrafficQueryConfig;
   srcNode: { name: string; iface: string };
   dstNode: { name: string; iface: string };
+  maxAgeMs?: number;
 }): TimeSeries<number> | null {
   const { name: instance, iface } = queryConfig.direction === 'egress' ? srcNode : dstNode;
+  const referenceMs = data.timeRange?.to?.valueOf();
 
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {
@@ -72,7 +85,7 @@ export function findTrafficTimeSeries({
       if (queryConfig.interfaceLabelKey !== null && labels[queryConfig.interfaceLabelKey] !== iface) {
         continue;
       }
-      return makeTimeSeries(field, timeField, (v) => (Number.isFinite(v) ? (v as number) : null));
+      return makeTimeSeries(field, timeField, (v) => (Number.isFinite(v) ? (v as number) : null), maxAgeMs, referenceMs);
     }
   }
 
@@ -175,7 +188,10 @@ export function findHealthTimeSeries(
   data: PanelData,
   queryConfig: NodeHealthQueryConfig,
   nodeName: string,
+  maxAgeMs?: number,
 ): TimeSeries<HealthStatus> | null {
+  const referenceMs = data.timeRange?.to?.valueOf();
+
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {
       continue;
@@ -196,7 +212,7 @@ export function findHealthTimeSeries(
         continue;
       }
 
-      return makeTimeSeries(field, timeField, decodeHealthValue);
+      return makeTimeSeries(field, timeField, decodeHealthValue, maxAgeMs, referenceMs);
     }
   }
 

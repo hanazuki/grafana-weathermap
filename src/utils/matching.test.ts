@@ -23,8 +23,11 @@ function makeFrame(
   };
 }
 
-function makeData(frames: Array<ReturnType<typeof makeFrame>>): PanelData {
-  return { series: frames } as unknown as PanelData;
+function makeData(frames: Array<ReturnType<typeof makeFrame>>, timeRangeToMs?: number): PanelData {
+  return {
+    series: frames,
+    ...(timeRangeToMs !== undefined ? { timeRange: { to: { valueOf: () => timeRangeToMs } } } : {}),
+  } as unknown as PanelData;
 }
 
 const trafficQuery = (overrides: Partial<LinkTrafficQueryConfig> = {}): LinkTrafficQueryConfig => ({
@@ -385,6 +388,44 @@ describe('findTrafficTimeSeries', () => {
     expect(ts).not.toBeNull();
     // dst instance is router-b; first series with instance=router-b is [30,40]
     expect(ts!.getLatestValue()).toEqual({ value: 40, timestamp: 2000 });
+  });
+
+  describe('staleness (maxAgeMs)', () => {
+    // frame has timestamps [1000, 2000]; latest value is 20 at t=2000
+    const staleFrame = makeFrame('A', [1000, 2000], [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20] }]);
+    const call = (maxAgeMs: number, timeRangeToMs: number) =>
+      findTrafficTimeSeries({
+        data: makeData([staleFrame], timeRangeToMs),
+        queryConfig: trafficQuery(),
+        srcNode: { name: 'router-1', iface: 'eth0' },
+        dstNode: { name: 'router-z', iface: 'eth9' },
+        maxAgeMs,
+      });
+
+    test('returns null when gap between timeRange.to and last timestamp exceeds maxAgeMs', () => {
+      // gap = 5000 - 2000 = 3000 > 2000
+      expect(call(2000, 5000)!.getLatestValue()).toBeNull();
+    });
+
+    test('returns value when gap equals maxAgeMs (boundary: not stale)', () => {
+      // gap = 4000 - 2000 = 2000, not > 2000
+      expect(call(2000, 4000)!.getLatestValue()).toEqual({ value: 20, timestamp: 2000 });
+    });
+
+    test('returns value when gap is within maxAgeMs', () => {
+      // gap = 3500 - 2000 = 1500 < 2000
+      expect(call(2000, 3500)!.getLatestValue()).toEqual({ value: 20, timestamp: 2000 });
+    });
+
+    test('no maxAgeMs: returns value regardless of age', () => {
+      const ts = findTrafficTimeSeries({
+        data: makeData([staleFrame], 9999999),
+        queryConfig: trafficQuery(),
+        srcNode: { name: 'router-1', iface: 'eth0' },
+        dstNode: { name: 'router-z', iface: 'eth9' },
+      });
+      expect(ts!.getLatestValue()).toEqual({ value: 20, timestamp: 2000 });
+    });
   });
 });
 
