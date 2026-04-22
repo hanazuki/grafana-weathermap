@@ -85,7 +85,13 @@ export function findTrafficTimeSeries({
       if (queryConfig.interfaceLabelKey !== null && labels[queryConfig.interfaceLabelKey] !== iface) {
         continue;
       }
-      return makeTimeSeries(field, timeField, (v) => (Number.isFinite(v) ? (v as number) : null), maxAgeMs, referenceMs);
+      return makeTimeSeries(
+        field,
+        timeField,
+        (v) => (Number.isFinite(v) ? (v as number) : null),
+        maxAgeMs,
+        referenceMs,
+      );
     }
   }
 
