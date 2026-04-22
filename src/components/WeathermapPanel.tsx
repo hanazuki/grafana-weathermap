@@ -448,7 +448,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           dragHandle: '.iwm-move-zone',
         };
       }),
-    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing],
+    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing, dataMaxAgeMs],
   );
 
   // Build React Flow edges
@@ -561,6 +561,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
     linkTipLength,
     linkLabelDistance,
     linkLabelFontSize,
+    dataMaxAgeMs,
   ]);
 
   // Full-panel error state for invalid label transform config
