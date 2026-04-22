@@ -896,6 +896,79 @@ test('interface description appears in A iface combobox via inline editor', asyn
   await page.keyboard.press('Escape');
 });
 
+test('traffic labels are rendered above arrows via EdgeLabelRenderer', async ({
+  panelEditPage,
+  readProvisionedDataSource,
+  page,
+}) => {
+  const ds = await readProvisionedDataSource({ fileName: 'datasources.yml' });
+
+  // Mock query response: node-a/eth0 with 500 Mbps
+  await panelEditPage.mockQueryDataResponse({
+    results: {
+      A: {
+        frames: [
+          {
+            schema: {
+              refId: 'A',
+              fields: [
+                { name: 'Time', type: 'time', typeInfo: { frame: 'time.Time' } },
+                {
+                  name: 'Value',
+                  type: 'number',
+                  typeInfo: { frame: 'float64' },
+                  labels: { instance: 'node-a', ifName: 'eth0' },
+                },
+              ],
+            },
+            data: {
+              values: [
+                [Date.now() - 60_000, Date.now()],
+                [500_000_000, 500_000_000],
+              ],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  await panelEditPage.datasource.set(ds.name);
+  await panelEditPage.setVisualization('Interactive Network Weathermap');
+
+  // Add two nodes
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('node-a');
+  await page.getByTestId('iwm-editor-node-x').fill('100');
+  await page.getByTestId('iwm-editor-node-y').fill('150');
+
+  await page.getByTestId('iwm-editor-node-add').click();
+  await page.getByTestId('iwm-editor-node-name').fill('node-b');
+  await page.getByTestId('iwm-editor-node-x').fill('400');
+  await page.getByTestId('iwm-editor-node-y').fill('150');
+
+  // Add a link with matching interface names
+  await page.getByTestId('iwm-editor-link-add').click();
+  await page.getByTestId('iwm-editor-link-aiface').fill('eth0');
+  await page.getByRole('option', { name: 'eth0' }).click();
+  await page.getByTestId('iwm-editor-link-ziface').fill('eth0');
+  await page.getByRole('option', { name: 'eth0' }).click();
+
+  // Add a linkTraffic query config with refId A, direction Egress (default)
+  await page.getByTestId('iwm-editor-query-add').click();
+  await page.getByTestId('iwm-editor-query-refid').click();
+  await page.getByRole('option', { name: 'A' }).click();
+
+  // Assign query as A→Z traffic on the link
+  await page.getByTestId('iwm-editor-link-atoz-query').click();
+  await page.getByRole('option', { name: 'A' }).click();
+
+  await panelEditPage.refreshPanel();
+
+  // The A→Z label must be visible as an HTML element rendered via EdgeLabelRenderer
+  await expect(page.getByTestId('iwm-edge-1-atoz-label')).toBeVisible();
+});
+
 test('nodeHealth instance label combobox shows suggestions from query data', async ({
   panelEditPage,
   readProvisionedDataSource,

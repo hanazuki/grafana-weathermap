@@ -1,4 +1,4 @@
-import type { Edge, EdgeProps } from '@xyflow/react';
+import { type Edge, EdgeLabelRenderer, type EdgeProps } from '@xyflow/react';
 import React, { useId } from 'react';
 
 const BORDER_WIDTH = 0.5;
@@ -47,22 +47,10 @@ interface ArrowProps {
   borderColor: string;
   strokeWidth: number;
   tipLength: number;
-  children?: React.ReactNode;
 }
 
 // Drawn in canonical coords (tip at origin, pointing +x), placed via group transform.
-// Children are rendered in the same canonical coordinate space.
-const Arrow: React.FC<ArrowProps> = ({
-  len,
-  angleDeg,
-  tipX,
-  tipY,
-  color,
-  borderColor,
-  strokeWidth,
-  tipLength,
-  children,
-}) => {
+const Arrow: React.FC<ArrowProps> = ({ len, angleDeg, tipX, tipY, color, borderColor, strokeWidth, tipLength }) => {
   const filterId = useId();
   const hw = strokeWidth / 2;
 
@@ -98,7 +86,6 @@ const Arrow: React.FC<ArrowProps> = ({
           />
           <PencilTip color={color} strokeWidth={strokeWidth} tipLength={tipLength} />
         </g>
-        {children}
       </g>
     </>
   );
@@ -119,8 +106,6 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
     labelDistance = 40,
     labelFontSize = 10,
   } = /* biome-ignore lint/style/noNonNullAssertion: data is always provided when creating edges*/ data!;
-
-  const filterId = useId();
 
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
@@ -145,69 +130,75 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
   const atozBorderColor = lshift(atozColor);
   const ztoaBorderColor = lshift(ztoaColor);
 
-  // Text flip: when the arrow points leftward the rotated text is upside-down.
-  // The A-to-Z-arrow points at angleDeg; the Z-to-A-arrow points the opposite way.
   const atozNeedsFlip = Math.abs(angleDeg) > 90;
-  const ztoaNeedsFlip = !atozNeedsFlip;
 
-  const label = (text: string, color: string, needsFlip: boolean, testId: string) => (
-    <g transform={needsFlip ? `rotate(180, ${-labelDistance}, 0)` : undefined}>
-      <text
-        x={-labelDistance}
-        y={0}
-        textAnchor={needsFlip ? 'start' : 'end'}
-        dy="0.5cap"
-        fontSize={labelFontSize}
-        fill={color}
-        filter={`url(#${filterId})`}
-        data-testid={testId}
-      >
-        {text}
-      </text>
-    </g>
-  );
+  // Tip position in panel space (midpoint + perpendicular offset)
+  const tipX = mx + ox;
+  const tipY = my + oy;
+  const ux = dx / len;
+  const uy = dy / len;
+
+  const atozLabelX = tipX - labelDistance * ux;
+  const atozLabelY = tipY - labelDistance * uy;
+  const ztoaLabelX = tipX + labelDistance * ux;
+  const ztoaLabelY = tipY + labelDistance * uy;
+
+  // When A→Z points leftward, flip 180° so both labels remain readable
+  const displayAngle = atozNeedsFlip ? angleDeg + 180 : angleDeg;
+
+  const labelStyle = (labelX: number, labelY: number, borderColor: string): React.CSSProperties => ({
+    position: 'absolute',
+    transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px) rotate(${displayAngle}deg)`,
+    background: labelBgColor,
+    borderRadius: '2px',
+    color: borderColor,
+    fontSize: labelFontSize,
+    padding: '0 2px',
+    whiteSpace: 'nowrap',
+    pointerEvents: 'none',
+  });
 
   return (
-    <g data-testid={`iwm-edge-${id}`}>
-      <defs>
-        <filter id={filterId} x="-2%" y="-0%" width="104%" height="100%">
-          <feFlood floodColor={labelBgColor} result="bg" />
-          <feMerge>
-            <feMergeNode in="bg" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
+    <>
+      <g data-testid={`iwm-edge-${id}`}>
+        <g transform={`translate(${ox}, ${oy})`}>
+          {/* A half-arrow: A node → midpoint (A→Z traffic) */}
+          <Arrow
+            len={halfLen}
+            angleDeg={angleDeg}
+            tipX={mx}
+            tipY={my}
+            color={atozColor}
+            borderColor={atozBorderColor}
+            strokeWidth={strokeWidth}
+            tipLength={tipLength}
+          />
 
-      <g transform={`translate(${ox}, ${oy})`}>
-        {/* A half-arrow: A node → midpoint (A→Z traffic) */}
-        <Arrow
-          len={halfLen}
-          angleDeg={angleDeg}
-          tipX={mx}
-          tipY={my}
-          color={atozColor}
-          borderColor={atozBorderColor}
-          strokeWidth={strokeWidth}
-          tipLength={tipLength}
-        >
-          {atozSpeed && label(atozSpeed, atozBorderColor, atozNeedsFlip, `iwm-edge-${id}-atoz-label`)}
-        </Arrow>
-
-        {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
-        <Arrow
-          len={halfLen}
-          angleDeg={angleDeg + 180}
-          tipX={mx}
-          tipY={my}
-          color={ztoaColor}
-          borderColor={ztoaBorderColor}
-          strokeWidth={strokeWidth}
-          tipLength={tipLength}
-        >
-          {ztoaSpeed && label(ztoaSpeed, ztoaBorderColor, ztoaNeedsFlip, `iwm-edge-${id}-ztoa-label`)}
-        </Arrow>
+          {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
+          <Arrow
+            len={halfLen}
+            angleDeg={angleDeg + 180}
+            tipX={mx}
+            tipY={my}
+            color={ztoaColor}
+            borderColor={ztoaBorderColor}
+            strokeWidth={strokeWidth}
+            tipLength={tipLength}
+          />
+        </g>
       </g>
-    </g>
+      <EdgeLabelRenderer>
+        {atozSpeed && (
+          <div style={labelStyle(atozLabelX, atozLabelY, atozBorderColor)} data-testid={`iwm-edge-${id}-atoz-label`}>
+            {atozSpeed}
+          </div>
+        )}
+        {ztoaSpeed && (
+          <div style={labelStyle(ztoaLabelX, ztoaLabelY, ztoaBorderColor)} data-testid={`iwm-edge-${id}-ztoa-label`}>
+            {ztoaSpeed}
+          </div>
+        )}
+      </EdgeLabelRenderer>
+    </>
   );
 });

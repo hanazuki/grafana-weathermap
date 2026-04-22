@@ -392,7 +392,11 @@ describe('findTrafficTimeSeries', () => {
 
   describe('staleness (maxAgeMs)', () => {
     // frame has timestamps [1000, 2000]; latest value is 20 at t=2000
-    const staleFrame = makeFrame('A', [1000, 2000], [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20] }]);
+    const staleFrame = makeFrame(
+      'A',
+      [1000, 2000],
+      [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20] }],
+    );
     const call = (maxAgeMs: number, timeRangeToMs: number) =>
       findTrafficTimeSeries({
         data: makeData([staleFrame], timeRangeToMs),
