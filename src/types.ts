@@ -13,6 +13,7 @@ export interface WeathermapOptions {
   linkLabelDistance?: number; // distance of speed label from midpoint in pixels (default: 40; min: 1)
   linkParallelOffset?: number; // perpendicular gap per step between parallel links in pixels (default: 6; min: 1)
   linkLabelFontSize?: number; // font size of speed label text in pixels (default: 10; min: 1)
+  dataMaxAge?: number; // seconds; latest value older than this relative to timeRange.to is treated as missing
 }
 
 export type QueryConfig = LinkTrafficQueryConfig | NodeHealthQueryConfig;

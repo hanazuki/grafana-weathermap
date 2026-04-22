@@ -6,9 +6,19 @@ import { WeathermapPanel } from './components/WeathermapPanel';
 import type { WeathermapOptions } from './types';
 
 const APPEARANCE = ['Appearance'];
+const DATA = ['Data'];
 
 export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPanelOptions((builder) => {
   return builder
+    .addNumberInput({
+      path: 'dataMaxAge',
+      name: 'Data max age (s)',
+      description:
+        'If the latest data point is older than this many seconds relative to the panel time range end, it is treated as missing. Leave empty to disable.',
+      defaultValue: 300,
+      category: DATA,
+      settings: { min: 1, integer: true },
+    })
     .addTextInput({
       path: 'nodeLabelPattern',
       name: 'Node label pattern',
