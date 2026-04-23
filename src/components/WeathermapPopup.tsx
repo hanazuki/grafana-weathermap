@@ -115,7 +115,7 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ panelRef, opti
       : state.cursorPos;
 
   // Place popup above the anchor by default; flip below if too close to the top edge.
-  const ESTIMATED_POPUP_HEIGHT = link != null ? 280 : 60;
+  const ESTIMATED_POPUP_HEIGHT = link != null ? 320 : 80;
   const GAP = 4;
   const translateY = anchorPos.y < ESTIMATED_POPUP_HEIGHT ? `${GAP}px` : `calc(-100% - ${GAP}px)`;
 
