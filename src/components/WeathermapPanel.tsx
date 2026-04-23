@@ -1,6 +1,6 @@
 import { css, cx } from '@emotion/css';
 import type { GrafanaTheme2, PanelProps } from '@grafana/data';
-import { Icon, useStyles2, useTheme2 } from '@grafana/ui';
+import { ClickOutsideWrapper, Icon, useStyles2, useTheme2 } from '@grafana/ui';
 import {
   Background,
   type Connection,
@@ -170,14 +170,10 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
     return `${aName} → ${zName} (#${link.id})`;
   };
 
-  // Update cursor position (panel-relative) on mouse move
+  // Update cursor position (client coordinates) on mouse move
   const onPanelMouseMove = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!panelRef.current) {
-        return;
-      }
-      const rect = panelRef.current.getBoundingClientRect();
-      setCursorPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+      setCursorPos({ x: event.clientX, y: event.clientY });
     },
     [setCursorPos],
   );
@@ -578,77 +574,79 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   }
 
   return (
-    // biome-ignore lint/a11y/noStaticElementInteractions: TODO: add role="application" + aria markup on Popup/InlineEditor children for full a11y
-    <div ref={panelRef} className={styles.panelRoot} style={{ width, height }} onMouseMove={onPanelMouseMove}>
-      {/* Warning banner for invalid query references */}
-      {linksWithInvalidQuery.size > 0 && (
-        <div className={styles.warningBanner}>
-          <strong>Warning:</strong> Invalid query reference on:{' '}
-          {links
-            .filter((l) => linksWithInvalidQuery.has(l.id))
-            .map(linkLabel)
-            .join(', ')}
-        </div>
-      )}
+    <ClickOutsideWrapper onClick={() => setPinned(null)}>
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO: add role="application" + aria markup on Popup/InlineEditor children for full a11y */}
+      <div ref={panelRef} className={styles.panelRoot} style={{ width, height }} onMouseMove={onPanelMouseMove}>
+        {/* Warning banner for invalid query references */}
+        {linksWithInvalidQuery.size > 0 && (
+          <div className={styles.warningBanner}>
+            <strong>Warning:</strong> Invalid query reference on:{' '}
+            {links
+              .filter((l) => linksWithInvalidQuery.has(l.id))
+              .map(linkLabel)
+              .join(', ')}
+          </div>
+        )}
 
-      <ColorLegend
-        colorScale={colorScale}
-        colorScaleMode={options.colorScaleMode ?? 'linear'}
-        logScaleBase={logScaleBase}
-      />
+        <ColorLegend
+          colorScale={colorScale}
+          colorScaleMode={options.colorScaleMode ?? 'linear'}
+          logScaleBase={logScaleBase}
+        />
 
-      <ReactFlow
-        nodes={rfNodes}
-        edges={rfEdges}
-        nodeTypes={NODE_TYPES}
-        edgeTypes={EDGE_TYPES}
-        nodesDraggable={isEditing}
-        nodesConnectable={isEditing}
-        elementsSelectable={false}
-        snapToGrid={true}
-        snapGrid={[10, 10]}
-        onNodesChange={onNodesChange}
-        onNodeDragStart={onNodeDragStart}
-        onNodeDragStop={onNodeDragStop}
-        onNodeMouseEnter={onNodeMouseEnter}
-        onNodeMouseLeave={onNodeMouseLeave}
-        onNodeClick={onNodeClick}
-        onEdgeMouseEnter={onEdgeMouseEnter}
-        onEdgeMouseLeave={onEdgeMouseLeave}
-        onEdgeClick={onEdgeClick}
-        onNodeDoubleClick={onNodeDoubleClick}
-        onEdgeDoubleClick={onEdgeDoubleClick}
-        onPaneClick={onPaneClick}
-        onMoveStart={onMoveStart}
-        onMove={onMove}
-        isValidConnection={isValidConnection}
-        onConnectStart={onConnectStart}
-        onConnectEnd={onConnectEnd}
-        onConnect={onConnect}
-        connectionLineComponent={ConnectionLine}
-        connectionLineStyle={{ strokeWidth: linkStrokeWidth }}
-        fitView={fitViewEnabled}
-        fitViewOptions={fitViewOptions}
-        colorMode={theme.isLight ? 'light' : theme.isDark ? 'dark' : undefined}
-        className={cx(styles.reactFlow, isConnecting && styles.reactFlowConnecting)}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background color={theme.colors.border.weak} />
-        <Controls showInteractive={false} fitViewOptions={fitViewOptions}>
-          <ControlButton
-            title={`Color scheme: ${colorSchemeName}`}
-            aria-label={`Cycle color scheme (Current: ${colorSchemeName})`}
-            onClick={() => setColorSchemeIndex((colorSchemeIndex + 1) % colorScales.length)}
-          >
-            <Icon name="palette" aria-hidden />
-          </ControlButton>
-        </Controls>
-        {nodes.length === 0 && <div className={styles.emptyState}>Click/tap the canvas to add a node.</div>}
-      </ReactFlow>
-      <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
-      <WeathermapPopup options={options} data={data} />
-      <InlineEditor options={options} onOptionsChange={onOptionsChange} data={data.series} />
-    </div>
+        <ReactFlow
+          nodes={rfNodes}
+          edges={rfEdges}
+          nodeTypes={NODE_TYPES}
+          edgeTypes={EDGE_TYPES}
+          nodesDraggable={isEditing}
+          nodesConnectable={isEditing}
+          elementsSelectable={false}
+          snapToGrid={true}
+          snapGrid={[10, 10]}
+          onNodesChange={onNodesChange}
+          onNodeDragStart={onNodeDragStart}
+          onNodeDragStop={onNodeDragStop}
+          onNodeMouseEnter={onNodeMouseEnter}
+          onNodeMouseLeave={onNodeMouseLeave}
+          onNodeClick={onNodeClick}
+          onEdgeMouseEnter={onEdgeMouseEnter}
+          onEdgeMouseLeave={onEdgeMouseLeave}
+          onEdgeClick={onEdgeClick}
+          onNodeDoubleClick={onNodeDoubleClick}
+          onEdgeDoubleClick={onEdgeDoubleClick}
+          onPaneClick={onPaneClick}
+          onMoveStart={onMoveStart}
+          onMove={onMove}
+          isValidConnection={isValidConnection}
+          onConnectStart={onConnectStart}
+          onConnectEnd={onConnectEnd}
+          onConnect={onConnect}
+          connectionLineComponent={ConnectionLine}
+          connectionLineStyle={{ strokeWidth: linkStrokeWidth }}
+          fitView={fitViewEnabled}
+          fitViewOptions={fitViewOptions}
+          colorMode={theme.isLight ? 'light' : theme.isDark ? 'dark' : undefined}
+          className={cx(styles.reactFlow, isConnecting && styles.reactFlowConnecting)}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background color={theme.colors.border.weak} />
+          <Controls showInteractive={false} fitViewOptions={fitViewOptions}>
+            <ControlButton
+              title={`Color scheme: ${colorSchemeName}`}
+              aria-label={`Cycle color scheme (Current: ${colorSchemeName})`}
+              onClick={() => setColorSchemeIndex((colorSchemeIndex + 1) % colorScales.length)}
+            >
+              <Icon name="palette" aria-hidden />
+            </ControlButton>
+          </Controls>
+          {nodes.length === 0 && <div className={styles.emptyState}>Click/tap the canvas to add a node.</div>}
+        </ReactFlow>
+        <CanvasContextMenu options={options} onOptionsChange={onOptionsChange} />
+        <WeathermapPopup panelRef={panelRef} options={options} data={data} />
+        <InlineEditor options={options} onOptionsChange={onOptionsChange} data={data.series} />
+      </div>
+    </ClickOutsideWrapper>
   );
 };
 
