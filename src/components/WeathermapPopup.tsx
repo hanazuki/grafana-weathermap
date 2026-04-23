@@ -1,6 +1,6 @@
 import { css } from '@emotion/css';
 import type { GrafanaTheme2, PanelData } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Portal, useStyles2 } from '@grafana/ui';
 import { useViewport } from '@xyflow/react';
 import type React from 'react';
 import { usePopup } from '../context/PopupContext';
@@ -10,6 +10,7 @@ import { LinkPopup } from './LinkPopup';
 import { NodePopup } from './NodePopup';
 
 interface WeathermapPopupProps {
+  panelRef: React.RefObject<HTMLDivElement>;
   options: WeathermapOptions;
   data: PanelData;
 }
@@ -76,7 +77,7 @@ function resolveLinkTraffic(
   return { atozTraffic, ztoaTraffic };
 }
 
-export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data }) => {
+export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ panelRef, options, data }) => {
   const { state } = usePopup();
   const styles = useStyles2(getStyles);
 
@@ -101,12 +102,16 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
   const panelTo = data.timeRange.to.valueOf();
   const maxDataPoints = data.request?.maxDataPoints ?? 1080;
 
-  // Convert pinned flow (canvas) position to panel-relative coordinates using current viewport.
-  // This makes the popup follow the element in real-time as the canvas is panned or zoomed.
+  // Convert pinned flow (canvas) position to client coordinates using current viewport.
+  // cursorPos is already in client coordinates; pinnedFlowPos needs the panel offset added.
   const { x: vpX, y: vpY, zoom } = useViewport();
+  const panelRect = panelRef.current?.getBoundingClientRect();
   const anchorPos =
-    state.pinned != null && state.pinnedFlowPos != null
-      ? { x: state.pinnedFlowPos.x * zoom + vpX, y: state.pinnedFlowPos.y * zoom + vpY }
+    state.pinned != null && state.pinnedFlowPos != null && panelRect != null
+      ? {
+          x: state.pinnedFlowPos.x * zoom + vpX + panelRect.left,
+          y: state.pinnedFlowPos.y * zoom + vpY + panelRect.top,
+        }
       : state.cursorPos;
 
   // Place popup above the anchor by default; flip below if too close to the top edge.
@@ -122,34 +127,36 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ options, data 
   const zNode = link != null ? nodeMap.get(link.zNodeId) : undefined;
 
   return (
-    <div
-      className={styles.popup}
-      style={{
-        left: anchorPos.x,
-        top: anchorPos.y,
-        transform: `translate(-50%, ${translateY})`,
-      }}
-    >
-      {node != null && (
-        <NodePopup
-          node={node}
-          healthStatus={healthStatus}
-          healthTimeSeries={healthTimeSeries ?? undefined}
-          panelFrom={panelFrom}
-          panelTo={panelTo}
-          maxDataPoints={maxDataPoints}
-        />
-      )}
-      {link != null && aNode != null && zNode != null && (
-        <LinkPopup link={link} aNode={aNode} zNode={zNode} atozTraffic={atozTraffic} ztoaTraffic={ztoaTraffic} />
-      )}
-    </div>
+    <Portal>
+      <div
+        className={styles.popup}
+        style={{
+          left: anchorPos.x,
+          top: anchorPos.y,
+          transform: `translate(-50%, ${translateY})`,
+        }}
+      >
+        {node != null && (
+          <NodePopup
+            node={node}
+            healthStatus={healthStatus}
+            healthTimeSeries={healthTimeSeries ?? undefined}
+            panelFrom={panelFrom}
+            panelTo={panelTo}
+            maxDataPoints={maxDataPoints}
+          />
+        )}
+        {link != null && aNode != null && zNode != null && (
+          <LinkPopup link={link} aNode={aNode} zNode={zNode} atozTraffic={atozTraffic} ztoaTraffic={ztoaTraffic} />
+        )}
+      </div>
+    </Portal>
   );
 };
 
 const getStyles = (_theme: GrafanaTheme2) => ({
   popup: css({
-    position: 'absolute',
+    position: 'fixed',
     pointerEvents: 'none',
     zIndex: 100,
   }),

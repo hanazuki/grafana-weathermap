@@ -192,12 +192,18 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
       </g>
       <EdgeLabelRenderer>
         {atozSpeed && (
-          <div style={labelStyle(atozLabelOffset, atozLabelXAlign, atozBorderColor)} data-testid={`iwm-edge-${id}-atoz-label`}>
+          <div
+            style={labelStyle(atozLabelOffset, atozLabelXAlign, atozBorderColor)}
+            data-testid={`iwm-edge-${id}-atoz-label`}
+          >
             {atozSpeed}
           </div>
         )}
         {ztoaSpeed && (
-          <div style={labelStyle(ztoaLabelOffset, ztoaLabelXAlign, ztoaBorderColor)} data-testid={`iwm-edge-${id}-ztoa-label`}>
+          <div
+            style={labelStyle(ztoaLabelOffset, ztoaLabelXAlign, ztoaBorderColor)}
+            data-testid={`iwm-edge-${id}-ztoa-label`}
+          >
             {ztoaSpeed}
           </div>
         )}
