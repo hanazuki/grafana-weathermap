@@ -83,13 +83,29 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ panelRef, opti
   const styles = useStyles2(getStyles);
 
   useEffect(() => {
-    if (state.pinned == null) {
+    if (state.pinned == null || panelRef.current == null) {
       return;
     }
+
+    let scrollContainer: HTMLElement | null = null;
+    let node = panelRef.current.parentElement;
+    while (node) {
+      const { overflow, overflowY } = getComputedStyle(node);
+      if (/(auto|scroll)/.test(overflow + overflowY) && node.scrollHeight > node.clientHeight) {
+        scrollContainer = node;
+        break;
+      }
+      node = node.parentElement;
+    }
+
+    if (scrollContainer == null) {
+      return;
+    }
+
     const handler = () => setPinned(null);
-    window.addEventListener('scroll', handler, { capture: true, passive: true });
-    return () => window.removeEventListener('scroll', handler, { capture: true });
-  }, [state.pinned, setPinned]);
+    scrollContainer.addEventListener('scroll', handler, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', handler);
+  }, [state.pinned, setPinned, panelRef]);
 
   const activeTarget = state.pinned ?? state.preview;
 
