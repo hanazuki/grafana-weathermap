@@ -53,8 +53,8 @@ importers:
         specifier: ^2.4.12
         version: 2.4.12
       '@grafana/plugin-e2e':
-        specifier: ^3.5.1
-        version: 3.5.1(@axe-core/playwright@4.11.1(playwright-core@1.59.1))(@playwright/test@1.59.1)
+        specifier: ^3.6.1
+        version: 3.6.1(@axe-core/playwright@4.11.1(playwright-core@1.59.1))(@playwright/test@1.59.1)
       '@grafana/tsconfig':
         specifier: ^2.0.1
         version: 2.0.1
@@ -595,8 +595,8 @@ packages:
     peerDependencies:
       react: '>=18'
 
-  '@grafana/plugin-e2e@3.5.1':
-    resolution: {integrity: sha512-iYId7j9Vg0P5t2ciHTsu0Rp7S268qdjdIWhkP42AMTo/M3JhC4UWKzYOodvjekmWr+9TNOGph7FLmzcf26WWNA==}
+  '@grafana/plugin-e2e@3.6.1':
+    resolution: {integrity: sha512-BQAEMk2yVymYA2cKbHEuGDqXwZ5MwWnCD+293QJgMey3G6ao4PbiZTaZ/c5BVyfWxLOZ3izqay0F7eU0Ncty9Q==}
     engines: {node: '>=20 <=24'}
     peerDependencies:
       '@axe-core/playwright': ^4.11.1
@@ -5054,7 +5054,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@grafana/plugin-e2e@3.5.1(@axe-core/playwright@4.11.1(playwright-core@1.59.1))(@playwright/test@1.59.1)':
+  '@grafana/plugin-e2e@3.6.1(@axe-core/playwright@4.11.1(playwright-core@1.59.1))(@playwright/test@1.59.1)':
     dependencies:
       '@grafana/e2e-selectors': 13.1.0-24448182242
       '@playwright/test': 1.59.1
