@@ -12,7 +12,7 @@ import {
   type NodeChange,
   ReactFlow,
   ReactFlowProvider,
-  useViewport,
+  useReactFlow,
   type Viewport,
 } from '@xyflow/react';
 import type React from 'react';
@@ -42,6 +42,8 @@ const COLOR_LEGEND_TOTAL_WIDTH = 72;
 
 const NODE_TYPES = { weathermapNode: WeathermapNode };
 const EDGE_TYPES = { weathermapEdge: WeathermapEdge };
+const SNAP_GRID: [number, number] = [10, 10];
+const PRO_OPTIONS = { hideAttribution: true };
 
 function getLinkOffset(index: number): number {
   if (index === 0) {
@@ -80,7 +82,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   const colorScale = (colorScales[colorSchemeIndex] ?? colorScales[0]).getColor;
   const colorSchemeName = (colorScales[colorSchemeIndex] ?? colorScales[0]).name;
   const { state, setContextMenu, setPinned, setPreview, setCursorPos, setInlineEdit } = usePopup();
-  const { x: vpX, y: vpY, zoom } = useViewport();
+  const { screenToFlowPosition } = useReactFlow();
   // fitView is enabled only when the panel mounts with pre-existing nodes (saved dashboard).
   // Keeping it false when the canvas starts empty prevents viewport shifts that would break
   // raw-coordinate interactions in tests.
@@ -107,6 +109,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   const nodeWidth = options.nodeWidth ?? 120;
   const nodeHeight = options.nodeHeight ?? 40;
   const linkStrokeWidth = options.linkStrokeWidth ?? 4;
+  const connectionLineStyle = useMemo(() => ({ strokeWidth: linkStrokeWidth }), [linkStrokeWidth]);
   const linkTipLength = options.linkTipLength ?? 8;
   const linkLabelDistance = options.linkLabelDistance ?? 40;
   const linkParallelOffset = options.linkParallelOffset ?? 6;
@@ -220,22 +223,13 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
         setPinned(null); // click same node → unpin
       } else {
         setPreview(null);
-        // Convert click position from panel-relative to flow (canvas) coordinates.
-        // The popup will open at the click point and follow the node during pan/zoom.
-        let flowPos: { x: number; y: number };
-        if (panelRef.current) {
-          const rect = panelRef.current.getBoundingClientRect();
-          const panelX = event.clientX - rect.left;
-          const panelY = event.clientY - rect.top;
-          flowPos = { x: (panelX - vpX) / zoom, y: (panelY - vpY) / zoom };
-        } else {
-          // Fallback (should not occur in practice): use node center
-          flowPos = { x: rfNode.position.x + nodeWidth / 2, y: rfNode.position.y + nodeHeight / 2 };
-        }
-        setPinned({ type: 'node', id: rfNode.id }, flowPos);
+        setPinned(
+          { type: 'node', id: rfNode.id },
+          screenToFlowPosition({ x: event.clientX, y: event.clientY }, { snapToGrid: false }),
+        );
       }
     },
-    [state.pinned, setPinned, setPreview, vpX, vpY, zoom, nodeWidth, nodeHeight],
+    [state.pinned, setPinned, setPreview, screenToFlowPosition],
   );
 
   // Edge hover: set preview (mouse only, not when pinned)
@@ -264,19 +258,13 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
         setPinned(null); // click same edge → unpin
       } else {
         setPreview(null);
-        let flowPos: { x: number; y: number };
-        if (panelRef.current) {
-          const rect = panelRef.current.getBoundingClientRect();
-          const panelX = event.clientX - rect.left;
-          const panelY = event.clientY - rect.top;
-          flowPos = { x: (panelX - vpX) / zoom, y: (panelY - vpY) / zoom };
-        } else {
-          flowPos = { x: 0, y: 0 };
-        }
-        setPinned({ type: 'link', id: rfEdge.id }, flowPos);
+        setPinned(
+          { type: 'link', id: rfEdge.id },
+          screenToFlowPosition({ x: event.clientX, y: event.clientY }, { snapToGrid: false }),
+        );
       }
     },
-    [state.pinned, setPinned, setPreview, vpX, vpY, zoom],
+    [state.pinned, setPinned, setPreview, screenToFlowPosition],
   );
 
   // Node double-click: toggle inline editor (edit mode only)
@@ -613,7 +601,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           nodesConnectable={isEditing}
           elementsSelectable={false}
           snapToGrid={true}
-          snapGrid={[10, 10]}
+          snapGrid={SNAP_GRID}
           onNodesChange={onNodesChange}
           onNodeDragStart={onNodeDragStart}
           onNodeDragStop={onNodeDragStop}
@@ -633,12 +621,12 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           onConnectEnd={onConnectEnd}
           onConnect={onConnect}
           connectionLineComponent={ConnectionLine}
-          connectionLineStyle={{ strokeWidth: linkStrokeWidth }}
+          connectionLineStyle={connectionLineStyle}
           fitView={fitViewEnabled}
           fitViewOptions={fitViewOptions}
           colorMode={theme.isLight ? 'light' : theme.isDark ? 'dark' : undefined}
           className={cx(styles.reactFlow, isConnecting && styles.reactFlowConnecting)}
-          proOptions={{ hideAttribution: true }}
+          proOptions={PRO_OPTIONS}
         >
           <Background color={theme.colors.border.weak} />
           <Controls showInteractive={false} fitViewOptions={fitViewOptions}>
