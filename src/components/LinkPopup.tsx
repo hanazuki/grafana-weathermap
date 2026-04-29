@@ -259,10 +259,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     width: POPUP_WIDTH,
     fontSize: theme.typography.bodySmall.fontSize,
     color: theme.colors.text.primary,
-    background: theme.colors.background.secondary,
-    border: `1px solid ${theme.colors.border.medium}`,
-    borderRadius: theme.shape.radius.default,
-    overflow: 'hidden',
   }),
   header: css({
     padding: theme.spacing(1, 1.5),

@@ -1,6 +1,6 @@
 import { css } from '@emotion/css';
 import type { GrafanaTheme2, PanelData } from '@grafana/data';
-import { Portal, useStyles2, useTheme2 } from '@grafana/ui';
+import { Portal, VizTooltipContainer, useStyles2 } from '@grafana/ui';
 import { useViewport } from '@xyflow/react';
 import type React from 'react';
 import { useEffect } from 'react';
@@ -9,6 +9,8 @@ import type { HealthStatus, LinkConfig, NodeConfig, TimeSeries, WeathermapOption
 import { findHealthTimeSeries, findTrafficTimeSeries } from '../utils/matching';
 import { LinkPopup } from './LinkPopup';
 import { NodePopup } from './NodePopup';
+
+const OFFSET = { x: 8, y: 8 };
 
 interface WeathermapPopupProps {
   panelRef: React.RefObject<HTMLDivElement>;
@@ -80,8 +82,7 @@ function resolveLinkTraffic(
 
 export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ panelRef, options, data }) => {
   const { state, setPinned } = usePopup();
-  const styles = useStyles2(getStyles);
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles, state.pinned != null);
 
   useEffect(() => {
     if (state.pinned == null) {
@@ -125,11 +126,6 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ panelRef, opti
         }
       : state.cursorPos;
 
-  // Place popup above the anchor by default; flip below if too close to the top edge.
-  const ESTIMATED_POPUP_HEIGHT = link != null ? 320 : 80;
-  const GAP = 4;
-  const translateY = anchorPos.y < ESTIMATED_POPUP_HEIGHT ? `${GAP}px` : `calc(-100% - ${GAP}px)`;
-
   if (node == null && link == null) {
     return null;
   }
@@ -139,14 +135,10 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ panelRef, opti
 
   return (
     <Portal>
-      <div
-        className={styles.popup}
-        style={{
-          left: anchorPos.x,
-          top: anchorPos.y,
-          transform: `translate(-50%, ${translateY})`,
-          boxShadow: state.pinned != null ? theme.shadows.z3 : theme.shadows.z2,
-        }}
+      <VizTooltipContainer
+        position={anchorPos}
+        offset={OFFSET}
+        className={styles.container}
       >
         {node != null && (
           <NodePopup
@@ -161,15 +153,14 @@ export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ panelRef, opti
         {link != null && aNode != null && zNode != null && (
           <LinkPopup link={link} aNode={aNode} zNode={zNode} atozTraffic={atozTraffic} ztoaTraffic={ztoaTraffic} />
         )}
-      </div>
+      </VizTooltipContainer>
     </Portal>
   );
 };
 
-const getStyles = (_theme: GrafanaTheme2) => ({
-  popup: css({
-    position: 'fixed',
-    pointerEvents: 'none',
-    zIndex: 100,
+const getStyles = (theme: GrafanaTheme2, isPinned: boolean) => ({
+  container: css({
+    padding: '0 !important',
+    boxShadow: `${isPinned ? theme.shadows.z3 : theme.shadows.z2} !important`,
   }),
 });
