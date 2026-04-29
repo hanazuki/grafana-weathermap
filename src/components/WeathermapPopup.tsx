@@ -3,6 +3,7 @@ import type { GrafanaTheme2, PanelData } from '@grafana/data';
 import { Portal, useStyles2 } from '@grafana/ui';
 import { useViewport } from '@xyflow/react';
 import type React from 'react';
+import { useEffect } from 'react';
 import { usePopup } from '../context/PopupContext';
 import type { HealthStatus, LinkConfig, NodeConfig, TimeSeries, WeathermapOptions } from '../types';
 import { findHealthTimeSeries, findTrafficTimeSeries } from '../utils/matching';
@@ -78,8 +79,17 @@ function resolveLinkTraffic(
 }
 
 export const WeathermapPopup: React.FC<WeathermapPopupProps> = ({ panelRef, options, data }) => {
-  const { state } = usePopup();
+  const { state, setPinned } = usePopup();
   const styles = useStyles2(getStyles);
+
+  useEffect(() => {
+    if (state.pinned == null) {
+      return;
+    }
+    const handler = () => setPinned(null);
+    window.addEventListener('scroll', handler, { capture: true, passive: true });
+    return () => window.removeEventListener('scroll', handler, { capture: true });
+  }, [state.pinned, setPinned]);
 
   const activeTarget = state.pinned ?? state.preview;
 
