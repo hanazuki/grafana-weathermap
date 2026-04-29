@@ -23,10 +23,10 @@ function makeFrame(
   };
 }
 
-function makeData(frames: Array<ReturnType<typeof makeFrame>>, timeRangeToMs?: number): PanelData {
+function makeData(frames: Array<ReturnType<typeof makeFrame>>, timeRangeToMs = Number.POSITIVE_INFINITY): PanelData {
   return {
     series: frames,
-    ...(timeRangeToMs !== undefined ? { timeRange: { to: { valueOf: () => timeRangeToMs } } } : {}),
+    timeRange: { to: { valueOf: () => timeRangeToMs } },
   } as unknown as PanelData;
 }
 
@@ -470,5 +470,99 @@ describe('findHealthTimeSeries', () => {
   test('returns null when refId does not match', () => {
     const ts = findHealthTimeSeries(data, healthQuery({ refId: 'Z' }), 'host-1');
     expect(ts).toBeNull();
+  });
+});
+
+describe('getValueAt', () => {
+  // Series: timestamps [1000, 2000, 3000], values [10, 20, 30]
+  const frame = makeFrame(
+    'A',
+    [1000, 2000, 3000],
+    [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20, 30] }],
+  );
+  const data = makeData([frame]);
+
+  const ts = () =>
+    findTrafficTimeSeries({
+      data,
+      queryConfig: trafficQuery(),
+      srcNode: { name: 'router-1', iface: 'eth0' },
+      dstNode: { name: 'router-z', iface: 'eth9' },
+    })!;
+
+  test('step-before lookup: returns point at t=2000 for crosshair at t=2500', () => {
+    expect(ts().getValueAt(2500)).toEqual({ value: 20, timestamp: 2000 });
+  });
+
+  test('no point before T: returns null when crosshair is before first timestamp', () => {
+    expect(ts().getValueAt(999)).toBeNull();
+  });
+
+  test('exact match: returns point at t=2000 for crosshair at t=2000', () => {
+    expect(ts().getValueAt(2000)).toEqual({ value: 20, timestamp: 2000 });
+  });
+
+  test('after last timestamp: returns last point for crosshair past the end', () => {
+    expect(ts().getValueAt(9999)).toEqual({ value: 30, timestamp: 3000 });
+  });
+
+  test('null decoded value: returns null with no fallback when point at t=3000 is non-finite', () => {
+    const frameNaN = makeFrame(
+      'A',
+      [1000, 2000, 3000],
+      [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [10, 20, Number.NaN] }],
+    );
+    const tsNaN = findTrafficTimeSeries({
+      data: makeData([frameNaN]),
+      queryConfig: trafficQuery(),
+      srcNode: { name: 'router-1', iface: 'eth0' },
+      dstNode: { name: 'router-z', iface: 'eth9' },
+    })!;
+    expect(tsNaN.getValueAt(3500)).toBeNull();
+  });
+
+  test('dataMaxAge rejection: returns null when age exceeds maxAgeMs', () => {
+    // point at t=2000, crosshair at t=2600, maxAgeMs=500 → age 600 > 500
+    const tsMaxAge = findTrafficTimeSeries({
+      data: makeData([frame]),
+      queryConfig: trafficQuery(),
+      srcNode: { name: 'router-1', iface: 'eth0' },
+      dstNode: { name: 'router-z', iface: 'eth9' },
+      maxAgeMs: 500,
+    })!;
+    expect(tsMaxAge.getValueAt(2600)).toBeNull();
+  });
+
+  test('dataMaxAge boundary: returns value when age equals maxAgeMs (not > 500)', () => {
+    // point at t=2000, crosshair at t=2500, maxAgeMs=500 → age 500, not > 500
+    const tsMaxAge = findTrafficTimeSeries({
+      data: makeData([frame]),
+      queryConfig: trafficQuery(),
+      srcNode: { name: 'router-1', iface: 'eth0' },
+      dstNode: { name: 'router-z', iface: 'eth9' },
+      maxAgeMs: 500,
+    })!;
+    expect(tsMaxAge.getValueAt(2500)).toEqual({ value: 20, timestamp: 2000 });
+  });
+
+  test('no maxAgeMs: returns value regardless of age gap', () => {
+    expect(ts().getValueAt(99999)).toEqual({ value: 30, timestamp: 3000 });
+  });
+
+  test('empty series: returns null', () => {
+    const emptyFrame = makeFrame('A', [], [{ labels: { instance: 'router-1', ifName: 'eth0' }, values: [] }]);
+    const tsEmpty = findTrafficTimeSeries({
+      data: makeData([emptyFrame]),
+      queryConfig: trafficQuery(),
+      srcNode: { name: 'router-1', iface: 'eth0' },
+      dstNode: { name: 'router-z', iface: 'eth9' },
+    })!;
+    expect(tsEmpty.getValueAt(5000)).toBeNull();
+  });
+
+  test('getValueAt(null) delegates to referenceMs: same result as getLatestValue', () => {
+    // getLatestValue is implemented as getValueAt(null); the staleness suite
+    // already exercises this path — verify here that both return the same value.
+    expect(ts().getValueAt(null)).toEqual(ts().getLatestValue());
   });
 });

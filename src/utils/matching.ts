@@ -5,24 +5,34 @@ function makeTimeSeries<T>(
   field: Field,
   timeField: Field,
   decode: (v: unknown) => T | null,
-  maxAgeMs?: number,
-  referenceMs?: number,
+  maxAgeMs: number | undefined,
+  referenceMs: number,
 ): TimeSeries<T> {
   return {
-    getLatestValue() {
+    getValueAt(timestampMs: number | null) {
+      const refMs = timestampMs ?? referenceMs;
       const len = field.values.length;
-      if (len === 0) {
-        return null;
+      if (len === 0) return null;
+
+      let found = -1;
+      for (let i = len - 1; i >= 0; i--) {
+        if ((timeField.values[i] as number) <= refMs) {
+          found = i;
+          break;
+        }
       }
-      const value = decode(field.values[len - 1]);
-      if (value === null) {
-        return null;
-      }
-      const timestamp = timeField.values[len - 1] as number;
-      if (maxAgeMs !== undefined && referenceMs !== undefined && referenceMs - timestamp > maxAgeMs) {
-        return null;
-      }
+      if (found === -1) return null;
+
+      const value = decode(field.values[found]);
+      if (value === null) return null;
+
+      const timestamp = timeField.values[found] as number;
+      if (maxAgeMs !== undefined && refMs - timestamp > maxAgeMs) return null;
+
       return { value, timestamp };
+    },
+    getLatestValue() {
+      return this.getValueAt(null);
     },
     getValues() {
       const values: T[] = [];
@@ -61,7 +71,7 @@ export function findTrafficTimeSeries({
   maxAgeMs?: number;
 }): TimeSeries<number> | null {
   const { name: instance, iface } = queryConfig.direction === 'egress' ? srcNode : dstNode;
-  const referenceMs = data.timeRange?.to?.valueOf();
+  const referenceMs = data.timeRange.to.valueOf();
 
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {
@@ -196,7 +206,7 @@ export function findHealthTimeSeries(
   nodeName: string,
   maxAgeMs?: number,
 ): TimeSeries<HealthStatus> | null {
-  const referenceMs = data.timeRange?.to?.valueOf();
+  const referenceMs = data.timeRange.to.valueOf();
 
   for (const frame of data.series) {
     if (frame.refId !== queryConfig.refId) {

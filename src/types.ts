@@ -42,6 +42,7 @@ export interface NodeHealthQueryConfig {
 export type HealthStatus = 'up' | 'down';
 
 export interface TimeSeries<T> {
+  getValueAt(timestampMs: number | null): { value: T; timestamp: number } | null;
   getLatestValue(): { value: T; timestamp: number } | null;
   getValues(): { values: T[]; timestamps: number[] };
 }

@@ -156,6 +156,7 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
     borderRadius: '2px',
     color: borderColor,
     fontSize: labelFontSize,
+    fontVariantNumeric: 'tabular-nums',
     padding: '0 2px',
     whiteSpace: 'nowrap',
     pointerEvents: 'none',
