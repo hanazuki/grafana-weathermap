@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css';
-import type { GrafanaTheme2, PanelProps } from '@grafana/data';
+import { dateTimeFormat, type GrafanaTheme2, type PanelProps } from '@grafana/data';
 import { ClickOutsideWrapper, Icon, useStyles2, useTheme2 } from '@grafana/ui';
 import {
   Background,
@@ -21,6 +21,7 @@ import '@xyflow/react/dist/style.css';
 
 import { useIsEditing } from 'hooks/useIsEditing';
 import { useLocalStorage } from 'hooks/useLocalStorage';
+import { useCrosshair } from 'hooks/useCrosshair';
 import * as z from 'zod/v4/mini';
 import { PopupProvider, usePopup } from '../context/PopupContext';
 import type { HealthStatus, LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../types';
@@ -65,10 +66,13 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   width,
   height,
   onOptionsChange,
+  eventBus,
+  timeZone,
 }) => {
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
   const isEditing = useIsEditing();
+  const crosshairTime = useCrosshair(eventBus);
   const [colorSchemeIndex, setColorSchemeIndex] = useLocalStorage(
     'iwm-preferences-color-scheme',
     PreferredColorSchemeIndex,
@@ -419,7 +423,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           const qc = queryMap.get(node.statusQueryId);
           healthStatus =
             qc && qc.type === 'nodeHealth'
-              ? (findHealthTimeSeries(data, qc, node.name, dataMaxAgeMs)?.getLatestValue()?.value ?? null)
+              ? (findHealthTimeSeries(data, qc, node.name, dataMaxAgeMs)?.getValueAt(crosshairTime)?.value ?? null)
               : null;
         }
 
@@ -444,7 +448,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           dragHandle: '.iwm-move-zone',
         };
       }),
-    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing, dataMaxAgeMs],
+    [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing, dataMaxAgeMs, crosshairTime],
   );
 
   // Build React Flow edges
@@ -477,7 +481,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
                   srcNode: { name: aNode.name, iface: link.aInterface },
                   dstNode: { name: zNode.name, iface: link.zInterface },
                   maxAgeMs: dataMaxAgeMs,
-                })?.getLatestValue() ?? null;
+                })?.getValueAt(crosshairTime) ?? null;
               if (latest !== null) {
                 atozColor = getUtilizationColor(
                   latest.value,
@@ -502,7 +506,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
                   srcNode: { name: zNode.name, iface: link.zInterface },
                   dstNode: { name: aNode.name, iface: link.aInterface },
                   maxAgeMs: dataMaxAgeMs,
-                })?.getLatestValue() ?? null;
+                })?.getValueAt(crosshairTime) ?? null;
               if (latest !== null) {
                 ztoaColor = getUtilizationColor(
                   latest.value,
@@ -558,6 +562,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
     linkLabelDistance,
     linkLabelFontSize,
     dataMaxAgeMs,
+    crosshairTime,
   ]);
 
   // Full-panel error state for invalid label transform config
@@ -593,6 +598,11 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           colorScaleMode={options.colorScaleMode ?? 'linear'}
           logScaleBase={logScaleBase}
         />
+        {crosshairTime !== null && (
+          <div className={styles.timestamp}>
+            {dateTimeFormat(crosshairTime, { timeZone })}
+          </div>
+        )}
 
         <ReactFlow
           nodes={rfNodes}
@@ -689,5 +699,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   reactFlowConnecting: css({
     '& .react-flow__pane': { cursor: 'no-drop !important' },
+  }),
+  timestamp: css({
+    position: 'absolute',
+    bottom: theme.spacing(1),
+    right: theme.spacing(1),
+    zIndex: 5,
+    pointerEvents: 'none',
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.text.secondary,
+    lineHeight: 1,
+    fontVariantNumeric: 'tabular-nums',
   }),
 });
