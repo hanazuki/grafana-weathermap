@@ -1,5 +1,5 @@
 import { type Edge, EdgeLabelRenderer, type EdgeProps } from '@xyflow/react';
-import React, { useId } from 'react';
+import React from 'react';
 
 const BORDER_WIDTH = 0.5;
 
@@ -21,18 +21,34 @@ export interface WeathermapEdgeData {
 
 interface PencilTipProps {
   color: string;
+  borderColor: string;
   strokeWidth: number;
   tipLength: number;
 }
 
 // Canonical coords: tip at origin, pointing +x. Caller applies group transform.
-const PencilTip: React.FC<PencilTipProps> = ({ color, strokeWidth, tipLength }) => {
+const PencilTip: React.FC<PencilTipProps> = ({ color, borderColor, strokeWidth, tipLength }) => {
   const hw = strokeWidth / 2;
+  const slantLen = Math.sqrt(tipLength ** 2 + hw ** 2);
   const d = BORDER_WIDTH;
-  const overlap = 0.5;
-  const innerPts = `${-tipLength - overlap},${-hw + d} ${-tipLength},${-hw + d} 0,0 ${-tipLength},${hw - d} ${-tipLength - overlap},${hw - d}`;
 
-  return <polygon points={innerPts} fill={color} />;
+  // Outer triangle (borderColor): L=(-tipLength,-hw), T=(0,0), R=(-tipLength,hw)
+  const outerPts = `${-tipLength},${-hw} 0,0 ${-tipLength},${hw}`;
+
+  // Inner triangle (color): slant edges inset by d, base unchanged
+  //   L' = (-tipLength, -(hw - d·slantLen/tipLength))
+  //   T' = (-d·slantLen/hw, 0)
+  //   R' = (-tipLength,  hw - d·slantLen/tipLength)
+  const insetHw = hw - (d * slantLen) / tipLength;
+  const insetTipX = (-d * slantLen) / hw;
+  const innerPts = `${-tipLength},${-insetHw} ${insetTipX},0 ${-tipLength},${insetHw}`;
+
+  return (
+    <>
+      <polygon points={outerPts} fill={borderColor} />
+      <polygon points={innerPts} fill={color} />
+    </>
+  );
 };
 
 interface ArrowProps {
@@ -50,46 +66,25 @@ interface ArrowProps {
 }
 
 // Drawn in canonical coords (tip at origin, pointing +x), placed via group transform.
-const Arrow: React.FC<ArrowProps> = ({ len, angleDeg, tipX, tipY, color, borderColor, strokeWidth, tipLength }) => {
-  const filterId = useId();
-  const hw = strokeWidth / 2;
-
-  return (
-    <>
-      <defs>
-        {/* Dilate alpha outward, flood borderColor, composite to get border ring, merge behind source. */}
-        <filter
-          id={filterId}
-          filterUnits="userSpaceOnUse"
-          x={-(len + BORDER_WIDTH)}
-          y={-(hw + BORDER_WIDTH)}
-          width={len + 2 * BORDER_WIDTH}
-          height={2 * (hw + BORDER_WIDTH)}
-        >
-          <feMorphology in="SourceAlpha" operator="dilate" radius={BORDER_WIDTH} result="dilated" />
-          <feFlood floodColor={borderColor} result="flood" />
-          <feComposite in="flood" in2="dilated" operator="in" result="border" />
-          <feMerge>
-            <feMergeNode in="border" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      <g transform={`translate(${tipX}, ${tipY}) rotate(${angleDeg})`}>
-        <g filter={`url(#${filterId})`}>
-          <path
-            d={`M ${-len},0 L ${-tipLength},0`}
-            stroke={color}
-            strokeWidth={strokeWidth - BORDER_WIDTH * 2}
-            fill="none"
-            strokeLinecap="butt"
-          />
-          <PencilTip color={color} strokeWidth={strokeWidth} tipLength={tipLength} />
-        </g>
-      </g>
-    </>
-  );
-};
+const Arrow: React.FC<ArrowProps> = ({ len, angleDeg, tipX, tipY, color, borderColor, strokeWidth, tipLength }) => (
+  <g transform={`translate(${tipX}, ${tipY}) rotate(${angleDeg})`}>
+    <path
+      d={`M ${-len},0 L ${-tipLength},0`}
+      stroke={borderColor}
+      strokeWidth={strokeWidth}
+      fill="none"
+      strokeLinecap="butt"
+    />
+    <path
+      d={`M ${-len},0 L ${-tipLength},0`}
+      stroke={color}
+      strokeWidth={strokeWidth - BORDER_WIDTH * 2}
+      fill="none"
+      strokeLinecap="butt"
+    />
+    <PencilTip color={color} borderColor={borderColor} strokeWidth={strokeWidth} tipLength={tipLength} />
+  </g>
+);
 
 type WeathermapEdgeProps = EdgeProps<Edge<WeathermapEdgeData>>;
 
