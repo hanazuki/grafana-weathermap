@@ -1,7 +1,7 @@
 {
   "name": "grafana-weathermap",
   "private": true,
-  "version": "0.1.13",
+  "version": "0.1.15",
   "scripts": {
     "build": "webpack -c ./webpack.config.ts --env production",
     "dev": "webpack -w -c ./webpack.config.ts --env development",
@@ -18,7 +18,7 @@
   "license": "AGPL-3.0",
   "devDependencies": {
     "@biomejs/biome": "^2.4.12",
-    "@grafana/plugin-e2e": "^3.5.1",
+    "@grafana/plugin-e2e": "^3.6.1",
     "@grafana/tsconfig": "^2.0.1",
     "@playwright/test": "^1.59.1",
     "@swc/core": "^1.15.24",
@@ -50,7 +50,7 @@
     "terser-webpack-plugin": "^5.4.0",
     "ts-node": "^10.9.2",
     "typescript": "5.9.3",
-    "webpack": "^5.106.1",
+    "webpack": "^5.106.2",
     "webpack-cli": "^7.0.2",
     "webpack-livereload-plugin": "^3.0.2",
     "webpack-subresource-integrity": "^5.1.0",
