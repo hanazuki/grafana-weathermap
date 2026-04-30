@@ -115,7 +115,12 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   const linkParallelOffset = options.linkParallelOffset ?? 6;
   const linkLabelFontSize = options.linkLabelFontSize ?? 10;
   const logScaleBase = options.logScaleBase ?? 10;
-  const dataMaxAgeMs = options.dataMaxAge != null ? options.dataMaxAge * 1000 : undefined;
+  const dataMaxAgeMs = useMemo(() => {
+    const intervalMs = data.request?.intervalMs != null ? data.request.intervalMs * 2 : undefined;
+    if (options.dataMaxAge == null) return intervalMs;
+    const configuredMs = options.dataMaxAge * 1000;
+    return intervalMs != null ? Math.max(configuredMs, intervalMs) : configuredMs;
+  }, [options.dataMaxAge, data.request?.intervalMs]);
 
   // Fast lookup maps
   const nodeMap = useMemo(() => new Map<number, NodeConfig>(nodes.map((n) => [n.id, n])), [nodes]);

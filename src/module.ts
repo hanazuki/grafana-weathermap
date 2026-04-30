@@ -14,7 +14,7 @@ export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPan
       path: 'dataMaxAge',
       name: 'Data max age (s)',
       description:
-        'If the latest data point is older than this many seconds relative to the panel time range end, it is treated as missing. Leave empty to disable.',
+        'If the latest data point is older than this many seconds relative to the panel time range end, it is treated as missing. Leave empty to use the query interval automatically.',
       defaultValue: 300,
       category: DATA,
       settings: { min: 1, integer: true },
