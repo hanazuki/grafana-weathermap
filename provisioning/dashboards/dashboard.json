@@ -41,26 +41,82 @@
           {
             "id": 1,
             "name": "host-0.example.com",
-            "x": 200,
-            "y": 200,
+            "x": 400,
+            "y": 50,
             "statusQueryId": 3,
-            "description": "Core aggregation router"
+            "description": "Edge gateway"
           },
           {
             "id": 2,
             "name": "host-1.example.com",
-            "x": 500,
-            "y": 200,
+            "x": 200,
+            "y": 185,
             "statusQueryId": 3,
-            "description": "Distribution switch"
+            "description": "Firewall A"
           },
           {
             "id": 3,
             "name": "host-2.example.com",
-            "x": 800,
-            "y": 200,
+            "x": 600,
+            "y": 185,
             "statusQueryId": 3,
-            "description": "Edge access router"
+            "description": "Firewall B"
+          },
+          {
+            "id": 4,
+            "name": "host-3.example.com",
+            "x": 200,
+            "y": 330,
+            "statusQueryId": 3,
+            "description": "Core router A"
+          },
+          {
+            "id": 5,
+            "name": "host-4.example.com",
+            "x": 600,
+            "y": 330,
+            "statusQueryId": 3,
+            "description": "Core router B"
+          },
+          {
+            "id": 6,
+            "name": "host-5.example.com",
+            "x": 200,
+            "y": 475,
+            "statusQueryId": 3,
+            "description": "Distribution switch A"
+          },
+          {
+            "id": 7,
+            "name": "host-6.example.com",
+            "x": 600,
+            "y": 475,
+            "statusQueryId": 3,
+            "description": "Distribution switch B"
+          },
+          {
+            "id": 8,
+            "name": "host-7.example.com",
+            "x": 100,
+            "y": 620,
+            "statusQueryId": 3,
+            "description": "Access switch A"
+          },
+          {
+            "id": 9,
+            "name": "host-8.example.com",
+            "x": 400,
+            "y": 620,
+            "statusQueryId": 3,
+            "description": "Access switch B"
+          },
+          {
+            "id": 10,
+            "name": "host-9.example.com",
+            "x": 700,
+            "y": 620,
+            "statusQueryId": 3,
+            "description": "Access switch C"
           }
         ],
         "links": [
@@ -73,10 +129,21 @@
             "capacity": 1000000000,
             "atozQueryId": 1,
             "ztoaQueryId": 2,
-            "description": "host-0 to host-1 uplink"
+            "description": "Edge to FW-A"
           },
           {
             "id": 2,
+            "aNodeId": 1,
+            "zNodeId": 3,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Edge to FW-B"
+          },
+          {
+            "id": 3,
             "aNodeId": 2,
             "zNodeId": 3,
             "aInterface": "eth0",
@@ -84,7 +151,205 @@
             "capacity": 1000000000,
             "atozQueryId": 1,
             "ztoaQueryId": 2,
-            "description": "host-1 to host-2 uplink"
+            "description": "FW-A to FW-B HA link"
+          },
+          {
+            "id": 4,
+            "aNodeId": 2,
+            "zNodeId": 4,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "FW-A to Core-A"
+          },
+          {
+            "id": 5,
+            "aNodeId": 2,
+            "zNodeId": 5,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "FW-A to Core-B"
+          },
+          {
+            "id": 6,
+            "aNodeId": 3,
+            "zNodeId": 4,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "FW-B to Core-A"
+          },
+          {
+            "id": 7,
+            "aNodeId": 3,
+            "zNodeId": 5,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "FW-B to Core-B"
+          },
+          {
+            "id": 8,
+            "aNodeId": 4,
+            "zNodeId": 5,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 10000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Core-A to Core-B"
+          },
+          {
+            "id": 9,
+            "aNodeId": 4,
+            "zNodeId": 6,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 10000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Core-A to Dist-A"
+          },
+          {
+            "id": 10,
+            "aNodeId": 4,
+            "zNodeId": 7,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 10000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Core-A to Dist-B"
+          },
+          {
+            "id": 11,
+            "aNodeId": 5,
+            "zNodeId": 6,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 10000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Core-B to Dist-A"
+          },
+          {
+            "id": 12,
+            "aNodeId": 5,
+            "zNodeId": 7,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 10000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Core-B to Dist-B"
+          },
+          {
+            "id": 13,
+            "aNodeId": 6,
+            "zNodeId": 7,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 10000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Dist-A to Dist-B"
+          },
+          {
+            "id": 14,
+            "aNodeId": 6,
+            "zNodeId": 8,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Dist-A to Access-A"
+          },
+          {
+            "id": 15,
+            "aNodeId": 6,
+            "zNodeId": 9,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Dist-A to Access-B"
+          },
+          {
+            "id": 16,
+            "aNodeId": 6,
+            "zNodeId": 10,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Dist-A to Access-C"
+          },
+          {
+            "id": 17,
+            "aNodeId": 7,
+            "zNodeId": 8,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Dist-B to Access-A"
+          },
+          {
+            "id": 18,
+            "aNodeId": 7,
+            "zNodeId": 9,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Dist-B to Access-B"
+          },
+          {
+            "id": 19,
+            "aNodeId": 7,
+            "zNodeId": 10,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Dist-B to Access-C"
+          },
+          {
+            "id": 20,
+            "aNodeId": 8,
+            "zNodeId": 9,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "Access-A to Access-B stacking"
+          },
+          {
+            "id": 21,
+            "aNodeId": 2,
+            "zNodeId": 3,
+            "aInterface": "eth0",
+            "zInterface": "eth0",
+            "capacity": 1000000000,
+            "atozQueryId": 1,
+            "ztoaQueryId": 2,
+            "description": "FW-A to FW-B redundant HA link"
           }
         ],
         "queries": [
@@ -122,12 +387,12 @@
           },
           "refId": "OutBits",
           "scenarioId": "random_walk",
-          "seriesCount": 3,
+          "seriesCount": 10,
           "labels": "instance=host-$seriesIndex.example.com,ifName=eth0,ifAlias=Link-$seriesIndex",
           "startValue": 500000000,
           "spread": 10000000,
           "min": 1000000,
-          "max": 1000000000
+          "max": 10000000000
         },
         {
           "datasource": {
@@ -136,12 +401,12 @@
           },
           "refId": "InBits",
           "scenarioId": "random_walk",
-          "seriesCount": 3,
+          "seriesCount": 10,
           "labels": "instance=host-$seriesIndex.example.com,ifName=eth0,ifAlias=Link-$seriesIndex",
           "startValue": 500000000,
           "spread": 10000000,
           "min": 1000000,
-          "max": 1000000000
+          "max": 10000000000
         },
         {
           "datasource": {
@@ -150,7 +415,7 @@
           },
           "refId": "Health",
           "scenarioId": "random_walk",
-          "seriesCount": 2,
+          "seriesCount": 10,
           "labels": "instance=host-$seriesIndex.example.com",
           "startValue": 1,
           "min": 0,
@@ -260,7 +525,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Interactive Weathermap \u2014 Sample",
+  "title": "Interactive Weathermap — Sample",
   "uid": "a538aeff-5a8a-42a5-901c-938d896fdd6f",
-  "version": 5
+  "version": 7
 }
