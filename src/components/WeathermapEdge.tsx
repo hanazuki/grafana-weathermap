@@ -1,3 +1,6 @@
+import { css } from '@emotion/css';
+import type { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
 import { type Edge, EdgeLabelRenderer, type EdgeProps } from '@xyflow/react';
 import React from 'react';
 
@@ -102,6 +105,8 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
     labelFontSize = 10,
   } = /* biome-ignore lint/style/noNonNullAssertion: data is always provided when creating edges*/ data!;
 
+  const styles = useStyles2(getStyles, { labelBgColor, labelFontSize });
+
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
   const len = Math.sqrt(dx * dx + dy * dy);
@@ -144,51 +149,41 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
   const ztoaLabelXAlign = atozNeedsFlip ? '-100%' : '0%';
 
   const labelStyle = (offset: number, xAlign: string, borderColor: string): React.CSSProperties => ({
-    position: 'absolute',
     transform: `translate(${tipX}px, ${tipY}px) rotate(${displayAngle}deg) translateX(${offset}px) translate(${xAlign}, -50%)`,
-    transformOrigin: '0 0',
-    background: labelBgColor,
-    borderRadius: '2px',
     color: borderColor,
-    fontSize: labelFontSize,
-    fontVariantNumeric: 'tabular-nums',
-    padding: '0 2px',
-    whiteSpace: 'nowrap',
-    pointerEvents: 'none',
   });
 
   return (
     <>
-      <g data-testid={`iwm-edge-${id}`}>
-        <g transform={`translate(${ox}, ${oy})`}>
-          {/* A half-arrow: A node → midpoint (A→Z traffic) */}
-          <Arrow
-            len={halfLen}
-            angleDeg={angleDeg}
-            tipX={mx}
-            tipY={my}
-            color={atozColor}
-            borderColor={atozBorderColor}
-            strokeWidth={strokeWidth}
-            tipLength={tipLength}
-          />
+      <g data-testid={`iwm-edge-${id}`} transform={`translate(${ox}, ${oy})`}>
+        {/* A half-arrow: A node → midpoint (A→Z traffic) */}
+        <Arrow
+          len={halfLen}
+          angleDeg={angleDeg}
+          tipX={mx}
+          tipY={my}
+          color={atozColor}
+          borderColor={atozBorderColor}
+          strokeWidth={strokeWidth}
+          tipLength={tipLength}
+        />
 
-          {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
-          <Arrow
-            len={halfLen}
-            angleDeg={angleDeg + 180}
-            tipX={mx}
-            tipY={my}
-            color={ztoaColor}
-            borderColor={ztoaBorderColor}
-            strokeWidth={strokeWidth}
-            tipLength={tipLength}
-          />
-        </g>
+        {/* Z half-arrow: Z node → midpoint (Z→A traffic) */}
+        <Arrow
+          len={halfLen}
+          angleDeg={angleDeg + 180}
+          tipX={mx}
+          tipY={my}
+          color={ztoaColor}
+          borderColor={ztoaBorderColor}
+          strokeWidth={strokeWidth}
+          tipLength={tipLength}
+        />
       </g>
       <EdgeLabelRenderer>
         {atozSpeed && (
           <div
+            className={styles.label}
             style={labelStyle(atozLabelOffset, atozLabelXAlign, atozBorderColor)}
             data-testid={`iwm-edge-${id}-atoz-label`}
           >
@@ -197,6 +192,7 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
         )}
         {ztoaSpeed && (
           <div
+            className={styles.label}
             style={labelStyle(ztoaLabelOffset, ztoaLabelXAlign, ztoaBorderColor)}
             data-testid={`iwm-edge-${id}-ztoa-label`}
           >
@@ -206,4 +202,22 @@ export const WeathermapEdge = React.memo<WeathermapEdgeProps>(({ id, sourceX, so
       </EdgeLabelRenderer>
     </>
   );
+});
+
+const getStyles = (
+  theme: GrafanaTheme2,
+  { labelBgColor, labelFontSize }: { labelBgColor: string; labelFontSize: number },
+) => ({
+  label: css({
+    position: 'absolute',
+    transformOrigin: '0 0',
+    borderRadius: '2px',
+    padding: theme.spacing(0, 0.25),
+    whiteSpace: 'nowrap',
+    pointerEvents: 'none',
+    background: labelBgColor,
+    lineHeight: 1,
+    fontSize: labelFontSize,
+    fontVariantNumeric: 'tabular-nums',
+  }),
 });
