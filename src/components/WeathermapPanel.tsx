@@ -27,6 +27,7 @@ import { PopupProvider, usePopup } from '../context/PopupContext';
 import type { HealthStatus, LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../types';
 import { colorScales, GRAY_COLOR, getUtilizationColor } from '../utils/color';
 import { formatSI } from '../utils/format';
+import { computeLinkOffsets } from '../utils/link';
 import { findHealthTimeSeries, findTrafficTimeSeries } from '../utils/matching';
 import { CanvasContextMenu } from './CanvasContextMenu';
 import { ColorLegend } from './ColorLegend';
@@ -44,13 +45,6 @@ const NODE_TYPES = { weathermapNode: WeathermapNode };
 const EDGE_TYPES = { weathermapEdge: WeathermapEdge };
 const SNAP_GRID: [number, number] = [10, 10];
 const PRO_OPTIONS = { hideAttribution: true };
-
-function getLinkOffset(index: number): number {
-  if (index === 0) {
-    return 0;
-  }
-  return Math.ceil(index / 2) * (index % 2 === 1 ? 1 : -1);
-}
 
 export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) => (
   <PopupProvider>
@@ -391,19 +385,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   );
 
   // Compute parallel link offsets (keyed by link id)
-  const linkOffsets = useMemo(() => {
-    const pairCount = new Map<string, number>();
-    const offsets = new Map<number, number>();
-    for (const link of links) {
-      const a = Math.min(link.aNodeId, link.zNodeId);
-      const b = Math.max(link.aNodeId, link.zNodeId);
-      const key = `${a}\0${b}`;
-      const idx = pairCount.get(key) ?? 0;
-      offsets.set(link.id, getLinkOffset(idx));
-      pairCount.set(key, idx + 1);
-    }
-    return offsets;
-  }, [links]);
+  const linkOffsets = useMemo(() => computeLinkOffsets(links), [links]);
 
   // Build React Flow nodes (React Flow requires string IDs)
   const rfNodes: Node[] = useMemo(
