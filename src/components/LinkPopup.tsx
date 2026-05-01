@@ -309,6 +309,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   bandwidth: css({
     marginTop: theme.spacing(0.75),
     color: theme.colors.text.secondary,
+    fontVariantNumeric: 'tabular-nums',
   }),
   chartWrapper: css({
     padding: `0 ${CHART_PADDING_H}px ${theme.spacing(1)}`,
@@ -332,6 +333,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   axisLabel: css({
     fill: theme.colors.text.primary,
     fontSize: theme.typography.bodySmall.fontSize,
+    fontVariantNumeric: 'tabular-nums',
   }),
   legendRow: css({
     display: 'flex',
