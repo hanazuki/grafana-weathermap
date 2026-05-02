@@ -6,7 +6,7 @@ export function useCrosshair(eventBus: EventBus): number | null {
 
   useEffect(() => {
     const sub1 = eventBus.subscribe(DataHoverEvent, (e) => {
-      const t = e.payload.point['time'];
+      const t = e.payload.point.time;
       setCrosshairTime(typeof t === 'number' ? t : null);
     });
     const sub2 = eventBus.subscribe(DataHoverClearEvent, () => {

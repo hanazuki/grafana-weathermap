@@ -19,9 +19,9 @@ import type React from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import '@xyflow/react/dist/style.css';
 
+import { useCrosshair } from 'hooks/useCrosshair';
 import { useIsEditing } from 'hooks/useIsEditing';
 import { useLocalStorage } from 'hooks/useLocalStorage';
-import { useCrosshair } from 'hooks/useCrosshair';
 import * as z from 'zod/v4/mini';
 import { PopupProvider, usePopup } from '../context/PopupContext';
 import type { HealthStatus, LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../types';
@@ -574,9 +574,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
           logScaleBase={logScaleBase}
         />
         {crosshairTime !== null && (
-          <div className={styles.timestamp}>
-            {dateTimeFormat(crosshairTime, { timeZone })}
-          </div>
+          <div className={styles.timestamp}>{dateTimeFormat(crosshairTime, { timeZone })}</div>
         )}
 
         <ReactFlow

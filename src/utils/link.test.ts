@@ -44,11 +44,7 @@ describe('computeLinkOffsets', () => {
   });
 
   test('independent pairs are offset separately', () => {
-    const links = [
-      makeLink(1, 10, 20),
-      makeLink(2, 10, 20),
-      makeLink(3, 30, 40),
-    ];
+    const links = [makeLink(1, 10, 20), makeLink(2, 10, 20), makeLink(3, 30, 40)];
     const offsets = computeLinkOffsets(links);
     // pair (10,20): two links → -0.5, 0.5
     expect(offsets.get(1)).toBe(-0.5);
