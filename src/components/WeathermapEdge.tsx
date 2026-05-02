@@ -19,6 +19,8 @@ export interface WeathermapEdgeData {
   tipLength: number;
   labelDistance: number;
   labelFontSize: number;
+  hasQueryAtoz: boolean;
+  hasQueryZtoa: boolean;
   [key: string]: unknown;
 }
 

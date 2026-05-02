@@ -27,6 +27,7 @@ import { PopupProvider, usePopup } from '../context/PopupContext';
 import type { HealthStatus, LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../types';
 import { colorScales, GRAY_COLOR, getUtilizationColor } from '../utils/color';
 import { formatSI } from '../utils/format';
+import { computeLabelDistances, estimateLabelSize, type LabelLayoutEdge } from '../utils/labelLayout';
 import { computeLinkOffsets } from '../utils/link';
 import { findHealthTimeSeries, findTrafficTimeSeries } from '../utils/matching';
 import { CanvasContextMenu } from './CanvasContextMenu';
@@ -426,8 +427,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
     [nodes, nodeWidth, nodeHeight, transformLabel, queryMap, data, isEditing, dataMaxAgeMs, crosshairTime],
   );
 
-  // Build React Flow edges
-  const rfEdges: Edge[] = useMemo(() => {
+  // Build React Flow edges (raw: data-bearing, no label distance override)
+  const rfEdgesRaw: Edge[] = useMemo(() => {
     return links
       .filter((link) => nodeMap.has(link.aNodeId) && nodeMap.has(link.zNodeId)) // skip orphaned links
       .map((link) => {
@@ -517,6 +518,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
             tipLength: linkTipLength,
             labelDistance: linkLabelDistance,
             labelFontSize: linkLabelFontSize,
+            hasQueryAtoz: link.atozQueryId != null && !hasInvalidQuery,
+            hasQueryZtoa: link.ztoaQueryId != null && !hasInvalidQuery,
           } satisfies WeathermapEdgeData,
         };
       });
@@ -539,6 +542,49 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
     dataMaxAgeMs,
     crosshairTime,
   ]);
+
+  const labelSize = useMemo(() => estimateLabelSize(linkLabelFontSize, theme), [linkLabelFontSize, theme]);
+
+  const labelDistances = useMemo(() => {
+    const layoutEdges: LabelLayoutEdge[] = rfEdgesRaw.map((e) => {
+      const d = e.data as WeathermapEdgeData;
+      const aNodeId = Number(e.source);
+      const zNodeId = Number(e.target);
+      const aNode = nodeMap.get(aNodeId);
+      const zNode = nodeMap.get(zNodeId);
+      return {
+        id: e.id,
+        aNodeId,
+        zNodeId,
+        sourceX: (aNode?.x ?? 0) + nodeWidth / 2,
+        sourceY: (aNode?.y ?? 0) + nodeHeight / 2,
+        targetX: (zNode?.x ?? 0) + nodeWidth / 2,
+        targetY: (zNode?.y ?? 0) + nodeHeight / 2,
+        offsetPx: d.offsetPx,
+        hasAtoz: d.hasQueryAtoz,
+        hasZtoa: d.hasQueryZtoa,
+      };
+    });
+    return computeLabelDistances(
+      layoutEdges,
+      labelSize,
+      linkLabelDistance,
+      { w: nodeWidth, h: nodeHeight },
+      linkTipLength,
+    );
+  }, [rfEdgesRaw, nodeMap, nodeWidth, nodeHeight, labelSize, linkLabelDistance, linkTipLength]);
+
+  const rfEdges = useMemo(
+    () =>
+      rfEdgesRaw.map((e) => ({
+        ...e,
+        data: {
+          ...e.data,
+          labelDistance: labelDistances.get(e.id) ?? linkLabelDistance,
+        },
+      })),
+    [rfEdgesRaw, labelDistances, linkLabelDistance],
+  );
 
   // Full-panel error state for invalid label transform config
   if (labelTransformError) {

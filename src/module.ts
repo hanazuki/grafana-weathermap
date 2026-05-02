@@ -82,7 +82,7 @@ export const plugin = new PanelPlugin<WeathermapOptions>(WeathermapPanel).setPan
     })
     .addNumberInput({
       path: 'linkLabelDistance',
-      name: 'Link label distance (px)',
+      name: 'Default link label distance (px)',
       defaultValue: 40,
       category: APPEARANCE,
       settings: { min: 1, integer: true },
