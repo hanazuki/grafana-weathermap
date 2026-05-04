@@ -1,3 +1,4 @@
 overrides:
-  dompurify@>=3.0.0 <3.4.0: '>=3.4.0' # pinned by @grafana/data
-  immutable@>=5.0.0 <5.1.5: '>=5.1.5' # pinned by @grafana/ui
+  dompurify@>=3.0.0 <3.4.0: ^3.4.0 # pinned by @grafana/data
+  immutable@>=5.0.0 <5.1.5: ^5.1.5 # pinned by @grafana/ui
+  uuid@<14.0.0: ^14.0.0 # pinned by @grafana/plugin-e2e, @grafana/ui
