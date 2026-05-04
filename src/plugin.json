@@ -14,8 +14,16 @@
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
-    "links": [{ "name": "GitHub", "url": "https://github.com/hanazuki/grafana-weathermap" }],
-    "screenshots": [],
+    "links": [
+      { "name": "Code repository", "url": "https://github.com/hanazuki/grafana-weathermap" },
+      { "name": "Send feedback", "url": "https://github.com/hanazuki/grafana-weathermap/issues/new" },
+      { "name": "Changelog", "url": "https://github.com/hanazuki/grafana-weathermap/blob/v%VERSION%/CHANGELOG.md" },
+      { "name": "License", "url": "https://github.com/hanazuki/grafana-weathermap/blob/v%VERSION%/LICENSE" }
+    ],
+    "screenshots": [
+      { "name": "Color-coded network topology with bidirectional traffic throughput", "path": "img/screenshot01.png" },
+      { "name": "Interactive link inspection showing throughput metrics and traffic history", "path": "img/screenshot02.png" }
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
