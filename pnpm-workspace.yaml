@@ -1,3 +1,8 @@
+allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false
+  protobufjs: false
+  unrs-resolver: false
 overrides:
   dompurify@>=3.0.0 <3.4.0: ^3.4.0 # pinned by @grafana/data
   immutable@>=5.0.0 <5.1.5: ^5.1.5 # pinned by @grafana/ui

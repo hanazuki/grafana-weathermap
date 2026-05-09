@@ -1,5 +1,9 @@
 # Grafana Interactive Network Weathermap Plugin
 
+## Feedback
+
+Bug reports and feature ideas are always welcome. Feel free to open an issue on [GitHub Issues](https://github.com/hanazuki/grafana-weathermap/issues) and share how you use this plugin.
+
 ## License
 
 Copyright (C) 2026 Kasumi Hanazuki <kasumi@rollingapple.net>
