@@ -166,7 +166,7 @@ jobs:
           GRAFANA_IMAGE: ${{ matrix.GRAFANA_IMAGE.NAME }}
 
       - name: Wait for grafana server
-        uses: grafana/plugin-actions/wait-for-grafana@c8ad89b7d81f8cb9967bb65e444d85f5b3d7c674 # wait-for-grafana/v1.0.2
+        uses: grafana/plugin-actions/wait-for-grafana@686ff644d420875e6eeb7b4c10d52d634feeacee # wait-for-grafana/v1.0.4
         with:
           url: http://localhost:3000/login
 
