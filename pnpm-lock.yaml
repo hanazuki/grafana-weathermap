@@ -9,6 +9,9 @@ overrides:
   react-use@>=17.0.0 <17.6.1: ^17.6.1
   react-router@>=6.0.0 <6.30.4: ^6.30.4
 
+patchedDependencies:
+  '@grafana/plugin-e2e@3.15.4': c342eb6055ab4c9ef67c8e9653b4868d7ae56556f5b1cbb920514362699b274a
+
 importers:
 
   .:
@@ -55,7 +58,7 @@ importers:
         version: 2.4.12
       '@grafana/plugin-e2e':
         specifier: ^3.15.4
-        version: 3.15.4(@playwright/test@1.59.1)
+        version: 3.15.4(patch_hash=c342eb6055ab4c9ef67c8e9653b4868d7ae56556f5b1cbb920514362699b274a)(@playwright/test@1.59.1)
       '@grafana/sign-plugin':
         specifier: ^3.2.2
         version: 3.3.3
@@ -5409,7 +5412,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@grafana/plugin-e2e@3.15.4(@playwright/test@1.59.1)':
+  '@grafana/plugin-e2e@3.15.4(patch_hash=c342eb6055ab4c9ef67c8e9653b4868d7ae56556f5b1cbb920514362699b274a)(@playwright/test@1.59.1)':
     dependencies:
       '@playwright/test': 1.59.1
       yaml: 2.8.3

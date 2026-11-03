@@ -1,0 +1,13 @@
+diff --git a/dist/models/pages/PanelEditPage.js b/dist/models/pages/PanelEditPage.js
+index 7914b2e9f4ca289057fd11bd4a9fa2f09690bab6..bb78b5697f84d7b54a9472f66c41156f63eb035e 100644
+--- a/dist/models/pages/PanelEditPage.js
++++ b/dist/models/pages/PanelEditPage.js
+@@ -90,7 +90,7 @@ class PanelEditPage extends GrafanaPage.GrafanaPage {
+         await test.expect(async () => {
+           test.expect(await allVisualizationsTab.isVisible() || await openVizPickerButton.isVisible()).toBe(true);
+         }).toPass();
+-        if (await openVizPickerButton.isVisible()) {
++        if (!await allVisualizationsTab.isVisible() && await openVizPickerButton.isVisible()) {
+           await openVizPickerButton.click();
+         }
+         await allVisualizationsTab.click();
