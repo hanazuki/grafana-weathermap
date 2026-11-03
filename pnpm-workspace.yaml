@@ -4,6 +4,7 @@ allowBuilds:
   protobufjs: false
   unrs-resolver: false
 overrides:
+  glob@>=9.0.0 <14.0.2: ^14.0.2
   moment@>=2.29.2 <2.31.0: ^2.31.0
   basic-ftp@<6.2.1: ^6.2.1
   dompurify@>=3.0.0 <3.4.17: ^3.4.17
