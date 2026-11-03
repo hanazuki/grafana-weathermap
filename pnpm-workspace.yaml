@@ -7,6 +7,5 @@ overrides:
   basic-ftp@<6.2.1: ^6.2.1
   dompurify@>=3.0.0 <3.4.17: ^3.4.17
   react-use@>=17.0.0 <17.6.1: ^17.6.1
-  react-router@>=6.0.0 <6.30.4: ^6.30.4
 patchedDependencies:
   '@grafana/plugin-e2e@3.15.4': patches/@grafana__plugin-e2e@3.15.4.patch
