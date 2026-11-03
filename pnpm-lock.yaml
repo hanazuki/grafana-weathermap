@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  basic-ftp@<6.2.1: ^6.2.1
   dompurify@>=3.0.0 <3.4.17: ^3.4.17
   react-use@>=17.0.0 <17.6.1: ^17.6.1
   react-router@>=6.0.0 <6.30.4: ^6.30.4
@@ -2123,8 +2124,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  basic-ftp@5.3.1:
-    resolution: {integrity: sha512-bopVNp6ugyA150DDuZfPFdt1KZ5a94ZDiwX4hMgZDzF+GttD80lEy8kj98kbyhLXnPvhtIo93mdnLIjpCAeeOw==}
+  basic-ftp@6.2.5:
+    resolution: {integrity: sha512-JJKYwxdbJM6Z4jFO+ciaIUejHRCyIg6oJ9hoAzuZ0EMlJsHDT07h6vZt4NH8G61DLzddrDKvjoRqfewnPzDSJA==}
     engines: {node: '>=10.0.0'}
 
   body@5.1.0:
@@ -7098,7 +7099,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.34: {}
 
-  basic-ftp@5.3.1: {}
+  basic-ftp@6.2.5: {}
 
   body@5.1.0:
     dependencies:
@@ -7856,7 +7857,7 @@ snapshots:
 
   get-uri@8.0.0:
     dependencies:
-      basic-ftp: 5.3.1
+      basic-ftp: 6.2.5
       data-uri-to-buffer: 8.0.0
       debug: 4.4.3
     transitivePeerDependencies:
