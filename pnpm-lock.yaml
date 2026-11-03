@@ -54,8 +54,8 @@ importers:
         specifier: ^2.4.12
         version: 2.4.12
       '@grafana/plugin-e2e':
-        specifier: ^3.9.2
-        version: 3.9.2(@playwright/test@1.59.1)
+        specifier: ^3.15.4
+        version: 3.15.4(@playwright/test@1.59.1)
       '@grafana/sign-plugin':
         specifier: ^3.2.2
         version: 3.3.3
@@ -650,9 +650,6 @@ packages:
   '@grafana/e2e-selectors@13.1.0':
     resolution: {integrity: sha512-g/N5gGZ4iE59g4Coi/R6+F66BRrBnP0XKa7DO7sbiGo4IgM2tGsXgVvWNcR4CCF7bza930mhVWQnREyNLhClFw==}
 
-  '@grafana/e2e-selectors@13.1.0-25644485979':
-    resolution: {integrity: sha512-2H+veZBayawey47iUTb5N69QK5KYHxzspe8uaauvLH7aSsjeyzH6nFubLkOVxz1JUOVtVrwOaH+libUwSaPMXw==}
-
   '@grafana/faro-core@2.8.2':
     resolution: {integrity: sha512-63C6+N/P9/ySUMaGut8yVb1DkPuHS5I/lfRm97+aDXFj3+8pxRT/QzyXNe0r6KMU5O95wC9FLVGxG9ZvkwEhJQ==}
 
@@ -664,9 +661,9 @@ packages:
     peerDependencies:
       react: '>=18'
 
-  '@grafana/plugin-e2e@3.9.2':
-    resolution: {integrity: sha512-r82U+clsXdhjLt+HSCk6M6PYCIkiGj/AUzJaqpxEDk0SWob63+9dZfz94ZcEY2+pV2HnyskThcLcrR67puH87w==}
-    engines: {node: '>=20 <=24'}
+  '@grafana/plugin-e2e@3.15.4':
+    resolution: {integrity: sha512-NC/AA3lajw6OLvi26TMSOkkaOl8uP+Ax5eiRmraZdUbaDKF0FLxBwuKz2qgYCbK7PrWuDoIHrBJ3n1VMGmyjMw==}
+    engines: {node: '>=20'}
     peerDependencies:
       '@axe-core/playwright': ^4.11.1
       '@playwright/test': ^1.52.0
@@ -5383,12 +5380,6 @@ snapshots:
       semver: 7.7.4
       typescript: 6.0.2
 
-  '@grafana/e2e-selectors@13.1.0-25644485979':
-    dependencies:
-      semver: 7.7.4
-      tslib: 2.8.1
-      typescript: 6.0.2
-
   '@grafana/faro-core@2.8.2':
     dependencies:
       '@opentelemetry/api': 1.9.1
@@ -5418,9 +5409,8 @@ snapshots:
       - supports-color
       - typescript
 
-  '@grafana/plugin-e2e@3.9.2(@playwright/test@1.59.1)':
+  '@grafana/plugin-e2e@3.15.4(@playwright/test@1.59.1)':
     dependencies:
-      '@grafana/e2e-selectors': 13.1.0-25644485979
       '@playwright/test': 1.59.1
       yaml: 2.8.3
 
