@@ -22,24 +22,18 @@ workflows:
         - 'pnpm/action-setup@v6.0.9'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
-        - 'grafana/plugin-actions@build-plugin/v1.2.0'
+        - 'grafana/plugin-actions@build-plugin/v1.2.1'
 dependencies:
-    'actions/attest-build-provenance@864457a58d4733d7f1574bd8821fa24e02cf7538':
-        ref: 'predicate@2.0.0'
-        commit: 'sha1-864457a58d4733d7f1574bd8821fa24e02cf7538'
-        owner_id: 44036562
-        repo_id: 760702757
-    'actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a':
-        ref: 'v3.0.0'
-        commit: 'sha1-977bb373ede98d70efdf65b84cb5f73e068dcc2a'
+    'actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8':
+        ref: 'v4.2.2'
+        commit: 'sha1-4d101475d8b20a2381f78447822ac1eab6504dd8'
         owner_id: 44036562
         repo_id: 760702757
         uses:
-            - 'actions/attest-build-provenance@864457a58d4733d7f1574bd8821fa24e02cf7538'
-            - 'actions/attest@daf44fb950173508f38bd2406030372c1d1162b1'
-    'actions/attest@daf44fb950173508f38bd2406030372c1d1162b1':
-        ref: 'v3.0.0'
-        commit: 'sha1-daf44fb950173508f38bd2406030372c1d1162b1'
+            - 'actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d'
+    'actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d':
+        ref: 'v4.2.1'
+        commit: 'sha1-508db95dd578ae2727ebd6217d5ba78e4fbda05d'
         owner_id: 44036562
         repo_id: 760701061
     'actions/checkout@v7.0.1':
@@ -97,16 +91,16 @@ dependencies:
         commit: 'sha1-043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
         owner_id: 44036562
         repo_id: 192625955
-    'grafana/plugin-actions@build-plugin/v1.2.0':
-        ref: 'build-plugin/v1.2.0'
-        commit: 'sha1-8b12a2d6fa5fc0939a6bf75905453d4b505ef29a'
+    'grafana/plugin-actions@build-plugin/v1.2.1':
+        ref: 'build-plugin/v1.2.1'
+        commit: 'sha1-b05ed88ddca828d4700149aeacab32fcaf10caa0'
         owner_id: 7195757
         repo_id: 536571509
         uses:
-            - 'actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a'
+            - 'actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8'
             - 'grafana/plugin-actions@main'
             - 'janheinrichmerker/action-github-changelog-generator@e60b5a2bd9fcd88dadf6345ff8327863fb8b490f'
-            - 'softprops/action-gh-release@62c96d0c4e8a889135c1f3a25910db8dbe0e85f7'
+            - 'softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64'
     'grafana/plugin-actions@bundle-size/v1.1.0':
         ref: 'bundle-size/v1.1.0'
         commit: 'sha1-a66a1c96cdbb176f9cccf10cf23593e250db7cce'
@@ -133,7 +127,7 @@ dependencies:
             - 'marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405'
     'grafana/plugin-actions@main':
         ref: 'main'
-        commit: 'sha1-36bb5bdf15ecf385a1deac61b5d932d2f9c3d9d8'
+        commit: 'sha1-5c20caa865b69528e612228cc778d0813e50ebeb'
         owner_id: 7195757
         repo_id: 536571509
         uses:
@@ -177,8 +171,8 @@ dependencies:
         commit: 'sha1-0ebf47130e4866e96fce0953f49152a61190b271'
         owner_id: 21320719
         repo_id: 262289747
-    'softprops/action-gh-release@62c96d0c4e8a889135c1f3a25910db8dbe0e85f7':
-        ref: 'v2.3.4'
-        commit: 'sha1-62c96d0c4e8a889135c1f3a25910db8dbe0e85f7'
+    'softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64':
+        ref: 'v3.0.3'
+        commit: 'sha1-efb35369e0ad2afab669f228072c1b0d510eae64'
         owner_id: 2242
         repo_id: 204253808
