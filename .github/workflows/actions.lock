@@ -11,7 +11,7 @@ workflows:
         - 'actions/download-artifact@v8.0.1'
         - 'actions/setup-node@v7.0.0'
         - 'actions/upload-artifact@v7.0.1'
-        - 'grafana/plugin-actions@e2e-version/v3.0.2'
+        - 'grafana/plugin-actions@e2e-version/v3.2.0'
         - 'grafana/plugin-actions@upload-report-artifacts/v1.0.1'
         - 'grafana/plugin-actions@wait-for-grafana/v1.0.5'
         - 'pnpm/action-setup@v6.0.9'
@@ -77,6 +77,11 @@ dependencies:
         commit: 'sha1-48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e'
         owner_id: 44036562
         repo_id: 189476904
+    'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020':
+        ref: 'v7.0.0'
+        commit: 'sha1-820762786026740c76f36085b0efc47a31fe5020'
+        owner_id: 44036562
+        repo_id: 189476904
     'actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1':
         ref: 'v7.1.0'
         commit: 'sha1-949feb2413d6458794dcd2491c4babbbce0c15c1'
@@ -117,11 +122,13 @@ dependencies:
             - 'actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b'
             - 'actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903'
             - 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02'
-    'grafana/plugin-actions@e2e-version/v3.0.2':
-        ref: 'e2e-version/v3.0.2'
-        commit: 'sha1-3ef49643a84470fd25bafeb96701fa0be3be6746'
+    'grafana/plugin-actions@e2e-version/v3.2.0':
+        ref: 'e2e-version/v3.2.0'
+        commit: 'sha1-b2d42498af86999c092e974be98860757fd3cb10'
         owner_id: 7195757
         repo_id: 536571509
+        uses:
+            - 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020'
     'grafana/plugin-actions@is-compatible/v1.0.4':
         ref: 'is-compatible/v1.0.4'
         commit: 'sha1-6a283a4015776c4becd1708906b59b2e78c221ae'
