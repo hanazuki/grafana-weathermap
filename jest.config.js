@@ -5,7 +5,7 @@ process.env.TZ = 'UTC';
 module.exports = {
   ...require('./.config/jest.config'),
   transform: {
-    '^.+\\.(t|j)sx?$': [
+    '^.+\\.(t|j|mj)sx?$': [
       '@swc/jest',
       {
         sourceMaps: 'inline',
