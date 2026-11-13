@@ -204,6 +204,7 @@ export const QueriesEditor: React.FC<StandardEditorProps<QueryConfig[]>> = ({ va
       </Field>
       {query !== null ? (
         <QueryEditor
+          key={query.id}
           query={query}
           refIdOptions={refIdOptions}
           usedRefIds={usedRefIds}

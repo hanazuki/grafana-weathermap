@@ -171,6 +171,11 @@ test('direction combobox defaults to Egress and persists after switching queries
 
   // First query's direction should still be Ingress
   await expect(directionBox).toHaveValue('Ingress');
+
+  // Returning to the second query must restore its own default, not the first query's input state.
+  await page.getByPlaceholder('— select a query config —').click();
+  await page.getByRole('option', { name: /link traffic \(#2\)/ }).click();
+  await expect(directionBox).toHaveValue('Egress');
 });
 
 test('traffic label appears with egress direction and disappears with ingress', async ({
