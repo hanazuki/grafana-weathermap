@@ -14,9 +14,10 @@ import {
   ReactFlowProvider,
   useReactFlow,
   type Viewport,
+  type XYPosition,
 } from '@xyflow/react';
 import type React from 'react';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '@xyflow/react/dist/style.css';
 
 import { useCrosshair } from 'hooks/useCrosshair';
@@ -25,6 +26,7 @@ import { useLocalStorage } from 'hooks/useLocalStorage';
 import * as z from 'zod/v4/mini';
 import { PopupProvider, usePopup } from '../context/PopupContext';
 import type { HealthStatus, LinkConfig, NodeConfig, QueryConfig, WeathermapOptions } from '../types';
+import { type Axis, constrainToAxis, decideAxis } from '../utils/axisLock';
 import { colorScales, GRAY_COLOR, getUtilizationColor } from '../utils/color';
 import { formatSI } from '../utils/format';
 import { computeLabelDistances, estimateLabelSize, type LabelLayoutEdge } from '../utils/labelLayout';
@@ -45,7 +47,16 @@ const COLOR_LEGEND_TOTAL_WIDTH = 72;
 const NODE_TYPES = { weathermapNode: WeathermapNode };
 const EDGE_TYPES = { weathermapEdge: WeathermapEdge };
 const SNAP_GRID: [number, number] = [10, 10];
+// Movement needed before a Shift-drag decides its axis: one grid step
+const AXIS_LOCK_THRESHOLD = SNAP_GRID[0];
 const PRO_OPTIONS = { hideAttribution: true };
+
+type DragSession = {
+  referenceId: string;
+  origins: Map<string, XYPosition>;
+  shiftHeld: boolean;
+  axis: Axis | null;
+};
 
 export const WeathermapPanel: React.FC<PanelProps<WeathermapOptions>> = (props) => (
   <PopupProvider>
@@ -95,7 +106,8 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   );
 
   const panelRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
+  // A session exists if and only if nodes are being dragged.
+  const dragSession = useRef<DragSession | null>(null);
   const moveStartViewport = useRef<Viewport | null>(null);
 
   const nodes = useMemo(() => options.nodes ?? [], [options.nodes]);
@@ -186,16 +198,57 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
   );
 
   // Drag lifecycle: clear preview, context menu and pinned popup on drag start; block preview during drag
-  const onNodeDragStart = useCallback(() => {
-    isDragging.current = true;
-    setPreview(null);
-    setContextMenu(null);
-    setPinned(null);
-  }, [setPreview, setContextMenu, setPinned]);
+  const onNodeDragStart = useCallback(
+    (event: React.MouseEvent, node: Node, draggedNodes: Node[]) => {
+      dragSession.current = {
+        referenceId: node.id,
+        origins: new Map(draggedNodes.map((n) => [n.id, { x: n.position.x, y: n.position.y }])),
+        shiftHeld: event.shiftKey,
+        axis: null,
+      };
+      setPreview(null);
+      setContextMenu(null);
+      setPinned(null);
+    },
+    [setPreview, setContextMenu, setPinned],
+  );
 
   const onNodeDragStop = useCallback(() => {
-    isDragging.current = false;
+    dragSession.current = null;
   }, []);
+
+  // Track Shift from keyboard events: React Flow emits position changes before onNodeDrag,
+  // so the drag event's shiftKey would lag one move behind.
+  useEffect(() => {
+    if (!isEditing) {
+      return;
+    }
+    const onKey = (event: KeyboardEvent) => {
+      const session = dragSession.current;
+      if (event.key !== 'Shift' || session == null) {
+        return;
+      }
+      session.shiftHeld = event.type === 'keydown';
+      if (!session.shiftHeld) {
+        session.axis = null;
+      }
+    };
+    const onBlur = () => {
+      const session = dragSession.current;
+      if (session != null) {
+        session.shiftHeld = false;
+        session.axis = null;
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKey);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKey);
+      window.removeEventListener('blur', onBlur);
+    };
+  }, [isEditing]);
 
   // Node hover: set preview (mouse only, not when pinned, not while dragging)
   const onNodeMouseEnter = useCallback(
@@ -203,7 +256,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
       if ((event.nativeEvent as PointerEvent).pointerType === 'touch') {
         return;
       }
-      if (state.pinned || isDragging.current) {
+      if (state.pinned || dragSession.current != null) {
         return;
       }
       setPreview({ type: 'node', id: rfNode.id });
@@ -367,7 +420,7 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
       if (!isEditing) {
         return;
       }
-      const posMap = new Map<string, { x: number; y: number }>();
+      const posMap = new Map<string, XYPosition>();
       for (const change of changes) {
         if (change.type === 'position' && change.position != null) {
           posMap.set(change.id, change.position);
@@ -375,6 +428,20 @@ const WeathermapPanelContent: React.FC<PanelProps<WeathermapOptions>> = ({
       }
       if (posMap.size === 0) {
         return;
+      }
+      const session = dragSession.current;
+      if (session?.shiftHeld) {
+        const referenceOrigin = session.origins.get(session.referenceId);
+        const referencePos = posMap.get(session.referenceId);
+        if (session.axis == null && referenceOrigin != null && referencePos != null) {
+          session.axis = decideAxis(referenceOrigin, referencePos, AXIS_LOCK_THRESHOLD);
+        }
+        for (const [id, pos] of posMap) {
+          const origin = session.origins.get(id);
+          if (origin != null) {
+            posMap.set(id, constrainToAxis(origin, pos, session.axis));
+          }
+        }
       }
       const updatedNodes = nodes.map((n) => {
         const pos = posMap.get(String(n.id));
