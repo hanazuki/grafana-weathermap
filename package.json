@@ -50,7 +50,7 @@
     "semver": "^7.7.4",
     "ts-checker-rspack-plugin": "^1.7.0",
     "ts-node": "^10.9.2",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "webpack": "^5.106.2",
     "ws": "^8.13.0"
   },
