@@ -1,5 +1,5 @@
-import type { Configuration, RuleSetRule } from 'webpack';
-import grafanaConfig, { type Env } from './.config/webpack/webpack.config.ts';
+import type { Configuration, RuleSetRule } from '@rspack/core';
+import grafanaConfig, { type Env } from './.config/rspack/rspack.config.ts';
 
 const config = async (env: Env): Promise<Configuration> => {
   const baseConfig = await grafanaConfig(env);
@@ -11,7 +11,7 @@ const config = async (env: Env): Promise<Configuration> => {
     const r = rule as RuleSetRule;
     if (r && typeof r.use === 'object' && !Array.isArray(r.use)) {
       const use = r.use as { loader?: string; options?: Record<string, unknown> };
-      if (use.loader === 'swc-loader') {
+      if (use.loader === 'builtin:swc-loader') {
         const jsc = (use.options?.jsc ?? {}) as Record<string, unknown>;
         use.options = {
           ...use.options,
