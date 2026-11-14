@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.2.1 (2026-11-14)
+
 ## v0.2.0 (2026-11-13)
 
 - Hold Shift while dragging nodes to keep movement horizontal or vertical. Release Shift to move freely again.
