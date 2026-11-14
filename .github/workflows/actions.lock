@@ -22,7 +22,7 @@ workflows:
         - 'pnpm/action-setup@v6.0.9'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
-        - 'grafana/plugin-actions@build-plugin/v1.2.1'
+        - 'grafana/plugin-actions@build-plugin/v2.0.1'
 dependencies:
     'actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8':
         ref: 'v4.2.2'
@@ -96,16 +96,16 @@ dependencies:
         commit: 'sha1-043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
         owner_id: 44036562
         repo_id: 192625955
-    'grafana/plugin-actions@build-plugin/v1.2.1':
-        ref: 'build-plugin/v1.2.1'
-        commit: 'sha1-b05ed88ddca828d4700149aeacab32fcaf10caa0'
+    'grafana/plugin-actions@build-plugin/v2.0.1':
+        ref: 'build-plugin/v2.0.1'
+        commit: 'sha1-2f27a3fa1821583cb64627495d927773646c728f'
         owner_id: 7195757
         repo_id: 536571509
         uses:
             - 'actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8'
             - 'grafana/plugin-actions@main'
             - 'janheinrichmerker/action-github-changelog-generator@e60b5a2bd9fcd88dadf6345ff8327863fb8b490f'
-            - 'softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64'
+            - 'softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3'
     'grafana/plugin-actions@bundle-size/v1.1.0':
         ref: 'bundle-size/v1.1.0'
         commit: 'sha1-a66a1c96cdbb176f9cccf10cf23593e250db7cce'
@@ -134,7 +134,7 @@ dependencies:
             - 'marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405'
     'grafana/plugin-actions@main':
         ref: 'main'
-        commit: 'sha1-5c20caa865b69528e612228cc778d0813e50ebeb'
+        commit: 'sha1-4237582c38fd642d5917edf9f9b7c94597b56661'
         owner_id: 7195757
         repo_id: 536571509
         uses:
@@ -178,8 +178,8 @@ dependencies:
         commit: 'sha1-0ebf47130e4866e96fce0953f49152a61190b271'
         owner_id: 21320719
         repo_id: 262289747
-    'softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64':
-        ref: 'v3.0.3'
-        commit: 'sha1-efb35369e0ad2afab669f228072c1b0d510eae64'
+    'softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3':
+        ref: 'v3.0.4'
+        commit: 'sha1-8a0cd651e5b2365bd640854a3fa5dfc70e4875f3'
         owner_id: 2242
         repo_id: 204253808
