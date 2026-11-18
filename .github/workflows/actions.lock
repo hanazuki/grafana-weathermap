@@ -18,7 +18,7 @@ workflows:
     '.github/workflows/is-compatible.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-node@v7.1.0'
-        - 'grafana/plugin-actions@is-compatible/v1.0.4'
+        - 'grafana/plugin-actions@is-compatible/v1.1.0'
         - 'pnpm/action-setup@v6.1.1'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
@@ -64,11 +64,6 @@ dependencies:
     'actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903':
         ref: 'v6.0.0'
         commit: 'sha1-2028fbc5c25fe9cf00d9f06a71cc4710d4507903'
-        owner_id: 44036562
-        repo_id: 189476904
-    'actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e':
-        ref: 'v6.4.0'
-        commit: 'sha1-48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e'
         owner_id: 44036562
         repo_id: 189476904
     'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020':
@@ -123,15 +118,15 @@ dependencies:
         repo_id: 536571509
         uses:
             - 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020'
-    'grafana/plugin-actions@is-compatible/v1.0.4':
-        ref: 'is-compatible/v1.0.4'
-        commit: 'sha1-6a283a4015776c4becd1708906b59b2e78c221ae'
+    'grafana/plugin-actions@is-compatible/v1.1.0':
+        ref: 'is-compatible/v1.1.0'
+        commit: 'sha1-3ead4fe1bf6b7b8f6905513d0b8c986f4bc4754a'
         owner_id: 7195757
         repo_id: 536571509
         uses:
-            - 'actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e'
-            - 'jwalton/gh-find-current-pr@89ee5799558265a1e0e31fab792ebb4ee91c016b'
-            - 'marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405'
+            - 'actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1'
+            - 'jwalton/gh-find-current-pr@f3d61b485d2801773f7a07b2aaa3306bd8f8e653'
+            - 'marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88'
     'grafana/plugin-actions@main':
         ref: 'main'
         commit: 'sha1-4237582c38fd642d5917edf9f9b7c94597b56661'
@@ -158,9 +153,9 @@ dependencies:
         commit: 'sha1-e60b5a2bd9fcd88dadf6345ff8327863fb8b490f'
         owner_id: 5065698
         repo_id: 247300336
-    'jwalton/gh-find-current-pr@89ee5799558265a1e0e31fab792ebb4ee91c016b':
-        ref: 'v1.3.3'
-        commit: 'sha1-89ee5799558265a1e0e31fab792ebb4ee91c016b'
+    'jwalton/gh-find-current-pr@f3d61b485d2801773f7a07b2aaa3306bd8f8e653':
+        ref: 'v1.3.5'
+        commit: 'sha1-f3d61b485d2801773f7a07b2aaa3306bd8f8e653'
         owner_id: 1771003
         repo_id: 207654194
     'magefile/mage-action@a662bd8c29d8106879588cfff83b2faf6e6f59db':
@@ -168,9 +163,9 @@ dependencies:
         commit: 'sha1-a662bd8c29d8106879588cfff83b2faf6e6f59db'
         owner_id: 32144377
         repo_id: 210177082
-    'marocchino/sticky-pull-request-comment@773744901bac0e8cbb5a0dc842800d45e9b2b405':
-        ref: 'v2.9.4'
-        commit: 'sha1-773744901bac0e8cbb5a0dc842800d45e9b2b405'
+    'marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88':
+        ref: 'v3.0.5'
+        commit: 'sha1-5770ad5eb8f42dd2c4f34da00c94c5381e49af88'
         owner_id: 128431
         repo_id: 223043916
     'pnpm/action-setup@v6.1.1':
