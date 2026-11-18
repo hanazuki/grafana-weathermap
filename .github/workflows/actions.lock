@@ -14,12 +14,12 @@ workflows:
         - 'grafana/plugin-actions@e2e-version/v3.2.0'
         - 'grafana/plugin-actions@upload-report-artifacts/v1.0.1'
         - 'grafana/plugin-actions@wait-for-grafana/v1.0.5'
-        - 'pnpm/action-setup@v6.0.9'
+        - 'pnpm/action-setup@v6.1.1'
     '.github/workflows/is-compatible.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-node@v7.1.0'
         - 'grafana/plugin-actions@is-compatible/v1.0.4'
-        - 'pnpm/action-setup@v6.0.9'
+        - 'pnpm/action-setup@v6.1.1'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
         - 'grafana/plugin-actions@build-plugin/v2.0.1'
@@ -173,9 +173,9 @@ dependencies:
         commit: 'sha1-773744901bac0e8cbb5a0dc842800d45e9b2b405'
         owner_id: 128431
         repo_id: 223043916
-    'pnpm/action-setup@v6.0.9':
-        ref: 'v6.0.9'
-        commit: 'sha1-0ebf47130e4866e96fce0953f49152a61190b271'
+    'pnpm/action-setup@v6.1.1':
+        ref: 'v6.1.1'
+        commit: 'sha1-73e46992e05b19abd31f2f3c20e0e7370d762115'
         owner_id: 21320719
         repo_id: 262289747
     'softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3':
