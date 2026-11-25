@@ -21,7 +21,7 @@
     "@grafana/plugin-e2e": "^3.15.4",
     "@grafana/sign-plugin": "^4.0.0",
     "@grafana/tsconfig": "^2.2.0",
-    "@playwright/test": "^1.65.0",
+    "@playwright/test": "^1.65.1",
     "@rspack/cli": "^2.2.0",
     "@rspack/core": "^2.2.0",
     "@swc/core": "^1.16.22",
