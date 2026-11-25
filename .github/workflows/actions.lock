@@ -12,7 +12,7 @@ workflows:
         - 'actions/setup-node@v7.1.0'
         - 'actions/upload-artifact@v7.0.1'
         - 'grafana/plugin-actions@e2e-version/v4.0.1'
-        - 'grafana/plugin-actions@upload-report-artifacts/v1.0.1'
+        - 'grafana/plugin-actions@upload-report-artifacts/v1.0.3'
         - 'grafana/plugin-actions@wait-for-grafana/v1.0.5'
         - 'pnpm/action-setup@v6.1.1'
     '.github/workflows/is-compatible.yml':
@@ -76,6 +76,11 @@ dependencies:
         commit: 'sha1-949feb2413d6458794dcd2491c4babbbce0c15c1'
         owner_id: 44036562
         repo_id: 189476904
+    'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9':
+        ref: 'v7.0.2'
+        commit: 'sha1-cf430e030ddbb5b0abf93d22962f4752f3646cd9'
+        owner_id: 44036562
+        repo_id: 192625955
     'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02':
         ref: 'v4.6.2'
         commit: 'sha1-ea165f8d65b6e75b540449e92b4886f43607fa02'
@@ -131,13 +136,13 @@ dependencies:
             - 'actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e'
             - 'actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1'
             - 'magefile/mage-action@a662bd8c29d8106879588cfff83b2faf6e6f59db'
-    'grafana/plugin-actions@upload-report-artifacts/v1.0.1':
-        ref: 'upload-report-artifacts/v1.0.1'
-        commit: 'sha1-fa3356df288e68f5e900ab466e98b0bf9bad3118'
+    'grafana/plugin-actions@upload-report-artifacts/v1.0.3':
+        ref: 'upload-report-artifacts/v1.0.3'
+        commit: 'sha1-2311d422543154f07aa4a01f966243f4ad4de266'
         owner_id: 7195757
         repo_id: 536571509
         uses:
-            - 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02'
+            - 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9'
     'grafana/plugin-actions@wait-for-grafana/v1.0.5':
         ref: 'wait-for-grafana/v1.0.5'
         commit: 'sha1-4205a0824a13b71fdb9b9b49f28f5f72b754f81f'
