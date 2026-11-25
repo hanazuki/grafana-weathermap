@@ -182,19 +182,19 @@ importers:
         version: 11.13.5(supports-color@8.1.1)
       '@grafana/data':
         specifier: ^13.3.1
-        version: 13.3.1(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+        version: 13.3.1(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@grafana/i18n':
         specifier: ^13.3.1
-        version: 13.3.1(eslint@10.14.0(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+        version: 13.3.1(eslint@10.15.0(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@grafana/runtime':
         specifier: ^13.3.1
-        version: 13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+        version: 13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@grafana/schema':
         specifier: ^13.3.1
         version: 13.3.1
       '@grafana/ui':
         specifier: ^13.3.1
-        version: 13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+        version: 13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@xyflow/react':
         specifier: ^12.10.2
         version: 12.10.2(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -270,10 +270,10 @@ importers:
         version: 8.18.2
       diagnostics-webpack-plugin:
         specifier: ^1.0.1
-        version: 1.1.2(@biomejs/biome@2.4.12)(eslint@10.14.0(supports-color@8.1.1))(typescript@7.0.2)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24)))
+        version: 1.1.2(@biomejs/biome@2.4.12)(eslint@10.15.0(supports-color@8.1.1))(typescript@7.0.2)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24)))
       eslint:
-        specifier: ^10.14.0
-        version: 10.14.0(supports-color@8.1.1)
+        specifier: ^10.15.0
+        version: 10.15.0(supports-color@8.1.1)
       identity-obj-proxy:
         specifier: ^3.0.0
         version: 3.0.0
@@ -762,8 +762,8 @@ packages:
     resolution: {integrity: sha512-R76UKbvsqI68DJJVTVyqFKqU98CN4+B+acxNfEA2IFarSzP0SjtKf/3+fFiXzTyv5Fj3PxLkGHe2wnVWWMxobQ==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
 
-  '@eslint/config-array@0.23.5':
-    resolution: {integrity: sha512-Y3kKLvC1dvTOT+oGlqNQ1XLqK6D1HU2YXPc52NmAlJZbMMWDzGYXMiPRJ8TYD39muD/OTjlZmNJ4ib7dvSrMBA==}
+  '@eslint/config-array@0.23.6':
+    resolution: {integrity: sha512-WrTH7nioI9QPY4NZGnsywmecswJdgeq4BCM76qok9VgjTO29ZgUzUvcuJLVPYVQM4uDbaPBU0M33R9DIxI8X3w==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   '@eslint/config-helpers@0.7.0':
@@ -3042,8 +3042,8 @@ packages:
     resolution: {integrity: sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  eslint@10.14.0:
-    resolution: {integrity: sha512-T0pNsxkb9IKmtQjhpK3d7nWOpFv+YHuMbTJnSVMoQblF0onvXfErrtp4V1jHtsQPan7dKaGVD0q1WCXnzMF31A==}
+  eslint@10.15.0:
+    resolution: {integrity: sha512-+5Wg4p+ze3sG1WErYgUO/3H1IQIfFBymVUA0Fo/XTeBOLS6UQIUekpSJ8sdRkn7O7wjh84b55w/roqavH2aScg==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     hasBin: true
     peerDependencies:
@@ -5420,14 +5420,14 @@ snapshots:
 
   '@emotion/weak-memoize@0.4.0': {}
 
-  '@eslint-community/eslint-utils@4.10.1(eslint@10.14.0(supports-color@8.1.1))':
+  '@eslint-community/eslint-utils@4.10.1(eslint@10.15.0(supports-color@8.1.1))':
     dependencies:
-      eslint: 10.14.0(supports-color@8.1.1)
+      eslint: 10.15.0(supports-color@8.1.1)
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.3': {}
 
-  '@eslint/config-array@0.23.5(supports-color@8.1.1)':
+  '@eslint/config-array@0.23.6(supports-color@8.1.1)':
     dependencies:
       '@eslint/object-schema': 3.0.5
       debug: 4.4.3(supports-color@8.1.1)
@@ -5488,10 +5488,10 @@ snapshots:
     dependencies:
       '@formatjs/fast-memoize': 3.1.7
 
-  '@grafana/data@13.3.1(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)':
+  '@grafana/data@13.3.1(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)':
     dependencies:
       '@braintree/sanitize-url': 7.1.2
-      '@grafana/i18n': 13.3.1(eslint@10.14.0(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+      '@grafana/i18n': 13.3.1(eslint@10.15.0(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@grafana/schema': 13.3.1
       '@leeoniya/ufuzzy': 1.0.19
       '@react-hookz/web': 25.3.0(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -5542,10 +5542,10 @@ snapshots:
       ua-parser-js: 1.0.41
       web-vitals: 6.2.3
 
-  '@grafana/i18n@13.3.1(eslint@10.14.0(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)':
+  '@grafana/i18n@13.3.1(eslint@10.15.0(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)':
     dependencies:
       '@formatjs/intl-durationformat': 0.11.1
-      '@typescript-eslint/utils': 8.72.1(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)
+      '@typescript-eslint/utils': 8.72.1(eslint@10.15.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)
       fast-deep-equal: 3.1.3
       i18next: 26.5.12(typescript@7.0.2)
       i18next-browser-languagedetector: 8.2.4
@@ -5570,13 +5570,13 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@grafana/runtime@13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)':
+  '@grafana/runtime@13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)':
     dependencies:
-      '@grafana/data': 13.3.1(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+      '@grafana/data': 13.3.1(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@grafana/e2e-selectors': 13.3.1
       '@grafana/faro-web-sdk': 2.13.0
       '@grafana/schema': 13.3.1
-      '@grafana/ui': 13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+      '@grafana/ui': 13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@openfeature/core': 1.12.0
       '@openfeature/localstorage-provider': 0.1.2(@openfeature/web-sdk@1.10.0(@openfeature/core@1.12.0))
       '@openfeature/ofrep-web-provider': 0.4.3(@openfeature/core@1.12.0)(@openfeature/web-sdk@1.10.0(@openfeature/core@1.12.0))
@@ -5613,7 +5613,7 @@ snapshots:
 
   '@grafana/tsconfig@2.2.0': {}
 
-  '@grafana/ui@13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)':
+  '@grafana/ui@13.3.1(@babel/runtime@8.1.0)(@codemirror/lint@6.9.7)(@codemirror/search@6.7.1)(@codemirror/theme-one-dark@6.1.3)(@types/react@18.3.28)(codemirror@6.0.2)(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)':
     dependencies:
       '@codemirror/autocomplete': 6.20.4
       '@codemirror/lang-go': 6.0.1
@@ -5632,10 +5632,10 @@ snapshots:
       '@emotion/react': 11.14.0(@types/react@18.3.28)(react@18.3.1)(supports-color@8.1.1)
       '@emotion/serialize': 1.3.3
       '@floating-ui/react': 0.27.20(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@grafana/data': 13.3.1(eslint@10.14.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+      '@grafana/data': 13.3.1(eslint@10.15.0(supports-color@8.1.1))(js-cookie@3.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@grafana/e2e-selectors': 13.3.1
       '@grafana/faro-web-sdk': 2.13.0
-      '@grafana/i18n': 13.3.1(eslint@10.14.0(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
+      '@grafana/i18n': 13.3.1(eslint@10.15.0(supports-color@8.1.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@8.1.1)(typescript@7.0.2)
       '@grafana/react-data-grid': 7.0.0-beta.60(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@grafana/schema': 13.3.1
       '@hello-pangea/dnd': 18.0.1(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -7042,13 +7042,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.72.1(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)':
+  '@typescript-eslint/utils@8.72.1(eslint@10.15.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.14.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.15.0(supports-color@8.1.1))
       '@typescript-eslint/scope-manager': 8.72.1
       '@typescript-eslint/types': 8.72.1
       '@typescript-eslint/typescript-estree': 8.72.1(supports-color@8.1.1)(typescript@7.0.2)
-      eslint: 10.14.0(supports-color@8.1.1)
+      eslint: 10.15.0(supports-color@8.1.1)
       typescript: 7.0.2
     transitivePeerDependencies:
       - supports-color
@@ -7792,7 +7792,7 @@ snapshots:
 
   detect-newline@3.1.0: {}
 
-  diagnostics-webpack-plugin@1.1.2(@biomejs/biome@2.4.12)(eslint@10.14.0(supports-color@8.1.1))(typescript@7.0.2)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))):
+  diagnostics-webpack-plugin@1.1.2(@biomejs/biome@2.4.12)(eslint@10.15.0(supports-color@8.1.1))(typescript@7.0.2)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))):
     dependencies:
       jest-worker: 30.5.1
       picomatch: 4.0.4
@@ -7800,7 +7800,7 @@ snapshots:
       webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))
     optionalDependencies:
       '@biomejs/biome': 2.4.12
-      eslint: 10.14.0(supports-color@8.1.1)
+      eslint: 10.15.0(supports-color@8.1.1)
       typescript: 7.0.2
 
   diff@4.0.4: {}
@@ -7879,11 +7879,11 @@ snapshots:
 
   eslint-visitor-keys@5.0.1: {}
 
-  eslint@10.14.0(supports-color@8.1.1):
+  eslint@10.15.0(supports-color@8.1.1):
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.14.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.15.0(supports-color@8.1.1))
       '@eslint-community/regexpp': 4.12.3
-      '@eslint/config-array': 0.23.5(supports-color@8.1.1)
+      '@eslint/config-array': 0.23.6(supports-color@8.1.1)
       '@eslint/config-helpers': 0.7.0
       '@eslint/core': 1.2.1
       '@eslint/plugin-kit': 0.7.3
