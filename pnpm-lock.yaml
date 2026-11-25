@@ -270,7 +270,7 @@ importers:
         version: 8.18.2
       diagnostics-webpack-plugin:
         specifier: ^1.0.1
-        version: 1.1.2(@biomejs/biome@2.4.12)(eslint@10.15.0(supports-color@8.1.1))(typescript@7.0.2)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24)))
+        version: 1.1.2(@biomejs/biome@2.4.12)(eslint@10.15.0(supports-color@8.1.1))(typescript@7.0.2)(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24)))
       eslint:
         specifier: ^10.15.0
         version: 10.15.0(supports-color@8.1.1)
@@ -303,7 +303,7 @@ importers:
         version: 1.99.0
       sass-loader:
         specifier: ^16.0.7
-        version: 16.0.7(@rspack/core@2.3.2(@swc/helpers@0.5.24))(sass@1.99.0)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24)))
+        version: 16.0.7(@rspack/core@2.3.2(@swc/helpers@0.5.24))(sass@1.99.0)(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24)))
       semver:
         specifier: ^7.7.4
         version: 7.7.4
@@ -317,8 +317,8 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
       webpack:
-        specifier: ^5.112.2
-        version: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))
+        specifier: ^5.113.0
+        version: 5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))
       ws:
         specifier: ^8.23.0
         version: 8.23.0
@@ -4556,8 +4556,8 @@ packages:
   tabbable@6.5.1:
     resolution: {integrity: sha512-dMCuwDUY6Noz3zVKLefBC4wq+aJV20yc7vWmM7uTNGwtQSFF5kX7OUIUsxuVajz/bdt5Xqdah3/0NLjth+cM5A==}
 
-  tapable@2.3.3:
-    resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
+  tapable@2.3.4:
+    resolution: {integrity: sha512-NHFiWnAbMJxNNpBwiO7jJVGDuqMxT9/oV8v57RR+fgBQShkJil5inGD8/xWy0hjLyHQyX1tu27QANhlz3KBqCg==}
     engines: {node: '>=6'}
 
   terser@5.51.2:
@@ -4772,12 +4772,12 @@ packages:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
 
-  webpack-sources@3.7.0:
-    resolution: {integrity: sha512-PdUhbCycwEgiS1hB/FBDksWKg/ashAIuJKqwdbPn8/dFVgU5LxQiBvG0js6VRRIzPujMrStYCczywp82P0KWng==}
+  webpack-sources@3.7.1:
+    resolution: {integrity: sha512-mcxs7A2LsEdwsNqQburqS4QHPR2Ca3NGplUakn6J5GPQvnVZ4oD4IM4FJcT3f8AVN2e2EsjuIVxKj4rorHvyuQ==}
     engines: {node: '>=10.13.0'}
 
-  webpack@5.112.2:
-    resolution: {integrity: sha512-B2tp1LI9D8GVpPDqprdt12ukTkXXahj9MzqSWJq4faSPgOUM7CdZaGAB6HrL/8E6UwbBpdj4vzWDbKoFnVoU6g==}
+  webpack@5.113.0:
+    resolution: {integrity: sha512-q54iF0LNaAAdLEt3al9qMXC2zARvcx7LVKjHp+ExjCRkGx0M8TmawGHAXykXwofWzxhNzPTAh3kLVXvNg0El4A==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     peerDependencies:
@@ -7876,12 +7876,12 @@ snapshots:
 
   detect-newline@3.1.0: {}
 
-  diagnostics-webpack-plugin@1.1.2(@biomejs/biome@2.4.12)(eslint@10.15.0(supports-color@8.1.1))(typescript@7.0.2)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))):
+  diagnostics-webpack-plugin@1.1.2(@biomejs/biome@2.4.12)(eslint@10.15.0(supports-color@8.1.1))(typescript@7.0.2)(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))):
     dependencies:
       jest-worker: 30.5.1
       picomatch: 4.0.4
       tinyglobby: 0.2.17
-      webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))
+      webpack: 5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))
     optionalDependencies:
       '@biomejs/biome': 2.4.12
       eslint: 10.15.0(supports-color@8.1.1)
@@ -7930,7 +7930,7 @@ snapshots:
   enhanced-resolve@5.27.0:
     dependencies:
       graceful-fs: 4.2.11
-      tapable: 2.3.3
+      tapable: 2.3.4
 
   entities@6.0.1: {}
 
@@ -8882,12 +8882,12 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minimizer-webpack-plugin@5.14.0(@swc/core@1.16.22(@swc/helpers@0.5.24))(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))):
+  minimizer-webpack-plugin@5.14.0(@swc/core@1.16.22(@swc/helpers@0.5.24))(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))):
     dependencies:
       jest-worker: 27.5.1
-      schema-utils: 4.8.3(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24)))
+      schema-utils: 4.8.3(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24)))
       terser: 5.51.2
-      webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))
+      webpack: 5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))
     optionalDependencies:
       '@swc/core': 1.16.22(@swc/helpers@0.5.24)
 
@@ -9386,13 +9386,13 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
-  sass-loader@16.0.7(@rspack/core@2.3.2(@swc/helpers@0.5.24))(sass@1.99.0)(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))):
+  sass-loader@16.0.7(@rspack/core@2.3.2(@swc/helpers@0.5.24))(sass@1.99.0)(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))):
     dependencies:
       neo-async: 2.6.2
     optionalDependencies:
       '@rspack/core': 2.3.2(@swc/helpers@0.5.24)
       sass: 1.99.0
-      webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))
+      webpack: 5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))
 
   sass@1.99.0:
     dependencies:
@@ -9410,14 +9410,14 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  schema-utils@4.8.3(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))):
+  schema-utils@4.8.3(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))):
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
       ajv-formats: 3.0.1
       ajv-keywords: 5.1.0(ajv@8.20.0)
     optionalDependencies:
-      webpack: 5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24))
+      webpack: 5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24))
 
   screenfull@5.2.0: {}
 
@@ -9599,7 +9599,7 @@ snapshots:
 
   tabbable@6.5.1: {}
 
-  tapable@2.3.3: {}
+  tapable@2.3.4: {}
 
   terser@5.51.2:
     dependencies:
@@ -9826,9 +9826,9 @@ snapshots:
 
   webidl-conversions@7.0.0: {}
 
-  webpack-sources@3.7.0: {}
+  webpack-sources@3.7.1: {}
 
-  webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24)):
+  webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24)):
     dependencies:
       '@types/estree': 1.0.10
       '@types/json-schema': 7.0.15
@@ -9838,15 +9838,14 @@ snapshots:
       browserslist: 4.29.5
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.27.0
-      es-module-lexer: 2.3.2
       events: 3.3.0
       graceful-fs: 4.2.11
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.14.0(@swc/core@1.16.22(@swc/helpers@0.5.24))(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24)))
-      schema-utils: 4.8.3(webpack@5.112.2(@swc/core@1.16.22(@swc/helpers@0.5.24)))
-      tapable: 2.3.3
+      minimizer-webpack-plugin: 5.14.0(@swc/core@1.16.22(@swc/helpers@0.5.24))(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24)))
+      schema-utils: 4.8.3(webpack@5.113.0(@swc/core@1.16.22(@swc/helpers@0.5.24)))
+      tapable: 2.3.4
       watchpack: 2.6.4
-      webpack-sources: 3.7.0
+      webpack-sources: 3.7.1
     transitivePeerDependencies:
       - '@minify-html/node'
       - '@napi-rs/image'
